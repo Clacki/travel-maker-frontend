@@ -108,6 +108,30 @@ fix: 다크모드 토글 버그 수정 (#18)
 
 ---
 
+## Next.js App Router — Server/Client Component
+
+기본값은 **Server Component**. 아래 조건에 해당할 때만 `'use client'`를 추가한다.
+
+| 상황                                               | 컴포넌트         |
+| -------------------------------------------------- | ---------------- |
+| 데이터 페칭, 서버 리소스 접근                      | Server Component |
+| 순수 UI 렌더링 (props만 받는 경우)                 | Server Component |
+| `useState`, `useEffect` 등 React 훅 사용           | Client Component |
+| 이벤트 핸들러 (`onClick` 등) 사용                  | Client Component |
+| 브라우저 API (`window`, `localStorage` 등) 사용    | Client Component |
+| 외부 라이브러리가 브라우저 환경 요구 (Recharts 등) | Client Component |
+
+**원칙: `'use client'` 경계는 가능한 한 leaf(말단) 컴포넌트까지 내린다.**
+
+```
+app/
+└── dashboard/
+    └── page.tsx          # Server Component (데이터 페칭)
+        └── ChartSection.tsx  # Client Component ('use client')
+```
+
+---
+
 ## 파일 / 폴더 네이밍
 
 | 대상                   | 형식                       | 예시                                 |

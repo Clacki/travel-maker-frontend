@@ -1,0 +1,5 @@
+.next/
+styled-system/
+node_modules/
+public/
+pnpm-lock.yaml
