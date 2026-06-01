@@ -26,9 +26,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Panda CSS codegen
-        run: pnpm panda
-
       - name: Run ESLint
         run: pnpm lint
 
