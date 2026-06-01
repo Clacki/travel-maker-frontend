@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import './globals.css'
-import { MSWProvider } from './_components/MSWProvider'
+import { Footer } from '@/components/layout/Footer'
+import { Header } from '@/components/layout/Header'
+import '@/styles/globals.css'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Travel Maker',
-  description: '나만의 여행 일정을 만들어보세요.',
+  description: '국내 여행 추천 서비스',
 }
 
 export default function RootLayout({
@@ -25,11 +26,15 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <MSWProvider>{children}</MSWProvider>
+      <body className="min-h-full">
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )

@@ -1,10 +1,9 @@
-import { defineConfig } from "@pandacss/dev";
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
   preflight: true,
 
-  // app, components 폴더 포함
-  include: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
 
   exclude: [],
 
@@ -12,5 +11,5 @@ export default defineConfig({
     extend: {},
   },
 
-  outdir: "styled-system",
-});
+  outdir: 'styled-system',
+})
