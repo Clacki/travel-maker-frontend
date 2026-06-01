@@ -1,54 +1,53 @@
-"use client"
+'use client'
 
-import Link from "next/link"
-import { Moon, Sun } from "lucide-react"
-import { useTheme } from "next-themes"
-import { useEffect, useState } from "react"
-import { css } from "@/styled-system/css"
+import Link from 'next/link'
+import { Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+import { css } from '@/styled-system/css'
 
 export function Header() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 
   return (
     <header
       className={css({
-        position: "fixed",
+        position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         zIndex: 50,
-        bg: "#FEFEFE",
-        h: "66px",
+        bg: '#FEFEFE',
+        h: '66px',
       })}
     >
       <div
         className={css({
-          maxW: "7xl",
-          mx: "auto",
+          maxW: '7xl',
+          mx: 'auto',
           px: 6,
-          h: "full",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          h: 'full',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
         })}
       >
-        <Link
-          href="/"
-          className={css({ textDecoration: "none" })}
-        >
+        <Link href="/" className={css({ textDecoration: 'none' })}>
           <span
             className={css({
-              fontSize: "2xl",
-              fontWeight: "800",
-              letterSpacing: "-0.03em",
-              background: "linear-gradient(135deg, var(--colors-primary) 0%, var(--colors-accent) 100%)",
-              backgroundClip: "text",
-              color: "transparent",
+              fontSize: '2xl',
+              fontWeight: '800',
+              letterSpacing: '-0.03em',
+              background:
+                'linear-gradient(135deg, var(--colors-primary) 0%, var(--colors-accent) 100%)',
+              backgroundClip: 'text',
+              color: 'transparent',
             })}
           >
             TravelMaker
@@ -57,24 +56,26 @@ export function Header() {
 
         <nav
           className={css({
-            display: { base: "none", md: "flex" },
-            alignItems: "center",
+            display: { base: 'none', md: 'flex' },
+            alignItems: 'center',
             gap: 8,
           })}
         >
           {[
-            { label: "Travel Style", href: "/" },
-            { label: "Explore", href: "/travel/explore" },
+            { label: 'Travel Style', href: '/' },
+            { label: 'Explore', href: '/travel/explore' },
           ].map((item) => (
             <Link
               key={item.label}
               href={item.href}
               className={css({
-                fontSize: "sm",
-                color: "muted.foreground",
-                textDecoration: "none",
-                _hover: { color: "foreground" },
-                transition: "colors",
+                fontSize: 'sm',
+                color: 'muted.foreground',
+                textDecoration: 'none',
+                _hover: { color: 'foreground' },
+                transitionProperty: 'background-color, color, border-color',
+                transitionDuration: '200ms',
+                transitionTimingFunction: 'ease-in-out',
               })}
             >
               {item.label}
@@ -82,7 +83,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div className={css({ display: "flex", alignItems: "center", gap: 3 })}>
+        <div className={css({ display: 'flex', alignItems: 'center', gap: 3 })}>
           {/* {mounted && (
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -97,7 +98,9 @@ export function Header() {
                 cursor: "pointer",
                 border: "none",
                 _hover: { bg: "secondary/80" },
-                transition: "colors",
+                transitionProperty: "background-color, color, border-color",
+                transitionDuration: "200ms",
+                transitionTimingFunction: "ease-in-out",
               })}
               aria-label="테마 변경"
             >
@@ -112,15 +115,17 @@ export function Header() {
             className={css({
               px: 4,
               py: 2,
-              bg: "white",
-              color: "muted.foreground",
-              fontSize: "sm",
-              fontWeight: "medium",
-              rounded: "lg",
-              cursor: "pointer",
-              border: "none",
+              bg: 'white',
+              color: 'muted.foreground',
+              fontSize: 'sm',
+              fontWeight: 'medium',
+              rounded: 'lg',
+              cursor: 'pointer',
+              border: 'none',
               _hover: { opacity: 0.9 },
-              transition: "opacity",
+              transitionProperty: 'opacity',
+              transitionDuration: '200ms',
+              transitionTimingFunction: 'ease-in-out',
             })}
           >
             Login
