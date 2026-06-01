@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowLeft, MapPin } from 'lucide-react'
-import { Header } from '@/components/common/header'
 import { FilterCard } from '@/components/filters/filter-card'
 import { DestinationCard } from '@/components/cards/destination-card'
 import { getCategoryById } from '@/lib/travel-data'
@@ -31,7 +30,6 @@ export default function CategoryPage() {
   if (!category) {
     return (
       <main className={css({ minH: '100vh', bg: 'background' })}>
-        <Header />
         <div className={css({ h: '66px' })} />
         <div className={css({ px: 6, textAlign: 'center' })}>
           <h1
@@ -63,8 +61,6 @@ export default function CategoryPage() {
 
   return (
     <main className={css({ minH: '100vh', bg: 'background' })}>
-      <Header />
-
       {/* 고정 헤더 높이만큼 공간 확보 */}
       <div className={css({ h: '66px' })} />
 
@@ -113,7 +109,9 @@ export default function CategoryPage() {
                   mb: 4,
                   fontSize: 'sm',
                   _hover: { color: 'foreground' },
-                  transition: 'colors',
+                  transitionProperty: 'background-color, color, border-color',
+                  transitionDuration: '200ms',
+                  transitionTimingFunction: 'ease-in-out',
                 })}
               >
                 <ArrowLeft className={css({ w: 4, h: 4 })} />

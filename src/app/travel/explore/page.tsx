@@ -4,7 +4,6 @@ import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, SlidersHorizontal, X } from 'lucide-react'
-import { Header } from '@/components/common/header'
 import { DestinationCard } from '@/components/cards/destination-card'
 import { getAllDestinations } from '@/lib/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
@@ -144,7 +143,6 @@ function ExploreContent() {
 
   return (
     <main className={css({ minH: '100vh', bg: 'background' })}>
-      <Header />
       <div className={css({ h: '66px' })} />
 
       {/* 페이지 헤더 */}
@@ -168,7 +166,9 @@ function ExploreContent() {
               mb: 5,
               fontSize: 'sm',
               _hover: { color: 'foreground' },
-              transition: 'colors',
+              transitionProperty: 'background-color, color, border-color',
+              transitionDuration: '200ms',
+              transitionTimingFunction: 'ease-in-out',
             })}
           >
             <ArrowLeft className={css({ w: 4, h: 4 })} />
