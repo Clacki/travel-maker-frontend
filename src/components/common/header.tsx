@@ -71,7 +71,9 @@ export function Header() {
                 color: 'muted.foreground',
                 textDecoration: 'none',
                 _hover: { color: 'foreground' },
-                transition: 'colors',
+                transitionProperty: 'background-color, color, border-color',
+                transitionDuration: '200ms',
+                transitionTimingFunction: 'ease-in-out',
               })}
             >
               {item}
@@ -94,7 +96,9 @@ export function Header() {
                 cursor: 'pointer',
                 border: 'none',
                 _hover: { bg: 'secondary/80' },
-                transition: 'colors',
+                transitionProperty: 'background-color, color, border-color',
+                transitionDuration: '200ms',
+                transitionTimingFunction: 'ease-in-out',
               })}
               aria-label="테마 변경"
             >
@@ -117,7 +121,9 @@ export function Header() {
               cursor: 'pointer',
               border: 'none',
               _hover: { opacity: 0.9 },
-              transition: 'opacity',
+              transitionProperty: 'opacity',
+              transitionDuration: '200ms',
+              transitionTimingFunction: 'ease-in-out',
             })}
           >
             여행 계획하기

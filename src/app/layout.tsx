@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
 import { Footer, Header } from '@/components/layout'
+import { ThemeProvider } from '@/components/common/theme-provider'
 import { css } from '@/styled-system/css'
 import '@/styles/globals.css'
 
@@ -22,28 +23,30 @@ export default function RootLayout({
   children: ReactNode
 }>) {
   return (
-    <html lang="ko" className={pretendard.variable}>
+    <html lang="ko" suppressHydrationWarning className={pretendard.variable}>
       <body>
-        <div
-          className={css({
-            minH: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            bg: 'bg.canvas',
-            color: 'text.primary',
-          })}
-        >
-          <Header />
-          <main
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <div
             className={css({
-              flex: 1,
-              minW: 0,
+              minH: '100vh',
+              display: 'flex',
+              flexDirection: 'column',
+              bg: 'bg.canvas',
+              color: 'text.primary',
             })}
           >
-            {children}
-          </main>
-          <Footer />
-        </div>
+            <Header />
+            <main
+              className={css({
+                flex: 1,
+                minW: 0,
+              })}
+            >
+              {children}
+            </main>
+            <Footer />
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

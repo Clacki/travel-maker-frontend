@@ -1,6 +1,5 @@
 'use client'
 
-import { Header } from '@/components/common/header'
 import { CategoryCard } from '@/components/cards/category-card'
 import { travelCategories } from '@/lib/travel-data'
 import { Sparkles } from 'lucide-react'
@@ -48,8 +47,6 @@ export default function Home() {
             'linear-gradient(to right, var(--colors-background) 0%, color-mix(in srgb, var(--colors-background) 95%, transparent) 40%, color-mix(in srgb, var(--colors-background) 30%, transparent) 100%)',
         })}
       />
-
-      <Header />
 
       <div
         className={css({
