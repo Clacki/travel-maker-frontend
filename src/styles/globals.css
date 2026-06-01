@@ -1,9 +1,64 @@
 @layer reset, base, tokens, recipes, utilities;
-body {
-  font-family:
-    var(--font-pretendard),
-    -apple-system,
-    BlinkMacSystemFont,
-    system-ui,
-    sans-serif;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    min-height: 100%;
+    background: var(--colors-bg-canvas);
+  }
+
+  body {
+    min-height: 100%;
+    margin: 0;
+    background: var(--colors-bg-canvas);
+    color: var(--colors-text-primary);
+    font-family:
+      var(--font-pretendard),
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      sans-serif;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  img,
+  picture,
+  video,
+  canvas,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
 }
