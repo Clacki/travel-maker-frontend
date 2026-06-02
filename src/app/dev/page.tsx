@@ -141,7 +141,7 @@ export default function DevPage() {
 
         <PlaygroundSection
           title="TypeCard"
-          description="여행 성향 타입 카드의 default, active(isSelected), MY TYPE 배지 상태를 확인합니다."
+          description="여행 성향 타입 카드의 기본 상태와 MY TYPE 배지 상태를 확인합니다."
         >
           <ExampleGroup title="Default">
             <TypeCard
@@ -152,23 +152,12 @@ export default function DevPage() {
             />
           </ExampleGroup>
 
-          <ExampleGroup title="Active (isSelected)">
+          <ExampleGroup title="MY TYPE 배지 (isMyType)">
             <TypeCard
               icon={<TypeCardIcon />}
               title="INFP"
               subtitle="여행 감성파"
               description="느낌 따라 떠나는 자유로운 여행자"
-              isSelected
-            />
-          </ExampleGroup>
-
-          <ExampleGroup title="MY TYPE 배지 (isMyType + isSelected)">
-            <TypeCard
-              icon={<TypeCardIcon />}
-              title="INFP"
-              subtitle="여행 감성파"
-              description="느낌 따라 떠나는 자유로운 여행자"
-              isSelected
               isMyType
             />
           </ExampleGroup>

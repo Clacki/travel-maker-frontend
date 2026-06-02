@@ -9,8 +9,13 @@ const cardStyle = cva({
     display: 'flex',
     alignItems: 'center',
     gap: '4',
+    width: '305px',
+    height: '170px',
+    padding: '6',
     borderWidth: '1px',
     borderStyle: 'solid',
+    borderRadius: '2xl',
+    boxShadow: 'md',
     cursor: 'pointer',
     transitionProperty: 'background-color, border-color, color, box-shadow',
     transitionDuration: '150ms',
@@ -26,57 +31,31 @@ const cardStyle = cva({
     },
   },
   variants: {
-    state: {
-      default: {
-        width: '305px',
-        height: '170px',
-        padding: '6',
-        borderRadius: '2xl',
-        bg: 'bg.surface',
-        borderColor: 'border.subtle',
-        boxShadow: 'md',
-      },
-      active: {
-        width: '335px',
-        height: '190px',
-        padding: '6',
-        borderRadius: '2xl',
+    myType: {
+      true: {
         bg: 'primary.soft',
         borderColor: 'primary',
-        boxShadow: 'card.active',
+      },
+      false: {
+        bg: 'bg.surface',
+        borderColor: 'border.subtle',
       },
     },
   },
   defaultVariants: {
-    state: 'default',
+    myType: false,
   },
 })
 
-const iconWrapperStyle = cva({
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 'pill',
-    flexShrink: 0,
-  },
-  variants: {
-    state: {
-      default: {
-        width: '40px',
-        height: '40px',
-        bg: 'primary.soft',
-      },
-      active: {
-        width: '56px',
-        height: '56px',
-        bg: 'teal.25',
-      },
-    },
-  },
-  defaultVariants: {
-    state: 'default',
-  },
+const iconWrapperStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'pill',
+  flexShrink: 0,
+  width: '40px',
+  height: '40px',
+  bg: 'primary.soft',
 })
 
 const badgeStyle = css({
@@ -104,7 +83,6 @@ export interface TypeCardProps extends Omit<
   title: string
   subtitle: string
   description: string
-  isSelected?: boolean
   isMyType?: boolean
 }
 
@@ -113,24 +91,20 @@ export function TypeCard({
   title,
   subtitle,
   description,
-  isSelected = false,
   isMyType = false,
   className,
   type = 'button',
   ...props
 }: TypeCardProps) {
-  const state = isSelected ? 'active' : 'default'
-
   return (
     <button
       type={type}
-      className={cx(cardStyle({ state }), className)}
-      aria-pressed={isSelected}
+      className={cx(cardStyle({ myType: isMyType }), className)}
       {...props}
     >
-      {isMyType && isSelected && <span className={badgeStyle}>MY TYPE</span>}
+      {isMyType && <span className={badgeStyle}>MY TYPE</span>}
 
-      <div className={iconWrapperStyle({ state })}>{icon}</div>
+      <div className={iconWrapperStyle}>{icon}</div>
 
       <div
         className={css({
