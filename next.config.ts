@@ -1,7 +1,12 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  images: {
+    remotePatterns: [
+      // 한국관광공사 공공데이터
+      { protocol: 'https', hostname: 'tong.visitkorea.or.kr' },
+    ],
+  },
+}
 
-export default nextConfig;
+export default nextConfig

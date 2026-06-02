@@ -3,8 +3,8 @@ import { LoginButton } from '@/components/layout/LoginButton'
 import { ROUTES } from '@/constants/routes'
 
 const navigationItems = [
-  { href: ROUTES.EXPLORE, label: '탐색' },
-  { href: ROUTES.TEST, label: '성향 테스트' },
+  { href: ROUTES.EXPLORE, label: '여행지 탐색' },
+  { href: ROUTES.TEST, label: '여행 성향 테스트' },
 ] as const
 
 export function Header() {
