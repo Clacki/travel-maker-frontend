@@ -12,6 +12,7 @@ export default defineConfig({
       tokens: {
         colors: {
           teal: {
+            25: { value: '#F1FDFD' },
             50: { value: '#D8F3FA' },
             500: { value: '#2CA6BE' },
             600: { value: '#009BB2' },
@@ -77,12 +78,14 @@ export default defineConfig({
           md: { value: '10px' },
           lg: { value: '12px' },
           xl: { value: '16px' },
+          '2xl': { value: '28px' },
           pill: { value: '9999px' },
         },
         shadows: {
           sm: { value: '0 1px 2px rgba(38, 50, 56, 0.08)' },
           md: { value: '0 8px 24px rgba(38, 50, 56, 0.10)' },
           focus: { value: '0 0 0 3px rgba(44, 166, 190, 0.24)' },
+          'card.active': { value: '0 8px 24px rgba(44, 166, 190, 0.25)' },
         },
         borderWidths: {
           DEFAULT: { value: '1px' },
