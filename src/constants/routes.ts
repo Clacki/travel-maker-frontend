@@ -1,8 +1,10 @@
 export const ROUTES = {
   HOME: '/',
   LOGIN: '/login',
-  TRAVEL: '/travel',
-  RECOMMENDATION: '/recommendation',
-  RESULT: '/result',
-  MYPAGE: '/mypage',
+  EXPLORE: '/explore',
+  DETAIL: (id: string) => `/detail/${id}`,
+  PROFILE: (userId: string) => `/profile/${userId}`,
+  PROFILE_EDIT: '/profile/edit',
+  TEST: '/test',
+  TEST_RESULT: '/test/result',
 } as const
