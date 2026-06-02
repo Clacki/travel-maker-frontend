@@ -15,14 +15,6 @@ export const metadata: Metadata = {
   description: '국내 여행 추천 서비스',
 }
 
-async function enableMocking() {
-  if (process.env.NODE_ENV !== 'development') return
-  const { initMocks } = await import('../../mocks')
-  return initMocks()
-}
-
-enableMocking()
-
 export default function RootLayout({
   children,
 }: Readonly<{
