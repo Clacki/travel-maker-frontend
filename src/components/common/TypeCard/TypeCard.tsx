@@ -1,0 +1,148 @@
+'use client'
+
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { css, cva, cx } from '@/styled-system/css'
+
+const cardStyle = cva({
+  base: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4',
+    width: '305px',
+    height: '170px',
+    padding: '6',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderRadius: '2xl',
+    boxShadow: 'md',
+    cursor: 'pointer',
+    transitionProperty: 'background-color, border-color, color, box-shadow',
+    transitionDuration: '150ms',
+    fontFamily: 'body',
+    textAlign: 'left',
+    userSelect: 'none',
+    _focusVisible: {
+      outline: 'none',
+      boxShadow: 'focus',
+    },
+    _disabled: {
+      pointerEvents: 'none',
+    },
+  },
+  variants: {
+    myType: {
+      true: {
+        bg: 'primary.soft',
+        borderColor: 'primary',
+      },
+      false: {
+        bg: 'bg.surface',
+        borderColor: 'border.subtle',
+      },
+    },
+  },
+  defaultVariants: {
+    myType: false,
+  },
+})
+
+const iconWrapperStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'pill',
+  flexShrink: 0,
+  width: '40px',
+  height: '40px',
+  bg: 'primary.soft',
+})
+
+const badgeStyle = css({
+  position: 'absolute',
+  top: '3',
+  right: '4',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  px: '3',
+  py: '1',
+  borderRadius: 'pill',
+  bg: 'primary',
+  color: 'text.inverse',
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+  lineHeight: 'tight',
+})
+
+export interface TypeCardProps extends Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'children'
+> {
+  icon: ReactNode
+  title: string
+  subtitle: string
+  description: string
+  isMyType?: boolean
+}
+
+export function TypeCard({
+  icon,
+  title,
+  subtitle,
+  description,
+  isMyType = false,
+  className,
+  type = 'button',
+  ...props
+}: TypeCardProps) {
+  return (
+    <button
+      type={type}
+      className={cx(cardStyle({ myType: isMyType }), className)}
+      {...props}
+    >
+      {isMyType && <span className={badgeStyle}>MY TYPE</span>}
+
+      <div className={iconWrapperStyle}>{icon}</div>
+
+      <div
+        className={css({
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1',
+          minWidth: 0,
+        })}
+      >
+        <span
+          className={css({
+            fontSize: 'lg',
+            fontWeight: 'bold',
+            color: 'text.primary',
+          })}
+        >
+          {title}
+        </span>
+        <span
+          className={css({
+            fontSize: 'sm',
+            fontWeight: 'medium',
+            color: 'text.secondary',
+          })}
+        >
+          {subtitle}
+        </span>
+        <p
+          className={css({
+            fontSize: 'xs',
+            color: 'text.secondary',
+            lineHeight: 'normal',
+            mt: '1',
+          })}
+        >
+          {description}
+        </p>
+      </div>
+    </button>
+  )
+}

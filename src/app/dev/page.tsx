@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button, IconButton } from '@/components/common/button'
+import { TypeCard } from '@/components/common/TypeCard'
 import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
 
@@ -139,6 +140,30 @@ export default function DevPage() {
         </PlaygroundSection>
 
         <PlaygroundSection
+          title="TypeCard"
+          description="여행 성향 타입 카드의 기본 상태와 MY TYPE 배지 상태를 확인합니다."
+        >
+          <ExampleGroup title="Default">
+            <TypeCard
+              icon={<TypeCardIcon />}
+              title="INFP"
+              subtitle="여행 감성파"
+              description="느낌 따라 떠나는 자유로운 여행자"
+            />
+          </ExampleGroup>
+
+          <ExampleGroup title="MY TYPE 배지 (isMyType)">
+            <TypeCard
+              icon={<TypeCardIcon />}
+              title="INFP"
+              subtitle="여행 감성파"
+              description="느낌 따라 떠나는 자유로운 여행자"
+              isMyType
+            />
+          </ExampleGroup>
+        </PlaygroundSection>
+
+        <PlaygroundSection
           title="Header"
           description="전역 Header의 로고, 메뉴 링크, Login 버튼, 프로필 아바타 교체 구조를 확인합니다."
         >
@@ -266,6 +291,23 @@ function PreviewFrame({ children }: { children: ReactNode }) {
     >
       {children}
     </div>
+  )
+}
+
+function TypeCardIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+    >
+      <path
+        d="M12 2a7 7 0 1 1 0 14A7 7 0 0 1 12 2Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 12 4Zm0 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm0-6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Z"
+        fill="currentColor"
+      />
+    </svg>
   )
 }
 
