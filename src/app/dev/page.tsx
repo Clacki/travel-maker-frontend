@@ -3,6 +3,7 @@ import { Button, IconButton } from '@/components/common/button'
 import { TypeCard } from '@/components/common/TypeCard'
 import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
+import { TagPlayground } from './TagPlayground'
 
 const buttonVariants = [
   'primary',
@@ -161,6 +162,13 @@ export default function DevPage() {
               isMyType
             />
           </ExampleGroup>
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Tag"
+          description="FilterTag(다중), KeywordTag(해시태그형), MypageTag(단일 탭형)의 선택/해제 동작과 disabled 상태를 확인합니다."
+        >
+          <TagPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
