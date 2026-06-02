@@ -32,7 +32,7 @@ export function MypageTag({
         gap: '1',
         minH: '8',
         px: '4',
-        borderRadius: 'md',
+        borderRadius: 'pill',
         fontSize: 'sm',
         fontWeight: 'medium',
         lineHeight: 'normal',

@@ -63,10 +63,21 @@ export function TagPlayground() {
       </div>
 
       <div>
-        <p className={groupLabelStyle}>KeywordTag — 표시 전용</p>
+        <p className={groupLabelStyle}>
+          KeywordTag result — 결과 페이지 표시용
+        </p>
         <div className={tagRowStyle}>
           {keywordLabels.map((label) => (
-            <KeywordTag key={label} label={label} />
+            <KeywordTag key={label} label={label} variant="result" />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className={groupLabelStyle}>KeywordTag card — 카드 내부 표시용</p>
+        <div className={tagRowStyle}>
+          {keywordLabels.map((label) => (
+            <KeywordTag key={label} label={label} variant="card" />
           ))}
         </div>
       </div>
