@@ -1,6 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { cva } from '@/styled-system/css'
-import { cx } from '@/styled-system/css'
+import { cva, cx } from '@/styled-system/css'
 
 const buttonRecipe = cva({
   base: {

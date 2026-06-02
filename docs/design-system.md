@@ -281,3 +281,218 @@ export const primaryButton = css({
 - 컴포넌트 대량 생성보다 token, global style, 문서 기준을 먼저 유지한다.
 - Panda CSS 사용 예시는 semantic token으로 작성한다.
 - Next.js 관련 변경 전에는 `node_modules/next/dist/docs/`의 현재 버전 문서를 확인한다.
+
+## Panda CSS 작성 컨벤션
+
+공통 컴포넌트와 페이지 UI는 Panda CSS의 `css`, `cva`를 사용해 스타일을 작성한다.
+기본 원칙은 디자인 토큰을 우선 사용하고, JSX 구조와 긴 스타일 객체가 섞이지 않도록 관리하는 것이다.
+
+### `css` 사용 기준
+
+짧고 단순한 스타일은 JSX 내부에서 `css({})`를 직접 사용할 수 있다.
+
+```tsx
+<h2 className={css({ fontSize: 'xl', fontWeight: 'semibold' })}>추천 여행지</h2>
+```
+
+다만 스타일 객체가 길어지거나 hover, focus-visible, disabled 같은 상태 스타일이 포함되면 컴포넌트 상단의 `const`로 분리한다.
+
+```tsx
+const profileLinkStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '10',
+  height: '10',
+  borderRadius: 'pill',
+  bg: 'primary.soft',
+  borderWidth: '1px',
+  borderColor: 'primary',
+  color: 'primary',
+  fontSize: 'sm',
+  fontWeight: 'bold',
+  transitionProperty: 'border-color, box-shadow, transform',
+  transitionDuration: '150ms',
+  _hover: {
+    boxShadow: 'focus',
+    transform: 'translateY(-1px)',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+})
+```
+
+```tsx
+<Link
+  href={ROUTES.PROFILE('me')}
+  aria-label="마이페이지로 이동"
+  className={profileLinkStyle}
+>
+  TM
+</Link>
+```
+
+기준:
+
+- 1~3줄 정도의 단순 스타일은 JSX 내부 `css({})`를 허용한다.
+- 스타일 객체가 길어지면 의미 있는 이름의 `const`로 분리한다.
+- hover, focus-visible, disabled 상태가 포함되면 가능한 `const`로 분리한다.
+- 동일한 스타일이 반복되면 공통 style const, `cva`, 공통 컴포넌트 분리를 검토한다.
+
+### `cva` 사용 기준
+
+`variant`, `size`, `shape`, `tone`, `fullWidth`처럼 조합 가능한 옵션이 있는 컴포넌트는 `cva` 사용을 우선 검토한다.
+
+대표 대상:
+
+- Button
+- IconButton
+- Badge
+- Tag
+- Chip
+- Card variant
+
+예시:
+
+```tsx
+const buttonStyle = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: 'semibold',
+    transitionProperty: 'background-color, border-color, color, box-shadow',
+    transitionDuration: '150ms',
+    _focusVisible: {
+      outline: 'none',
+      boxShadow: 'focus',
+    },
+    _disabled: {
+      cursor: 'not-allowed',
+    },
+  },
+  variants: {
+    variant: {
+      primary: {
+        bg: 'primary',
+        color: 'text.inverse',
+        _hover: {
+          bg: 'primary.hover',
+        },
+      },
+      secondary: {
+        bg: 'primary.soft',
+        color: 'primary',
+        borderWidth: '1px',
+        borderColor: 'primary',
+      },
+      neutral: {
+        bg: 'bg.muted',
+        color: 'text.primary',
+      },
+    },
+    size: {
+      sm: {
+        minHeight: '9',
+        px: '4',
+        fontSize: 'sm',
+      },
+      md: {
+        minHeight: '11',
+        px: '5',
+        fontSize: 'md',
+      },
+    },
+    shape: {
+      rounded: {
+        borderRadius: 'sm',
+      },
+      pill: {
+        borderRadius: 'pill',
+      },
+    },
+    fullWidth: {
+      true: {
+        width: 'full',
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'primary',
+    size: 'md',
+    shape: 'rounded',
+  },
+})
+```
+
+`cva`는 모든 컴포넌트에 무조건 적용하지 않는다.
+옵션 조합이 거의 없는 Header, Footer 같은 레이아웃 컴포넌트는 의미 있는 style const로 분리하는 것을 우선한다.
+
+### Header/Footer 스타일 작성 기준
+
+Header와 Footer는 서비스 전역 레이아웃에 해당하므로, JSX에서 구조가 먼저 읽히도록 스타일 객체를 분리한다.
+
+좋은 예:
+
+```tsx
+const headerStyle = css({
+  bg: 'bg.surface',
+  borderBottomWidth: '1px',
+  borderColor: 'border.subtle',
+})
+
+const navLinkStyle = css({
+  color: 'text.secondary',
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  _hover: {
+    color: 'primary',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+})
+```
+
+```tsx
+<header className={headerStyle}>
+  <Link href={ROUTES.HOME} className={logoStyle}>
+    TravelMaker
+  </Link>
+
+  <nav aria-label="주요 메뉴" className={navStyle}>
+    <Link href={ROUTES.RECOMMENDATION} className={navLinkStyle}>
+      Travel Style
+    </Link>
+  </nav>
+</header>
+```
+
+기준:
+
+- Header/Footer는 무리하게 `cva`로 추상화하지 않는다.
+- `headerStyle`, `navStyle`, `navLinkStyle`, `footerStyle`, `footerGridStyle`처럼 역할이 드러나는 이름을 사용한다.
+- 페이지별 Header/Footer 스타일 변경은 최소화한다.
+- 로그인 상태, 드롭다운, 모바일 메뉴 인터랙션은 별도 컴포넌트 또는 별도 이슈로 분리한다.
+
+### 스타일 분리 기준
+
+| 상황                      | 권장 방식                           |
+| ------------------------- | ----------------------------------- |
+| 짧은 1~3줄 스타일         | JSX 내부 `css({})` 허용             |
+| 긴 스타일 객체            | 컴포넌트 상단 `const`로 분리        |
+| hover/focus/disabled 포함 | 가능하면 `const`로 분리             |
+| variant/size 조합 존재    | `cva` 사용 검토                     |
+| 여러 파일에서 재사용      | 공통 컴포넌트 또는 recipe 분리 검토 |
+| 디자인 값이 확정되지 않음 | 임의 token 추가 금지, TODO 작성     |
+
+### 주의사항
+
+- 스타일 정리 작업에서 UI 디자인을 임의로 변경하지 않는다.
+- raw hex, 임의 px 값은 가능한 사용하지 않는다.
+- 새 token이 필요하면 기존 semantic token으로 표현 가능한지 먼저 확인한다.
+- 접근성 관련 `aria-label`, `focus-visible`, `disabled` 스타일은 제거하지 않는다.
+- 공통 컴포넌트는 팀원이 참고할 기준 코드가 되므로, 구조와 스타일 책임이 명확하게 보이도록 작성한다.
