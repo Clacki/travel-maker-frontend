@@ -1,11 +1,10 @@
 import Link from 'next/link'
+import { LoginButton } from '@/components/layout/LoginButton'
 import { ROUTES } from '@/constants/routes'
 
 const navigationItems = [
-  { href: ROUTES.RECOMMENDATION, label: '추천 여행지' },
-  { href: ROUTES.TRAVEL, label: '지역별 여행' },
-  { href: ROUTES.RESULT, label: '여행 코스' },
-  { href: ROUTES.MYPAGE, label: '리뷰' },
+  { href: ROUTES.EXPLORE, label: '탐색' },
+  { href: ROUTES.TEST, label: '성향 테스트' },
 ] as const
 
 export function Header() {
@@ -22,7 +21,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <Link href={ROUTES.LOGIN}>로그인</Link>
+        <LoginButton />
       </div>
     </header>
   )
