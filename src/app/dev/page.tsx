@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button, IconButton } from '@/components/common/button'
+import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
 
 const buttonVariants = [
@@ -136,6 +137,27 @@ export default function DevPage() {
             ))}
           </ExampleGroup>
         </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Header"
+          description="전역 Header의 로고, 메뉴 링크, Login 버튼, 프로필 아바타 교체 구조를 확인합니다."
+        >
+          <PreviewFrame>
+            <Header />
+          </PreviewFrame>
+          <PreviewFrame>
+            <Header isAuthenticated />
+          </PreviewFrame>
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Footer"
+          description="전역 Footer의 4컬럼 정보 구조와 하단 정책/사업자 정보 영역을 확인합니다."
+        >
+          <PreviewFrame>
+            <Footer />
+          </PreviewFrame>
+        </PlaygroundSection>
       </div>
     </div>
   )
@@ -227,6 +249,22 @@ function ExampleGroup({
       >
         {children}
       </div>
+    </div>
+  )
+}
+
+function PreviewFrame({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className={css({
+        overflow: 'hidden',
+        borderWidth: '1px',
+        borderColor: 'border.subtle',
+        borderRadius: 'lg',
+        bg: 'bg.canvas',
+      })}
+    >
+      {children}
     </div>
   )
 }

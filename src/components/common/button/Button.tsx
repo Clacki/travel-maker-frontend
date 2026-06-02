@@ -1,6 +1,5 @@
+import { cva, cx } from '@/styled-system/css'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
-import { cva } from '@/styled-system/css'
-import { cx } from '@/styled-system/css'
 
 const buttonRecipe = cva({
   base: {
@@ -119,7 +118,7 @@ const buttonRecipe = cva({
     },
     fullWidth: {
       true: {
-        width: '100%',
+        width: 'full',
       },
       false: {},
     },
