@@ -1,5 +1,7 @@
 @layer reset, base, tokens, recipes, utilities;
 
+@import 'styled-system/styles.css';
+
 @layer base {
   :root {
     color-scheme: light;
