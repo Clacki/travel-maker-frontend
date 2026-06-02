@@ -37,11 +37,18 @@ export function FilterTag({
         fontWeight: 'medium',
         lineHeight: 'normal',
         whiteSpace: 'nowrap',
-        bg: isSelected ? 'primary' : 'primary.soft',
-        color: isSelected ? 'text.inverse' : 'text.secondary',
+        bg: 'primary.soft',
+        color: 'text.secondary',
         transition: 'background-color 0.15s ease, color 0.15s ease',
+        _pressed: {
+          bg: 'primary',
+          color: 'text.inverse',
+        },
         _hover: {
-          bg: isSelected ? 'primary.hover' : 'bg.muted',
+          bg: 'bg.muted',
+          _pressed: {
+            bg: 'primary.hover',
+          },
         },
         _focusVisible: {
           outline: 'none',
@@ -50,23 +57,11 @@ export function FilterTag({
         _disabled: {
           opacity: 0.4,
           cursor: 'not-allowed',
-          _hover: {
-            bg: isSelected ? 'primary' : 'primary.soft',
-          },
+          pointerEvents: 'none',
         },
       })}
     >
-      {icon != null && (
-        <span
-          className={css({
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-        >
-          {icon}
-        </span>
-      )}
+      {icon}
       {label}
     </button>
   )

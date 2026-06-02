@@ -37,15 +37,23 @@ export function MypageTag({
         fontWeight: 'medium',
         lineHeight: 'normal',
         whiteSpace: 'nowrap',
-        borderWidth: isSelected ? '0' : '1px',
+        borderWidth: '1px',
         borderStyle: 'solid',
-        borderColor: isSelected ? 'transparent' : 'border',
-        bg: isSelected ? 'primary' : 'bg.surface',
-        color: isSelected ? 'text.inverse' : 'text.primary',
+        borderColor: 'border',
+        bg: 'bg.surface',
+        color: 'text.primary',
         transition:
           'background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease',
+        _pressed: {
+          bg: 'primary',
+          color: 'text.inverse',
+          borderColor: 'transparent',
+        },
         _hover: {
-          bg: isSelected ? 'primary.hover' : 'bg.muted',
+          bg: 'bg.muted',
+          _pressed: {
+            bg: 'primary.hover',
+          },
         },
         _focusVisible: {
           outline: 'none',
@@ -54,23 +62,11 @@ export function MypageTag({
         _disabled: {
           opacity: 0.4,
           cursor: 'not-allowed',
-          _hover: {
-            bg: isSelected ? 'primary' : 'bg.surface',
-          },
+          pointerEvents: 'none',
         },
       })}
     >
-      {icon != null && (
-        <span
-          className={css({
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          })}
-        >
-          {icon}
-        </span>
-      )}
+      {icon}
       {label}
     </button>
   )
