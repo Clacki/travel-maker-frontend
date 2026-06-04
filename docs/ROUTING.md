@@ -16,6 +16,12 @@ src/
 └── app/
     ├── layout.tsx                  # 공통 레이아웃 (Header, Footer)
     ├── page.tsx                    # 메인 페이지 (/)
+    ├── error.tsx                   # 공통 에러 UI
+    ├── loading.tsx                 # 공통 로딩 UI
+    ├── not-found.tsx               # 404 페이지
+    │
+    ├── dev/
+    │   └── page.tsx                # 개발용 UI 플레이그라운드 (/dev) — 프로덕션 미포함
     │
     ├── explore/
     │   └── page.tsx                # 탐색 페이지 (/explore)
@@ -25,20 +31,18 @@ src/
     │       └── page.tsx            # 여행지 상세 페이지 (/detail/123)
     │
     ├── profile/
-    │   ├── [userId]/
-    │   │   └── page.tsx            # 프로필 페이지 (/profile/user123)
-    │   └── edit/
-    │       └── page.tsx            # 프로필 수정 페이지 (/profile/edit)
+    │   └── [userId]/
+    │       ├── page.tsx            # 프로필 페이지 (/profile/user123)
+    │       └── edit/
+    │           └── page.tsx        # 프로필 수정 페이지 (/profile/user123/edit)
     │
-    ├── test/
-    │   ├── page.tsx                # 성향 테스트 질문 페이지 (/test)
-    │   └── result/
-    │       └── page.tsx            # 테스트 결과 페이지 (/test/result)
-    │
-    └── (auth)/
-        └── login/
-            └── page.tsx            # 소셜 로그인 페이지 (/login)
+    └── test/
+        ├── page.tsx                # 성향 테스트 질문 페이지 (/test)
+        └── result/
+            └── page.tsx            # 테스트 결과 페이지 (/test/result)
 ```
+
+> `(auth)/login` Route Group은 아직 미구현이다. 현재 로그인 페이지 경로는 미확정 상태이며, 백엔드 OAuth 연동 설계 후 추가 예정이다.
 
 ---
 
@@ -52,15 +56,25 @@ src/
 // app/layout.tsx
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: ReactNode
+}>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={pretendard.variable}>
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <div
+          className={css({
+            minH: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            bg: 'bg.canvas',
+            color: 'text.primary',
+          })}
+        >
+          <Header />
+          <main className={css({ flex: 1, minW: 0 })}>{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )
@@ -100,18 +114,19 @@ export default function RootLayout({
 export default function ExplorePage({
   searchParams,
 }: {
-  searchParams: { page?: string; region?: string; theme?: string }
+  searchParams: Promise<{ page?: string; region?: string; theme?: string }>
 }) {
-  const page = Number(searchParams.page) || 1
+  const { page, region, theme } = await searchParams
+  const currentPage = Number(page) || 1
 
-  // page 값으로 서버에서 해당 페이지 데이터 페칭
+  // currentPage 값으로 서버에서 해당 페이지 데이터 페칭
 }
 ```
 
+> Next.js 15부터 `searchParams`는 `Promise` 타입이므로 `await`로 언래핑해야 한다.
+
 - `page` 파라미터가 없으면 기본값 1로 처리
 - 필터(지역, 테마 등)도 동일한 쿼리 파라미터로 관리하여 필터 변경 시 `page=1`로 초기화
-
-> **⚠️ 현재 레포의 `/travel`과 동일한 역할이다.** 팀 합의 후 이름을 통일할 것.
 
 ---
 
@@ -124,16 +139,16 @@ export default function ExplorePage({
 /detail/seoul → id = "seoul"
 ```
 
-**비로그인 유저 접근 처리 (Middleware 방식 권장)**
+**비로그인 유저 접근 처리 (Middleware 방식)**
 
-`middleware.ts`에서 비로그인 유저의 `/detail/*` 접근을 가로채고, `?showLogin=true`를 붙여 직전 페이지(또는 메인 페이지)로 리다이렉트한다.
+`middleware.ts`에서 비로그인 유저의 `/detail/*` 접근을 가로채고, `?showLogin=true`를 붙여 메인 페이지로 리다이렉트한다.
 
 ```ts
-// middleware.ts
+// src/middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const isLoggedIn = !!request.cookies.get('session')
+  const isLoggedIn = !!request.cookies.get('access_token')
   const isDetailPage = request.nextUrl.pathname.startsWith('/detail')
 
   if (isDetailPage && !isLoggedIn) {
@@ -145,6 +160,23 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/detail/:path*'],
+}
+```
+
+> `access_token` 쿠키 유무로 로그인 여부를 판단한다. 백엔드 인증 방식 변경 시 쿠키 키 이름도 함께 수정해야 한다.
+
+**`params`는 async로 받아야 한다 (Next.js 15)**
+
+```tsx
+// app/detail/[id]/page.tsx
+export default async function DetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+
+  // id 값으로 여행지 데이터 페칭
 }
 ```
 
@@ -165,32 +197,44 @@ export const config = {
 
 ```tsx
 // app/profile/[userId]/page.tsx
-export default function ProfilePage({
+export default async function ProfilePage({
   params,
 }: {
-  params: { userId: string }
+  params: Promise<{ userId: string }>
 }) {
-  const { userId } = params
-  const { data: session } = useSession()
+  const { userId } = await params
 
-  const isMyProfile = session?.user?.id === userId
-
-  return isMyProfile ? <MyProfile /> : <OtherProfile userId={userId} />
+  // 세션 정보를 서버에서 조회하여 본인/타인 여부 판단
+  // const session = await getServerSession()
+  // const isMyProfile = session?.user?.id === userId
 }
 ```
+
+> Next.js 15에서 `params`는 `Promise` 타입이다. `useSession` 같은 Client Hook 대신 서버에서 세션을 조회하는 방식을 사용한다.
 
 | 조건                        | 렌더링                                       |
 | --------------------------- | -------------------------------------------- |
 | `params.userId === 세션 ID` | 프로필 수정 버튼, 저장한 여행지 목록 등 표시 |
 | `params.userId !== 세션 ID` | 수정 버튼 숨김, 해당 유저의 공개 일정만 표시 |
 
-> **⚠️ 현재 레포의 `/mypage`는 이 구조로 교체되어야 한다.**
-
 ---
 
-### `/profile/edit` — 프로필 수정 페이지
+### `/profile/[userId]/edit` — 프로필 수정 페이지
 
 닉네임, 프로필 이미지 등을 수정하는 페이지. 로그인한 본인만 접근 가능하며, Middleware 또는 페이지 내부에서 인증 여부를 확인한다.
+
+```tsx
+// app/profile/[userId]/edit/page.tsx
+export default async function ProfileEditPage({
+  params,
+}: {
+  params: Promise<{ userId: string }>
+}) {
+  const { userId } = await params
+
+  // 본인 여부 확인 후 접근 제어
+}
+```
 
 ---
 
@@ -200,8 +244,6 @@ export default function ProfilePage({
 
 - 질문 진행 상태는 Zustand 스토어 또는 URL 쿼리 파라미터로 관리
 - 테스트 완료 시 `/test/result`로 이동
-
-> **⚠️ 현재 레포에는 이 페이지가 없다.** 결과 페이지(`/result`)만 존재하므로 진입 페이지 생성 필요.
 
 ---
 
@@ -218,45 +260,19 @@ export default function ProfilePage({
 
 ---
 
-### `(auth)/login` — 소셜 로그인 페이지
+### `/dev` — 개발용 UI 플레이그라운드
 
-소셜 로그인(카카오, 네이버, 구글 등)을 처리하는 페이지. `(auth)`는 Route Group으로, URL에는 포함되지 않는다.
+공통 컴포넌트의 variant, size, state를 확인하는 개발 전용 페이지. 실제 사용자 플로우에 포함되지 않으며 API 연동이나 비즈니스 로직을 두지 않는다.
 
-```
-실제 접근 URL: /login
-```
-
-**로그인 후 리다이렉트 경로 결정 필요**
-
-| 시나리오                        | 리다이렉트 대상                   |
-| ------------------------------- | --------------------------------- |
-| 상세 페이지 진입 시도 후 로그인 | 원래 보려던 `/detail/[id]`로 복귀 |
-| 일반 로그인                     | 메인 페이지(`/`)                  |
-
-→ 카카오/네이버/구글 OAuth의 **Redirect URI** 설계와 연결되므로 백엔드팀과 사전 합의 필요.
-
----
-
-## 현재 레포와의 차이점
-
-| 제안 구조                    | 현재 레포    | 상태           | 조치 필요                     |
-| ---------------------------- | ------------ | -------------- | ----------------------------- |
-| `/explore`                   | `/travel`    | ⚠️ 이름 불일치 | 팀 합의 후 통일               |
-| `/detail/[id]`               | 없음         | ❌ 미구현      | 폴더 및 페이지 신규 생성      |
-| `/profile/[userId]`          | `/mypage`    | ⚠️ 구조 상이   | 동적 라우팅으로 교체          |
-| `/profile/edit`              | 없음         | ❌ 미구현      | 신규 생성                     |
-| `/test`                      | 없음         | ❌ 미구현      | 질문 페이지 신규 생성         |
-| `/test/result`               | `/result`    | ⚠️ 경로 불일치 | 경로 이동 및 `routes.ts` 수정 |
-| `layout.tsx` (Header/Footer) | ✅ 구현 완료 | ✅             | 없음                          |
-| `(auth)/login`               | `/login`     | ✅ 경로 동일   | Route Group 적용 여부만 결정  |
+- 프로덕션 배포 시 접근 제한 또는 제거 필요
 
 ---
 
 ## 구현 시 주의사항
 
-### `routes.ts` 업데이트
+### `routes.ts` 현재 상태
 
-라우팅 구조 변경에 맞춰 상수 파일도 함께 수정한다.
+라우팅 상수 파일은 이미 제안 구조와 일치하게 구현되어 있다.
 
 ```ts
 // src/constants/routes.ts
@@ -266,29 +282,36 @@ export const ROUTES = {
   EXPLORE: '/explore',
   DETAIL: (id: string) => `/detail/${id}`,
   PROFILE: (userId: string) => `/profile/${userId}`,
-  PROFILE_EDIT: '/profile/edit',
+  PROFILE_EDIT: (userId: string) => `/profile/${userId}/edit`,
   TEST: '/test',
   TEST_RESULT: '/test/result',
 } as const
 ```
 
+### Next.js 15: `params`와 `searchParams`는 Promise
+
+Next.js 15부터 동적 라우트의 `params`와 `searchParams`가 모두 `Promise` 타입으로 변경되었다. 반드시 `await`로 언래핑한다.
+
+```tsx
+// 올바른 사용법
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string }>
+}) {
+  const { id } = await params
+  const { page } = await searchParams
+}
+```
+
 ### Middleware 파일 위치
 
-`middleware.ts`는 반드시 `src/` 폴더 바로 아래(또는 프로젝트 루트)에 위치해야 Next.js가 인식한다.
+`middleware.ts`는 반드시 `src/` 폴더 바로 아래에 위치해야 Next.js가 인식한다.
 
 ```
 src/
 ├── middleware.ts   ← 여기
 └── app/
-```
-
-### 확장 고려
-
-추후 리뷰/피드 기능이 추가될 경우 아래와 같이 폴더를 확장할 수 있다.
-
-```
-app/detail/[id]/
-├── page.tsx
-└── reviews/        ← 추후 추가 가능
-    └── page.tsx
 ```
