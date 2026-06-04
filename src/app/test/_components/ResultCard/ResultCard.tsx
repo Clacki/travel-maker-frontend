@@ -60,13 +60,6 @@ const bannerStyle = css({
   bg: 'primary.soft',
 })
 
-const thumbnailPlaceholderStyle = css({
-  width: '120px',
-  height: '120px',
-  borderRadius: 'lg',
-  bg: 'bg.muted',
-})
-
 const titleSectionStyle = css({
   display: 'flex',
   flexDirection: 'column',
@@ -158,11 +151,10 @@ export function ResultCard({
 
       {/* Banner with thumbnail */}
       <div className={bannerStyle}>
-        {thumbnailSrc ? (
-          <ResultCardThumbnail src={thumbnailSrc} alt={thumbnailAlt} />
-        ) : (
-          <div className={thumbnailPlaceholderStyle} aria-hidden="true" />
-        )}
+        <ResultCardThumbnail
+          src={thumbnailSrc ?? '/thumbnail-default.svg'}
+          alt={thumbnailAlt}
+        />
       </div>
 
       {/* Title section */}
