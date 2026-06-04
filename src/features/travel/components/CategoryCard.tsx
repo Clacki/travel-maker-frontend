@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { TravelCategory } from '@/types/travel'
+import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
 import { PolaroidCard } from './PolaroidCard'
 
@@ -37,7 +38,7 @@ export function CategoryCard({ category, index, style }: CategoryCardProps) {
       }}
     >
       <Link
-        href={`/travel/${category.id}`}
+        href={ROUTES.TRAVEL(category.id)}
         className={css({ display: 'block', h: 'full' })}
       >
         <PolaroidCard image={category.image} alt={category.name}>

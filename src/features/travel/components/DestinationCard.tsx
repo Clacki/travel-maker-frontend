@@ -80,7 +80,7 @@ export function DestinationCard({ destination, index }: DestinationCardProps) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '3px',
-              color: 'muted.foreground',
+              color: 'text.secondary',
             })}
           >
             <MapPin className={css({ w: '10px', h: '10px' })} />

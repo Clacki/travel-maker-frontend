@@ -16,7 +16,7 @@ const cardPositions = [
 
 export default function Home() {
   return (
-    <main
+    <div
       className={css({
         h: '100vh',
         overflow: 'hidden',
@@ -97,7 +97,7 @@ export default function Home() {
             className={css({
               fontSize: { base: '3xl', md: '4xl', lg: '5xl', xl: '6xl' },
               fontWeight: 'bold',
-              color: 'foreground',
+              color: 'text.primary',
               mb: 6,
             })}
           >
@@ -108,7 +108,7 @@ export default function Home() {
           <p
             className={css({
               fontSize: { base: 'base', lg: 'lg' },
-              color: 'muted.foreground',
+              color: 'text.secondary',
               maxW: 'md',
             })}
           >
@@ -127,37 +127,19 @@ export default function Home() {
           })}
         >
           <div className={css({ position: 'relative', h: 'full', w: 'full' })}>
-            {travelCategories.map((category, index) => (
-              <CategoryCard
-                key={category.id}
-                category={category}
-                index={index}
-                style={cardPositions[index]}
-              />
-            ))}
+            {travelCategories
+              .slice(0, cardPositions.length)
+              .map((category, index) => (
+                <CategoryCard
+                  key={category.id}
+                  category={category}
+                  index={index}
+                  style={cardPositions[index]}
+                />
+              ))}
           </div>
         </section>
       </div>
-
-      {/* Footer */}
-      <footer
-        className={css({
-          display: { base: 'none', lg: 'block' },
-          borderTop: '1px solid',
-          borderColor: 'border',
-          py: 4,
-          px: 6,
-          position: 'relative',
-          zIndex: 10,
-          bg: 'bg.surface',
-        })}
-      >
-        <div className={css({ maxW: '7xl', mx: 'auto', textAlign: 'center' })}>
-          <p className={css({ fontSize: 'xs', color: 'muted.foreground' })}>
-            &copy; 2024 트래블픽. 당신의 완벽한 여행을 응원합니다.
-          </p>
-        </div>
-      </footer>
-    </main>
+    </div>
   )
 }
