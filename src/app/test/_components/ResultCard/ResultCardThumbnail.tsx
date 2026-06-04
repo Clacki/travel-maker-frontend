@@ -5,18 +5,13 @@ import { useState } from 'react'
 
 import { css } from '@/styled-system/css'
 
+const DEFAULT_THUMBNAIL = '/thumbnail-default.svg'
+
 const thumbnailStyle = css({
   width: '120px',
   height: '120px',
   borderRadius: 'lg',
   objectFit: 'cover',
-})
-
-const placeholderStyle = css({
-  width: '120px',
-  height: '120px',
-  borderRadius: 'lg',
-  bg: 'bg.muted',
 })
 
 interface ResultCardThumbnailProps {
@@ -25,20 +20,16 @@ interface ResultCardThumbnailProps {
 }
 
 export function ResultCardThumbnail({ src, alt }: ResultCardThumbnailProps) {
-  const [hasError, setHasError] = useState(false)
-
-  if (hasError) {
-    return <div className={placeholderStyle} aria-hidden="true" />
-  }
+  const [imgSrc, setImgSrc] = useState(src)
 
   return (
     <Image
-      src={src}
+      src={imgSrc}
       alt={alt}
       width={120}
       height={120}
       className={thumbnailStyle}
-      onError={() => setHasError(true)}
+      onError={() => setImgSrc(DEFAULT_THUMBNAIL)}
     />
   )
 }

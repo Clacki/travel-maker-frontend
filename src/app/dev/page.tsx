@@ -184,7 +184,7 @@ export default function DevPage() {
           title="ResultCard"
           description="모임 결과 카드의 타입명, 키워드 태그, 매칭도·테스트(12문항 고정)·타입(8종 중 n) 통계 영역을 확인합니다."
         >
-          <ExampleGroup title="Default (썸네일 없음)">
+          <ExampleGroup title="Default (기본 이미지)">
             <div className={css({ w: 'full', maxW: '400px' })}>
               <ResultCard
                 typeLabel="TYPE 0_9.0~8"
@@ -198,7 +198,7 @@ export default function DevPage() {
             </div>
           </ExampleGroup>
 
-          <ExampleGroup title="이미지 에러 (잘못된 src → placeholder 폴백)">
+          <ExampleGroup title="이미지 에러 (잘못된 src → 기본 이미지 폴백)">
             <div className={css({ w: 'full', maxW: '400px' })}>
               <ResultCard
                 typeLabel="TYPE 0_9.0~8"

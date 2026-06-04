@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" fill="none">
+  <!-- Background circle -->
+  <circle cx="60" cy="60" r="60" fill="#D8F3FA"/>
+
+  <!-- Suitcase body -->
+  <rect x="30" y="46" width="60" height="44" rx="6" fill="#2CA6BE"/>
+
+  <!-- Suitcase handle -->
+  <rect x="45" y="36" width="30" height="14" rx="5" fill="none" stroke="#2CA6BE" stroke-width="4"/>
+
+  <!-- Suitcase center line -->
+  <line x1="60" y1="46" x2="60" y2="90" stroke="#D8F3FA" stroke-width="2.5"/>
+
+  <!-- Suitcase latch -->
+  <rect x="53" y="62" width="14" height="8" rx="3" fill="#D8F3FA"/>
+
+  <!-- Wheels -->
+  <circle cx="40" cy="92" r="4" fill="#1A8BA0"/>
+  <circle cx="80" cy="92" r="4" fill="#1A8BA0"/>
+</svg>
