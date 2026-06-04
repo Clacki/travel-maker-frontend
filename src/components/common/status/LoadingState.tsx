@@ -1,4 +1,4 @@
-import loadingStatusImage from '@/assets/images/status/loadding-status.svg'
+import loadingStatusImage from '@/assets/images/status/loading-status.svg'
 import { css } from '@/styled-system/css'
 import { StatusLayout } from './StatusLayout'
 
