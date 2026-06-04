@@ -9,6 +9,7 @@
 
 | 작업 유형                         | 읽어야 할 문서                                                         |
 | --------------------------------- | ---------------------------------------------------------------------- |
+| 코드 컨벤션, 네이밍, 폴더 구조    | `.claude/docs/CONVENTION.md`                                           |
 | 스타일, Panda CSS, 디자인 토큰    | `docs/design-system.md`, `docs/ai-coding-guide.md`                     |
 | 컴포넌트 개발                     | `docs/design-system.md`, `docs/ai-coding-guide.md`                     |
 | 라우팅, 새 페이지 추가, 경로 변경 | `docs/ROUTING.md`                                                      |
