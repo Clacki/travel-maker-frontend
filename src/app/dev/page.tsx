@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
 import { Button, IconButton } from '@/components/common/button'
 import { TypeCard } from '@/components/common/TypeCard'
 import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
+import type { ReactNode } from 'react'
 import { ResultCard } from '../test/_components/ResultCard'
+import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
 
 const buttonVariants = [
@@ -170,6 +171,13 @@ export default function DevPage() {
           description="FilterTag(다중), KeywordTag(해시태그형), MypageTag(단일 탭형)의 선택/해제 동작과 disabled 상태를 확인합니다."
         >
           <TagPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Status"
+          description="EmptyState, ErrorState, LoadingState의 공통 레이아웃과 액션 영역을 확인합니다."
+        >
+          <StatusPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
