@@ -120,24 +120,21 @@ export default function Home() {
         {/* Category cards section */}
         <section
           className={css({
-            w: { lg: '3/5' },
+            w: { base: 'full', lg: '3/5' },
             position: 'relative',
             h: { base: '400px', md: '500px', lg: 'full' },
-            width: 'full',
           })}
         >
-          <div className={css({ position: 'relative', h: 'full', w: 'full' })}>
-            {travelCategories
-              .slice(0, cardPositions.length)
-              .map((category, index) => (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  index={index}
-                  style={cardPositions[index]}
-                />
-              ))}
-          </div>
+          {travelCategories
+            .slice(0, cardPositions.length)
+            .map((category, index) => (
+              <CategoryCard
+                key={category.id}
+                category={category}
+                index={index}
+                style={cardPositions[index]}
+              />
+            ))}
         </section>
       </div>
     </div>
