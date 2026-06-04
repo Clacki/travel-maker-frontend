@@ -3,6 +3,7 @@ import { Button, IconButton } from '@/components/common/button'
 import { TypeCard } from '@/components/common/TypeCard'
 import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
+import { ResultCard } from '../test/_components/ResultCard'
 import { TagPlayground } from './TagPlayground'
 
 const buttonVariants = [
@@ -169,6 +170,25 @@ export default function DevPage() {
           description="FilterTag(다중), KeywordTag(해시태그형), MypageTag(단일 탭형)의 선택/해제 동작과 disabled 상태를 확인합니다."
         >
           <TagPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="ResultCard"
+          description="모임 결과 카드의 타입명, 키워드 태그, 매칭도·테스트(12문항 고정)·타입(8종 중 n) 통계 영역을 확인합니다."
+        >
+          <ExampleGroup title="Default">
+            <div className={css({ w: 'full', maxW: '400px' })}>
+              <ResultCard
+                typeLabel="TYPE 0_9.0~8"
+                typeName="MOONLIGHT CAST"
+                title="모임 결과 보기"
+                description="당신과 가장 잘 맞는 모임 유형입니다"
+                keywords={['감성적', '야외활동', '소규모']}
+                matchScore={64}
+                typeRank={1}
+              />
+            </div>
+          </ExampleGroup>
         </PlaygroundSection>
 
         <PlaygroundSection
