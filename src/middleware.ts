@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const isLoggedIn = !!request.cookies.get('access_token')
+  // refresh_token은 HttpOnly Cookie로 발급되므로 서버에서 읽기 가능
+  const isLoggedIn = !!request.cookies.get('refresh_token')
   const isDetailPage = request.nextUrl.pathname.startsWith('/detail')
 
   if (isDetailPage && !isLoggedIn) {
