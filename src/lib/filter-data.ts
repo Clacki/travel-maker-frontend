@@ -24,6 +24,7 @@ export const travelFilterSections: FilterSectionData[] = [
     badgeVariant: 'multi',
     selectionMode: 'multi',
     tags: [
+      { id: 'all', label: '전체', emoji: '🌍' },
       { id: 'beach', label: '해변 휴양', emoji: '🏖️' },
       { id: 'mountain', label: '산악 탐험', emoji: '🏔️' },
       { id: 'city', label: '도시 탐방', emoji: '🏙️' },

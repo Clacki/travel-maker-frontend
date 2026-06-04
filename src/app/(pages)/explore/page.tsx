@@ -106,7 +106,7 @@ function ExploreContent() {
       result = result.filter((d) => d.categoryId === categoryId)
     }
 
-    if (selected.style?.length) {
+    if (selected.style?.length && !selected.style.includes('all')) {
       const cats = selected.style
         .map((s) => STYLE_TO_CATEGORY[s])
         .filter(Boolean)
