@@ -1,6 +1,6 @@
 import { css } from '@/styled-system/css'
 
-import { KeywordTag } from '@/components/common/tag/KeywordTag'
+import { KeywordTag } from '@/components/ui/tag/KeywordTag'
 
 import { ResultCardThumbnail } from './ResultCardThumbnail'
 
