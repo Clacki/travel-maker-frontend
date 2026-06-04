@@ -1,4 +1,4 @@
-type PageLayoutProps = {
+interface PageLayoutProps {
   children: React.ReactNode
 }
 

@@ -111,7 +111,7 @@ const mobileLoginButtonStyle = css({
   display: { base: 'inline-flex', sm: 'none' },
 })
 
-type HeaderProps = {
+interface HeaderProps {
   isAuthenticated?: boolean
   className?: string
 }

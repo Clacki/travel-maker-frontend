@@ -13,7 +13,7 @@ const spinnerStyle = css({
   animation: 'spin 700ms linear infinite',
 })
 
-export type LoadingStateProps = {
+export interface LoadingStateProps {
   title?: string
   description?: string
   className?: string

@@ -4,7 +4,7 @@ import errorStatusImage from '@/assets/images/status/error-status.svg'
 import { Button } from '@/components/common/button'
 import { StatusLayout } from './StatusLayout'
 
-export type ErrorStateProps = {
+export interface ErrorStateProps {
   title?: string
   description?: string
   actionLabel?: string

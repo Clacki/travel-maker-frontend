@@ -286,15 +286,17 @@ export default function DevPage() {
   )
 }
 
+interface PlaygroundSectionProps {
+  title: string
+  description: string
+  children: ReactNode
+}
+
 function PlaygroundSection({
   title,
   description,
   children,
-}: {
-  title: string
-  description: string
-  children: ReactNode
-}) {
+}: PlaygroundSectionProps) {
   return (
     <section
       className={css({
@@ -343,13 +345,12 @@ function PlaygroundSection({
   )
 }
 
-function ExampleGroup({
-  title,
-  children,
-}: {
+interface ExampleGroupProps {
   title: string
   children: ReactNode
-}) {
+}
+
+function ExampleGroup({ title, children }: ExampleGroupProps) {
   return (
     <div>
       <h3
@@ -376,7 +377,11 @@ function ExampleGroup({
   )
 }
 
-function PreviewFrame({ children }: { children: ReactNode }) {
+interface PreviewFrameProps {
+  children: ReactNode
+}
+
+function PreviewFrame({ children }: PreviewFrameProps) {
   return (
     <div
       className={css({

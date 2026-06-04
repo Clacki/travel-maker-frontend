@@ -43,7 +43,7 @@ const actionStyle = css({
   justifyContent: 'center',
 })
 
-export type StatusLayoutProps = {
+export interface StatusLayoutProps {
   title: string
   description?: string
   action?: ReactNode

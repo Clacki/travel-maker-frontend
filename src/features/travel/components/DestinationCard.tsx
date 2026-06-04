@@ -11,8 +11,11 @@ interface DestinationCardProps {
   index: number
 }
 
-/** 평점 배지 — PolaroidCard의 badge prop으로 전달 */
-function RatingBadge({ rating }: { rating: number }) {
+interface RatingBadgeProps {
+  rating: number
+}
+
+function RatingBadge({ rating }: RatingBadgeProps) {
   return (
     <div
       className={css({

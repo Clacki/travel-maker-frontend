@@ -166,7 +166,7 @@ const footerTitleStyle = css({
   mb: '3',
 })
 
-type FooterProps = {
+interface FooterProps {
   className?: string
 }
 
@@ -228,13 +228,12 @@ export function Footer({ className }: FooterProps) {
   )
 }
 
-function FooterLinkColumn({
-  title,
-  links,
-}: {
+interface FooterLinkColumnProps {
   title: string
   links: readonly { href: string; label: string }[]
-}) {
+}
+
+function FooterLinkColumn({ title, links }: FooterLinkColumnProps) {
   return (
     <div>
       <FooterTitle>{title}</FooterTitle>
@@ -251,6 +250,10 @@ function FooterLinkColumn({
   )
 }
 
-function FooterTitle({ children }: { children: ReactNode }) {
+interface FooterTitleProps {
+  children: ReactNode
+}
+
+function FooterTitle({ children }: FooterTitleProps) {
   return <h2 className={footerTitleStyle}>{children}</h2>
 }
