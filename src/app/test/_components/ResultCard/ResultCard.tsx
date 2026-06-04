@@ -1,8 +1,8 @@
-import Image from 'next/image'
-
 import { css } from '@/styled-system/css'
 
 import { KeywordTag } from '@/components/common/tag/KeywordTag'
+
+import { ResultCardThumbnail } from './ResultCardThumbnail'
 
 export interface ResultCardProps {
   typeLabel: string
@@ -159,13 +159,7 @@ export function ResultCard({
       {/* Banner with thumbnail */}
       <div className={bannerStyle}>
         {thumbnailSrc ? (
-          <Image
-            src={thumbnailSrc}
-            alt={thumbnailAlt}
-            width={120}
-            height={120}
-            className={css({ borderRadius: 'lg', objectFit: 'cover' })}
-          />
+          <ResultCardThumbnail src={thumbnailSrc} alt={thumbnailAlt} />
         ) : (
           <div className={thumbnailPlaceholderStyle} aria-hidden="true" />
         )}
