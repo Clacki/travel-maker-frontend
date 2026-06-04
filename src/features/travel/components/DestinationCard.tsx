@@ -58,6 +58,7 @@ export function DestinationCard({ destination, index }: DestinationCardProps) {
       <PolaroidCard
         image={destination.image}
         alt={destination.name}
+        sizes="(max-width: 768px) 45vw, (max-width: 1024px) 30vw, 220px"
         badge={<RatingBadge rating={destination.rating} />}
       >
         {/* 하단 스트립: 이름 + 위치 */}

@@ -6,6 +6,7 @@ import { css } from '@/styled-system/css'
 interface PolaroidCardProps {
   image: string
   alt: string
+  sizes?: string
   /** 이미지 위에 올릴 배지 (평점 등) */
   badge?: React.ReactNode
   /** 하단 흰색 스트립 안에 들어갈 내용 */
@@ -23,6 +24,7 @@ interface PolaroidCardProps {
 export function PolaroidCard({
   image,
   alt,
+  sizes = '(max-width: 768px) 140px, (max-width: 1024px) 165px, 180px',
   badge,
   children,
   className,
@@ -60,6 +62,7 @@ export function PolaroidCard({
           src={image}
           alt={alt}
           fill
+          sizes={sizes}
           className={css({ objectFit: 'cover' }) + ' polaroid-image'}
         />
         {badge && (

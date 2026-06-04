@@ -38,12 +38,11 @@ export default function Home() {
       />
       {/* Gradient overlay */}
       <div
-        className={css({
-          position: 'absolute',
-          inset: 0,
+        className={css({ position: 'absolute', inset: 0 })}
+        style={{
           background:
-            'linear-gradient(to right, var(--colors-background) 0%, color-mix(in srgb, var(--colors-background) 95%, transparent) 40%, color-mix(in srgb, var(--colors-background) 30%, transparent) 100%)',
-        })}
+            'linear-gradient(to right, var(--colors-bg-canvas) 0%, color-mix(in srgb, var(--colors-bg-canvas) 85%, transparent) 30%, color-mix(in srgb, var(--colors-bg-canvas) 10%, transparent) 100%)',
+        }}
       />
 
       <div
