@@ -7,6 +7,7 @@ import { ResultCard } from '../test/_components/ResultCard'
 import { ModalPlayground } from './ModalPlayground'
 import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
+import { PlaceCardPlayground } from './PlaceCardPlayground'
 
 const buttonVariants = [
   'primary',
@@ -221,6 +222,13 @@ export default function DevPage() {
               />
             </div>
           </ExampleGroup>
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="PlaceCard"
+          description="북마크/리뷰 variant의 카드 컴포넌트를 확인합니다."
+        >
+          <PlaceCardPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
