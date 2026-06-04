@@ -4,6 +4,7 @@ import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
 import type { ReactNode } from 'react'
 import { ResultCard } from '../test/_components/ResultCard'
+import { ModalPlayground } from './ModalPlayground'
 import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
 
@@ -178,6 +179,13 @@ export default function DevPage() {
           description="EmptyState, ErrorState, LoadingState의 공통 레이아웃과 액션 영역을 확인합니다."
         >
           <StatusPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Modal"
+          description="공통 Modal의 기본 구조, footer 영역, size 옵션과 닫기 동작을 확인합니다."
+        >
+          <ModalPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
