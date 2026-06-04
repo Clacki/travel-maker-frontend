@@ -170,7 +170,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'culture',
     name: '문화 체험',
     description: '역사와 전통을 깊이 느끼는 여행',
-    image: '/images/bg-culture.svg',
+    image: '/images/bg-culture.png',
     subTags: [
       { id: 'temple', name: '사원/신전', icon: '⛩️' },
       { id: 'festival', name: '축제', icon: '🎊' },
