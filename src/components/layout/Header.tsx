@@ -14,7 +14,7 @@ const headerStyle = css({
   borderBottomColor: 'border.subtle',
   position: 'sticky',
   top: 0,
-  zIndex: 10,
+  zIndex: 50,
 })
 
 const headerInnerStyle = css({
