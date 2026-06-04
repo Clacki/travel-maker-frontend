@@ -1,4 +1,7 @@
-import type { TravelCategory } from '@/types/travel.types'
+import type {
+  TravelCategory,
+  DestinationWithCategory,
+} from '@/types/travel.types'
 
 export const travelCategories: TravelCategory[] = [
   {
@@ -387,3 +390,13 @@ export const travelCategories: TravelCategory[] = [
     ],
   },
 ]
+
+export function getAllDestinations(): DestinationWithCategory[] {
+  return travelCategories.flatMap((cat) =>
+    cat.destinations.map((d) => ({ ...d, categoryId: cat.id }))
+  )
+}
+
+export function getCategoryById(id: string): TravelCategory | undefined {
+  return travelCategories.find((cat) => cat.id === id)
+}

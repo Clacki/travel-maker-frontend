@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     // Generated files:
     'styled-system/**',
     'public/mockServiceWorker.js',
+    // Local tooling (not committed):
+    '.claude/**',
   ]),
   prettier,
 ])

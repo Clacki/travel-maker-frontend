@@ -5,9 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, X } from 'lucide-react'
-import { travelCategories, getAllDestinations } from '@/lib/travel-data'
-import { travelFilterSections } from '@/lib/filter-data'
+import { ArrowLeft } from 'lucide-react'
+import { travelCategories, getAllDestinations } from '@/mocks/data/travel-data'
 import { DestinationCard } from '@/components/cards/destination-card'
 import { css } from '@/styled-system/css'
 
@@ -30,33 +29,6 @@ function hash(str: string): number {
   return Math.abs(h)
 }
 
-function parseParams(
-  searchParams: ReturnType<typeof useSearchParams>
-): Record<string, string[]> {
-  const result: Record<string, string[]> = {}
-  searchParams.forEach((value, key) => {
-    if (key !== 'sort' && key !== 'category' && value) {
-      result[key] = value.split(',')
-    }
-  })
-  return result
-}
-
-function getFilterChips(selected: Record<string, string[]>) {
-  const chips: { sectionId: string; tagId: string; label: string }[] = []
-  for (const section of travelFilterSections) {
-    const ids = selected[section.id] || []
-    for (const tagId of ids) {
-      const tag = section.tags.find((t) => t.id === tagId)
-      if (tag) {
-        const label = tag.emoji ? `${tag.emoji} ${tag.label}` : tag.label
-        chips.push({ sectionId: section.id, tagId, label })
-      }
-    }
-  }
-  return chips
-}
-
 export default function ExplorePage() {
   return (
     <Suspense fallback={null}>
@@ -71,8 +43,6 @@ function ExploreContent() {
 
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
-  const selected = useMemo(() => parseParams(searchParams), [searchParams])
-  const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
   const activeCategory = useMemo(
     () => travelCategories.find((c) => c.id === categoryId) ?? null,
@@ -87,24 +57,13 @@ function ExploreContent() {
   const all = useMemo(() => getAllDestinations(), [])
 
   const filtered = useMemo(() => {
-    let result = all
-
-    if (categoryId) {
-      result = result.filter((d) => d.categoryId === categoryId)
-    }
-
-    if (selected.region?.length) {
-      result = result.filter((d) => d.location.includes('대한민국'))
-    }
-
-    return result
-  }, [all, categoryId, selected])
+    if (!categoryId) return all
+    return all.filter((d) => d.categoryId === categoryId)
+  }, [all, categoryId])
 
   const sorted = useMemo(() => {
     const arr = [...filtered]
-    if (sort === 'popular') {
-      return arr.sort((a, b) => b.rating - a.rating)
-    }
+    if (sort === 'popular') return arr.sort((a, b) => b.rating - a.rating)
     if (sort === 'bookmarks') {
       return arr.sort(
         (a, b) => (hash(b.id + 'bm') % 1000) - (hash(a.id + 'bm') % 1000)
@@ -134,34 +93,8 @@ function ExploreContent() {
     router.push(`/explore?${params.toString()}`)
   }
 
-  function removeFilter(sectionId: string, tagId: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    const current = (params.get(sectionId) ?? '')
-      .split(',')
-      .filter((v) => v && v !== tagId)
-    if (current.length) {
-      params.set(sectionId, current.join(','))
-    } else {
-      params.delete(sectionId)
-    }
-    router.push(`/explore?${params.toString()}`)
-  }
-
-  function clearAllFilters() {
-    const params = new URLSearchParams()
-    if (categoryId) {
-      params.set('category', categoryId)
-    }
-    if (searchParams.get('sort')) {
-      params.set('sort', searchParams.get('sort')!)
-    }
-    router.push(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
-  }
-
-  const hasFilter = filterChips.length > 0
-
   return (
-    <main className={css({ minH: '100vh', bg: 'background' })}>
+    <main className={css({ minH: '100vh', bg: 'bg.canvas' })}>
       {/* Hero Section */}
       <section
         className={css({
@@ -194,7 +127,7 @@ function ExploreContent() {
             position: 'absolute',
             inset: 0,
             background:
-              'linear-gradient(to top, var(--colors-background) 0%, color-mix(in srgb, var(--colors-background) 50%, transparent) 55%, transparent 100%)',
+              'linear-gradient(to top, var(--colors-bg-canvas) 0%, color-mix(in srgb, var(--colors-bg-canvas) 50%, transparent) 55%, transparent 100%)',
           })}
         />
 
@@ -214,11 +147,11 @@ function ExploreContent() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 2,
-                color: 'muted.foreground',
+                color: 'text.secondary',
                 textDecoration: 'none',
                 mb: 4,
                 fontSize: 'sm',
-                _hover: { color: 'foreground' },
+                _hover: { color: 'text.primary' },
                 transitionProperty: 'color',
                 transitionDuration: '200ms',
                 transitionTimingFunction: 'ease-in-out',
@@ -239,15 +172,13 @@ function ExploreContent() {
                   className={css({
                     fontSize: { base: '2xl', md: '4xl' },
                     fontWeight: 'bold',
-                    color: 'foreground',
+                    color: 'text.primary',
                     mb: 1,
                   })}
                 >
                   {heroTitle}
                 </h1>
-                <p
-                  className={css({ fontSize: 'sm', color: 'muted.foreground' })}
-                >
+                <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
                   {heroDesc}
                 </p>
               </motion.div>
@@ -286,13 +217,15 @@ function ExploreContent() {
                 cursor: 'pointer',
                 border: '1.5px solid',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.15s',
+                transitionProperty: 'background-color, color, border-color',
+                transitionDuration: '150ms',
+                transitionTimingFunction: 'ease-in-out',
                 borderColor: !categoryId ? 'primary' : 'border',
-                bg: !categoryId ? 'primary' : 'card',
-                color: !categoryId ? 'primary.foreground' : 'muted.foreground',
+                bg: !categoryId ? 'primary' : 'bg.surface',
+                color: !categoryId ? 'text.inverse' : 'text.secondary',
                 _hover: !categoryId
                   ? {}
-                  : { borderColor: 'primary/40', color: 'foreground' },
+                  : { borderColor: 'primary', color: 'text.primary' },
               })}
             >
               전체
@@ -311,17 +244,17 @@ function ExploreContent() {
                   cursor: 'pointer',
                   border: '1.5px solid',
                   whiteSpace: 'nowrap',
-                  transition: 'all 0.15s',
+                  transitionProperty: 'background-color, color, border-color',
+                  transitionDuration: '150ms',
+                  transitionTimingFunction: 'ease-in-out',
                   borderColor: categoryId === cat.id ? 'primary' : 'border',
-                  bg: categoryId === cat.id ? 'primary' : 'card',
+                  bg: categoryId === cat.id ? 'primary' : 'bg.surface',
                   color:
-                    categoryId === cat.id
-                      ? 'primary.foreground'
-                      : 'muted.foreground',
+                    categoryId === cat.id ? 'text.inverse' : 'text.secondary',
                   _hover:
                     categoryId === cat.id
                       ? {}
-                      : { borderColor: 'primary/40', color: 'foreground' },
+                      : { borderColor: 'primary', color: 'text.primary' },
                 })}
               >
                 {cat.name}
@@ -331,13 +264,13 @@ function ExploreContent() {
         </div>
       </section>
 
-      {/* Sort + Count + Filter Chips */}
+      {/* Sort + Count */}
       <section
         className={css({
           py: 5,
           px: 6,
-          borderBottom: hasFilter ? '1px solid' : 'none',
-          borderColor: 'border',
+          borderBottom: '1px solid',
+          borderColor: 'border.subtle',
         })}
       >
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
@@ -350,8 +283,7 @@ function ExploreContent() {
               gap: 4,
             })}
           >
-            <p className={css({ fontSize: 'sm', color: 'muted.foreground' })}>
-              {hasFilter ? '필터 적용됨 · ' : ''}
+            <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
               {sorted.length}개의 여행지
             </p>
             <div className={css({ display: 'flex', gap: '6px' })}>
@@ -368,15 +300,16 @@ function ExploreContent() {
                     fontWeight: 600,
                     cursor: 'pointer',
                     border: '1.5px solid',
-                    transition: 'all 0.15s',
+                    transitionProperty: 'background-color, color, border-color',
+                    transitionDuration: '150ms',
+                    transitionTimingFunction: 'ease-in-out',
                     borderColor: sort === key ? 'primary' : 'border',
-                    bg: sort === key ? 'primary' : 'card',
-                    color:
-                      sort === key ? 'primary.foreground' : 'muted.foreground',
+                    bg: sort === key ? 'primary' : 'bg.surface',
+                    color: sort === key ? 'text.inverse' : 'text.secondary',
                     _hover:
                       sort === key
                         ? {}
-                        : { borderColor: 'primary/40', color: 'foreground' },
+                        : { borderColor: 'primary', color: 'text.primary' },
                   })}
                 >
                   {SORT_LABELS[key]}
@@ -384,76 +317,6 @@ function ExploreContent() {
               ))}
             </div>
           </div>
-
-          {hasFilter && (
-            <div
-              className={css({
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px',
-                mt: 4,
-                alignItems: 'center',
-              })}
-            >
-              <span
-                className={css({
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: 'primary',
-                  mr: 1,
-                })}
-              >
-                필터
-              </span>
-              {filterChips.map((chip) => (
-                <span
-                  key={`${chip.sectionId}-${chip.tagId}`}
-                  className={css({
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    bg: 'primary/10',
-                    color: 'primary',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    px: '10px',
-                    py: '3px',
-                    borderRadius: '50px',
-                    border: '1.5px solid',
-                    borderColor: 'primary/20',
-                  })}
-                >
-                  {chip.label}
-                  <span
-                    onClick={() => removeFilter(chip.sectionId, chip.tagId)}
-                    className={css({
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      _hover: { color: 'foreground' },
-                    })}
-                  >
-                    <X className={css({ w: '10px', h: '10px' })} />
-                  </span>
-                </span>
-              ))}
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className={css({
-                  fontSize: '11px',
-                  color: 'muted.foreground',
-                  cursor: 'pointer',
-                  border: 'none',
-                  bg: 'transparent',
-                  _hover: { color: 'foreground' },
-                  ml: 1,
-                })}
-              >
-                전체 초기화
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
@@ -486,7 +349,7 @@ function ExploreContent() {
               <p
                 className={css({
                   fontSize: 'lg',
-                  color: 'muted.foreground',
+                  color: 'text.secondary',
                   mb: 4,
                 })}
               >
@@ -494,12 +357,12 @@ function ExploreContent() {
               </p>
               <button
                 type="button"
-                onClick={clearAllFilters}
+                onClick={() => setCategory(null)}
                 className={css({
                   px: 6,
                   py: 3,
                   bg: 'primary',
-                  color: 'primary.foreground',
+                  color: 'text.inverse',
                   borderRadius: '10px',
                   fontSize: '14px',
                   fontWeight: 600,
@@ -508,7 +371,7 @@ function ExploreContent() {
                   _hover: { opacity: 0.88 },
                 })}
               >
-                필터 초기화하기
+                전체 보기
               </button>
             </div>
           )}

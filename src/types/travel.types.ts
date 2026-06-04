@@ -23,6 +23,8 @@ export type Destination = {
   tags: string[]
 }
 
+export type DestinationWithCategory = Destination & { categoryId: string }
+
 export type FilterOptions = {
   selectedTags: string[]
 }
