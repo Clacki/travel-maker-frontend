@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FilterTag, KeywordTag, MypageTag } from '@/components/ui'
+import { FilterTag, KeywordTag, MypageTag } from '@/components/common/tag'
 import { css } from '@/styled-system/css'
 
 const filterLabels = ['전체', '맛집', '관광지', '카페', '숙소']
