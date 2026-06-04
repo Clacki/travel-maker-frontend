@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { SubTag } from '@/types/travel'
+import type { SubTag } from '@/types/travel.types'
 import { css } from '@/styled-system/css'
 
 interface SubTagFilterProps {

@@ -1,4 +1,4 @@
-import type { TravelCategory } from '@/types/travel'
+import type { TravelCategory } from '@/types/travel.types'
 
 export const travelCategories: TravelCategory[] = [
   {

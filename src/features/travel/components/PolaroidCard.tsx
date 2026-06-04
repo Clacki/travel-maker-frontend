@@ -41,8 +41,7 @@ export function PolaroidCard({
           pt: '8px',
           px: '8px',
           pb: 0,
-          /* TODO: Design Token 추가 필요 — shadows.lg (현재 'lg' 토큰 없음) */
-          shadow: '0 12px 40px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)',
+          shadow: 'lg',
           cursor: 'pointer',
           '& .polaroid-image': { transition: 'transform 500ms' },
           '&:hover .polaroid-image': { transform: 'scale(1.06)' },

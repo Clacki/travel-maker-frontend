@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Star, MapPin } from 'lucide-react'
-import type { Destination } from '@/types/travel'
+import type { Destination } from '@/types/travel.types'
 import { css } from '@/styled-system/css'
 import { PolaroidCard } from './PolaroidCard'
 

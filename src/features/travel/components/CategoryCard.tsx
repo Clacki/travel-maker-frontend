@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import type { TravelCategory } from '@/types/travel'
+import type { TravelCategory } from '@/types/travel.types'
 import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
 import { PolaroidCard } from './PolaroidCard'

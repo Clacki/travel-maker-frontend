@@ -91,6 +91,10 @@ export default defineConfig({
         shadows: {
           sm: { value: '0 1px 2px rgba(38, 50, 56, 0.08)' },
           md: { value: '0 8px 24px rgba(38, 50, 56, 0.10)' },
+          lg: {
+            value:
+              '0 12px 40px rgba(38, 50, 56, 0.20), 0 2px 8px rgba(38, 50, 56, 0.08)',
+          },
           focus: { value: '0 0 0 3px rgba(44, 166, 190, 0.24)' },
           'card.active': { value: '0 8px 24px rgba(44, 166, 190, 0.25)' },
         },
