@@ -144,8 +144,8 @@ export function Header({ isAuthenticated = false, className }: HeaderProps) {
           ) : (
             <>
               <Button
-                className={desktopLoginButtonStyle}
-                variant="secondary"
+                className={cx(navLinkStyle, desktopLoginButtonStyle)}
+                variant="ghost"
                 size="sm"
                 shape="pill"
               >
