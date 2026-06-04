@@ -38,8 +38,8 @@ export function SubTagFilter({
               cursor: 'pointer',
               border: 'none',
               transition: 'all 0.3s',
-              bg: isSelected ? 'primary' : 'secondary',
-              color: isSelected ? 'primary.foreground' : 'secondary.foreground',
+              bg: isSelected ? 'primary' : 'bg.muted',
+              color: isSelected ? 'text.inverse' : 'text.primary',
               shadow: isSelected ? 'md' : 'none',
               _hover: {
                 opacity: isSelected ? 0.9 : 0.8,

@@ -3,12 +3,19 @@
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import type { TravelCategory } from '@/types/travel.types'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
+
+type CardPositionStyle = {
+  left: string
+  top: string
+  rotate: number
+  zIndex: number
+}
 
 interface CategoryCardProps {
   category: TravelCategory
   index: number
-  style: { left: string; top: string; rotate: number; zIndex: number }
+  style: CardPositionStyle
 }
 
 export function CategoryCard({ category, index, style }: CategoryCardProps) {
@@ -59,7 +66,7 @@ export function CategoryCard({ category, index, style }: CategoryCardProps) {
           alt={category.name}
           fill
           sizes="(max-width: 768px) 140px, (max-width: 1024px) 165px, 180px"
-          className={css({ objectFit: 'cover' }) + ' polaroid-image'}
+          className={cx(css({ objectFit: 'cover' }), 'polaroid-image')}
         />
       </div>
 

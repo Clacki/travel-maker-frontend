@@ -107,7 +107,7 @@ export default function Home() {
           </h1>
           <p
             className={css({
-              fontSize: { base: 'base', lg: 'lg' },
+              fontSize: { base: 'md', lg: 'lg' },
               color: 'text.secondary',
               maxW: 'md',
             })}
