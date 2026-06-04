@@ -14,6 +14,7 @@ export type ModalProps = {
   footer?: ReactNode
   size?: ModalSize
   closeOnOverlayClick?: boolean
+  ariaLabel?: string
   className?: string
 }
 
@@ -141,10 +142,16 @@ export function Modal({
   footer,
   size = 'md',
   closeOnOverlayClick = true,
+  ariaLabel,
   className,
 }: ModalProps) {
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!isOpen) {
@@ -159,14 +166,16 @@ export function Modal({
     document.body.style.overflow = 'hidden'
 
     if (scrollbarWidth > 0) {
-      document.body.style.paddingRight = `${scrollbarWidth}px`
+      document.body.style.paddingRight = previousPaddingRight
+        ? `calc(${previousPaddingRight} + ${scrollbarWidth}px)`
+        : `${scrollbarWidth}px`
     }
 
     dialogRef.current?.focus()
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onClose()
+        onCloseRef.current()
       }
     }
 
@@ -177,7 +186,7 @@ export function Modal({
       document.body.style.paddingRight = previousPaddingRight
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   if (!isOpen) {
     return null
@@ -197,6 +206,7 @@ export function Modal({
     <div className={overlayStyle} onClick={handleOverlayClick}>
       <div
         ref={dialogRef}
+        aria-label={title ? undefined : (ariaLabel ?? '모달')}
         aria-labelledby={title ? titleId : undefined}
         aria-modal="true"
         className={cx(dialogStyle({ size }), className)}
