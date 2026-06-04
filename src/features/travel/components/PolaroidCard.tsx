@@ -35,10 +35,11 @@ export function PolaroidCard({
           flexDir: 'column',
           h: 'full',
           rounded: '2xl',
-          bg: 'white',
+          bg: 'bg.surface',
           pt: '8px',
           px: '8px',
           pb: 0,
+          /* TODO: Design Token 추가 필요 — shadows.lg (현재 'lg' 토큰 없음) */
           shadow: '0 12px 40px rgba(0,0,0,0.20), 0 2px 8px rgba(0,0,0,0.08)',
           cursor: 'pointer',
           '& .polaroid-image': { transition: 'transform 500ms' },

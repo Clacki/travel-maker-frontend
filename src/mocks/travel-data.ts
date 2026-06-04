@@ -1,27 +1,4 @@
-export interface TravelCategory {
-  id: string
-  name: string
-  description: string
-  image: string
-  subTags: SubTag[]
-  destinations: Destination[]
-}
-
-export interface SubTag {
-  id: string
-  name: string
-  icon: string
-}
-
-export interface Destination {
-  id: string
-  name: string
-  location: string
-  description: string
-  image: string
-  rating: number
-  tags: string[]
-}
+import type { TravelCategory } from '@/types/travel'
 
 export const travelCategories: TravelCategory[] = [
   {
@@ -417,17 +394,3 @@ export const travelCategories: TravelCategory[] = [
     ],
   },
 ]
-
-export function getCategoryById(id: string): TravelCategory | undefined {
-  return travelCategories.find((category) => category.id === id)
-}
-
-export function filterDestinationsByTags(
-  destinations: Destination[],
-  selectedTags: string[]
-): Destination[] {
-  if (selectedTags.length === 0) return destinations
-  return destinations.filter((destination) =>
-    selectedTags.some((tag) => destination.tags.includes(tag))
-  )
-}

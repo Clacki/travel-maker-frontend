@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { SubTag } from '@/lib/travel-data'
+import type { SubTag } from '@/types/travel'
 import { css } from '@/styled-system/css'
 
 interface SubTagFilterProps {
@@ -40,13 +40,13 @@ export function SubTagFilter({
               transition: 'all 0.3s',
               bg: isSelected ? 'primary' : 'secondary',
               color: isSelected ? 'primary.foreground' : 'secondary.foreground',
-              shadow: isSelected ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+              shadow: isSelected ? 'md' : 'none',
               _hover: {
                 opacity: isSelected ? 0.9 : 0.8,
               },
             })}
           >
-            <span style={{ fontSize: '1rem' }}>{tag.icon}</span>
+            <span className={css({ fontSize: 'md' })}>{tag.icon}</span>
             <span>{tag.name}</span>
           </motion.button>
         )

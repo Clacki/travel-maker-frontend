@@ -2,9 +2,9 @@
 
 import { motion } from 'framer-motion'
 import { Star, MapPin } from 'lucide-react'
-import { Destination } from '@/lib/travel-data'
+import type { Destination } from '@/types/travel'
 import { css } from '@/styled-system/css'
-import { PolaroidCard } from './polaroid-card'
+import { PolaroidCard } from './PolaroidCard'
 
 interface DestinationCardProps {
   destination: Destination
@@ -16,7 +16,7 @@ function RatingBadge({ rating }: { rating: number }) {
   return (
     <div
       className={css({
-        bg: 'rgba(0,0,0,0.55)',
+        bg: 'black/55',
         backdropFilter: 'blur(4px)',
         px: '8px',
         py: '3px',
@@ -37,7 +37,7 @@ function RatingBadge({ rating }: { rating: number }) {
       <span
         className={css({
           fontSize: 'xs',
-          color: 'white',
+          color: 'text.inverse',
           fontWeight: 'medium',
         })}
       >
@@ -66,7 +66,7 @@ export function DestinationCard({ destination, index }: DestinationCardProps) {
             className={css({
               fontSize: 'sm',
               fontWeight: 'semibold',
-              color: 'rgba(40,40,55,0.9)',
+              color: 'text.primary',
               lineHeight: 'tight',
               mb: '2px',
             })}

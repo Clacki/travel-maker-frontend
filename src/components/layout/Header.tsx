@@ -2,6 +2,7 @@ import { Button, IconButton } from '@/components/common/button'
 import { ROUTES } from '@/constants/routes'
 import { css, cx } from '@/styled-system/css'
 import Link from 'next/link'
+import { ThemeToggle } from './ThemeToggle'
 
 const navigationItems = [
   { href: ROUTES.TEST, label: 'Travel Style' },
@@ -132,6 +133,8 @@ export function Header({ isAuthenticated = false, className }: HeaderProps) {
               </Link>
             ))}
           </nav>
+
+          <ThemeToggle />
 
           {isAuthenticated ? (
             <Link

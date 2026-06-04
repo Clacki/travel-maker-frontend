@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { TravelCategory } from '@/lib/travel-data'
+import type { TravelCategory } from '@/types/travel'
 import { css } from '@/styled-system/css'
-import { PolaroidCard } from './polaroid-card'
+import { PolaroidCard } from './PolaroidCard'
 
 interface CategoryCardProps {
   category: TravelCategory
@@ -45,7 +45,7 @@ export function CategoryCard({ category, index, style }: CategoryCardProps) {
             className={css({
               fontSize: { base: 'xs', lg: 'sm' },
               fontWeight: 'medium',
-              color: 'rgba(40,40,55,0.85)',
+              color: 'text.primary',
               textAlign: 'center',
             })}
           >

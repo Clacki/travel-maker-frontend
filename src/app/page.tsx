@@ -1,8 +1,6 @@
-'use client'
-
-import { CategoryCard } from '@/components/cards/category-card'
-import { travelCategories } from '@/lib/travel-data'
 import { Sparkles } from 'lucide-react'
+import { CategoryCard } from '@/features/travel/components/CategoryCard'
+import { travelCategories } from '@/mocks/travel-data'
 import { css } from '@/styled-system/css'
 
 // 전체적으로 우측으로 이동해 히어로 텍스트 가림 방지
@@ -152,7 +150,7 @@ export default function Home() {
           px: 6,
           position: 'relative',
           zIndex: 10,
-          bg: 'white',
+          bg: 'bg.surface',
         })}
       >
         <div className={css({ maxW: '7xl', mx: 'auto', textAlign: 'center' })}>
