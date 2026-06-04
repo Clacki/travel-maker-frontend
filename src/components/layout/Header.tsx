@@ -1,4 +1,4 @@
-import { Button, IconButton } from '@/components/ui/button'
+import { Button, IconButton } from '@/components/common/button'
 import { ROUTES } from '@/constants/routes'
 import { css, cx } from '@/styled-system/css'
 import Link from 'next/link'

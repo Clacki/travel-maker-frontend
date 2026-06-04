@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { Button, IconButton } from '@/components/ui/button'
-import { TypeCard } from '@/components/ui/TypeCard'
+import { Button, IconButton } from '@/components/common/button'
+import { TypeCard } from '@/components/common/TypeCard'
 import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
 import { ResultCard } from '../test/_components/ResultCard'

@@ -1,9 +1,7 @@
 'use client'
 
-import Link from 'next/link'
 import { motion } from 'framer-motion'
 import type { TravelCategory } from '@/types/travel.types'
-import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
 import { PolaroidCard } from './PolaroidCard'
 
@@ -37,23 +35,18 @@ export function CategoryCard({ category, index, style }: CategoryCardProps) {
         transition: { duration: 0.3 },
       }}
     >
-      <Link
-        href={ROUTES.TRAVEL(category.id)}
-        className={css({ display: 'block', h: 'full' })}
-      >
-        <PolaroidCard image={category.image} alt={category.name}>
-          <h3
-            className={css({
-              fontSize: { base: 'xs', lg: 'sm' },
-              fontWeight: 'medium',
-              color: 'text.primary',
-              textAlign: 'center',
-            })}
-          >
-            {category.name}
-          </h3>
-        </PolaroidCard>
-      </Link>
+      <PolaroidCard image={category.image} alt={category.name}>
+        <h3
+          className={css({
+            fontSize: { base: 'xs', lg: 'sm' },
+            fontWeight: 'medium',
+            color: 'text.primary',
+            textAlign: 'center',
+          })}
+        >
+          {category.name}
+        </h3>
+      </PolaroidCard>
     </motion.div>
   )
 }

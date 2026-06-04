@@ -1,7 +1,7 @@
 'use client'
 
 import errorStatusImage from '@/assets/images/status/error-status.svg'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/common/button'
 import { StatusLayout } from './StatusLayout'
 
 export type ErrorStateProps = {

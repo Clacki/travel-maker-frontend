@@ -1,7 +1,7 @@
 'use client'
 
 import emptyStatusImage from '@/assets/images/status/empty-status.svg'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/common/button'
 import { StatusLayout } from './StatusLayout'
 
 export type EmptyStateProps = {
