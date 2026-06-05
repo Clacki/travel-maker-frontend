@@ -9,130 +9,112 @@ export type BadgeVariant = 'multi' | 'single' | 'bool'
 interface FilterSectionProps {
   icon: string
   label: string
-  typeLabel: string
   badgeVariant: BadgeVariant
   isLast?: boolean
   defaultOpen?: boolean
   children: React.ReactNode
 }
 
-const badgeStyles: Record<
-  BadgeVariant,
-  { bg: string; color: string; text: string }
-> = {
-  multi: {
-    bg: 'var(--colors-primary)/15',
-    color: 'var(--colors-primary)',
-    text: '복수 선택',
-  },
-  single: {
-    bg: 'oklch(0.95 0.08 80)/50',
-    color: 'oklch(0.55 0.15 60)',
-    text: '1개 선택',
-  },
-  bool: {
-    bg: 'oklch(0.95 0.05 300)/50',
-    color: 'oklch(0.50 0.15 290)',
-    text: 'on / off',
-  },
+const badgeTextMap: Record<BadgeVariant, string> = {
+  multi: '복수 선택',
+  single: '1개 선택',
+  bool: 'on / off',
 }
 
 export function FilterSection({
   icon,
   label,
-  typeLabel,
   badgeVariant,
   isLast = false,
   defaultOpen = true,
   children,
 }: FilterSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
-  const badge = badgeStyles[badgeVariant]
 
   return (
     <div
       className={css({
-        borderBottom: isLast ? 'none' : '1px solid',
-        borderColor: 'border',
+        borderBottomWidth: isLast ? '0' : '1px',
+        borderColor: 'border.subtle',
       })}
     >
-      {/* Header row - clickable to toggle */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={css({
-          width: '100%',
-          padding: '12px 20px',
+          width: 'full',
+          py: '3',
+          px: '5',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          gap: '12px',
+          gap: '3',
           cursor: 'pointer',
           border: 'none',
           bg: 'transparent',
-          transition: 'background 0.15s',
-          _hover: { bg: 'secondary/40' },
+          transitionProperty: 'background-color',
+          transitionDuration: '150ms',
+          _hover: { bg: 'bg.muted' },
+          _focusVisible: { outline: 'none', boxShadow: 'focus' },
         })}
       >
-        {/* Left: icon + label */}
         <span
           className={css({
-            fontSize: '13px',
-            fontWeight: 700,
-            color: 'foreground',
+            fontSize: 'sm',
+            fontWeight: 'bold',
+            color: 'text.primary',
             display: 'flex',
             alignItems: 'center',
-            gap: '4px',
+            gap: '1',
           })}
         >
-          <span className={css({ fontSize: '15px' })}>{icon}</span>
+          <span>{icon}</span>
           {label}
         </span>
 
-        {/* Right: badge + chevron */}
         <div
           className={css({
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
+            gap: '2',
           })}
         >
           <span
             className={css({
-              fontSize: '10px',
-              fontWeight: 600,
-              letterSpacing: '0.05em',
-              padding: '3px 9px',
-              borderRadius: '4px',
+              fontSize: 'xs',
+              fontWeight: 'semibold',
+              px: '2',
+              py: '1',
+              borderRadius: 'xs',
               whiteSpace: 'nowrap',
-              bg: 'primary/10',
+              bg: 'primary.soft',
               color: 'primary',
             })}
           >
-            {badge.text}
+            {badgeTextMap[badgeVariant]}
           </span>
           {isOpen ? (
             <ChevronDown
               size={14}
-              className={css({ color: 'muted.foreground' })}
+              className={css({ color: 'text.secondary' })}
             />
           ) : (
             <ChevronRight
               size={14}
-              className={css({ color: 'muted.foreground' })}
+              className={css({ color: 'text.secondary' })}
             />
           )}
         </div>
       </button>
 
-      {/* Tags area - conditionally rendered */}
       {isOpen && (
         <div
           className={css({
-            padding: '0 20px 12px 20px',
+            pb: '3',
+            px: '5',
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '7px',
+            gap: '2',
           })}
         >
           {children}

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { SubTag } from '@/lib/travel-data'
+import type { SubTag } from '@/types/travel.types'
 import { css } from '@/styled-system/css'
 
 interface SubTagFilterProps {
@@ -16,37 +16,38 @@ export function SubTagFilter({
   onTagToggle,
 }: SubTagFilterProps) {
   return (
-    <div className={css({ display: 'flex', flexWrap: 'wrap', gap: 3 })}>
+    <div className={css({ display: 'flex', flexWrap: 'wrap', gap: '2' })}>
       {subTags.map((tag, index) => {
         const isSelected = selectedTags.includes(tag.id)
         return (
           <motion.button
             key={tag.id}
+            type="button"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: index * 0.05 }}
             onClick={() => onTagToggle(tag.id)}
             className={css({
-              px: 4,
-              py: '10px',
-              rounded: 'full',
+              px: '4',
+              py: '2',
+              borderRadius: 'pill',
               fontSize: 'sm',
               fontWeight: 'medium',
               display: 'flex',
               alignItems: 'center',
-              gap: 2,
+              gap: '2',
               cursor: 'pointer',
               border: 'none',
-              transition: 'all 0.3s',
-              bg: isSelected ? 'primary' : 'secondary',
-              color: isSelected ? 'primary.foreground' : 'secondary.foreground',
-              shadow: isSelected ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
-              _hover: {
-                opacity: isSelected ? 0.9 : 0.8,
-              },
+              transitionProperty: 'opacity',
+              transitionDuration: '150ms',
+              bg: isSelected ? 'primary' : 'bg.muted',
+              color: isSelected ? 'text.inverse' : 'text.primary',
+              boxShadow: isSelected ? 'sm' : 'none',
+              _hover: { opacity: isSelected ? 0.9 : 0.8 },
+              _focusVisible: { outline: 'none', boxShadow: 'focus' },
             })}
           >
-            <span style={{ fontSize: '1rem' }}>{tag.icon}</span>
+            <span className={css({ fontSize: 'md' })}>{tag.icon}</span>
             <span>{tag.name}</span>
           </motion.button>
         )

@@ -13,15 +13,19 @@ interface TagProps {
 }
 
 const baseStyle = css.raw({
-  borderRadius: '50px',
-  fontWeight: 500,
+  borderRadius: 'pill',
+  fontWeight: 'medium',
   cursor: 'pointer',
-  transition: 'all 0.18s ease',
-  border: '1.5px solid transparent',
+  transitionProperty: 'background-color, color, border-color',
+  transitionDuration: '150ms',
+  borderWidth: '1px',
+  borderColor: 'transparent',
   userSelect: 'none',
   whiteSpace: 'nowrap',
   display: 'inline-flex',
   alignItems: 'center',
+  border: 'none',
+  _focusVisible: { outline: 'none', boxShadow: 'focus' },
 })
 
 export function Tag({
@@ -33,80 +37,80 @@ export function Tag({
 }: TagProps) {
   if (variant === 'toggle') {
     return (
-      <span
+      <button
+        type="button"
         onClick={onClick}
         className={css(baseStyle, {
-          padding: '6px 14px',
-          fontSize: '12px',
-          gap: '5px',
-          bg: isActive ? 'primary' : 'secondary',
-          color: isActive ? 'primary.foreground' : 'muted.foreground',
-          borderColor: isActive ? 'primary' : 'transparent',
+          px: '4',
+          py: '2',
+          fontSize: 'xs',
+          gap: '1',
+          bg: isActive ? 'primary' : 'bg.muted',
+          color: isActive ? 'text.inverse' : 'text.secondary',
           _hover: {
-            bg: isActive ? 'primary' : 'primary/10',
-            color: isActive ? 'primary.foreground' : 'primary',
-            borderColor: isActive ? 'primary' : 'primary/30',
+            bg: isActive ? 'primary' : 'primary.soft',
+            color: isActive ? 'text.inverse' : 'primary',
           },
         })}
       >
         <span
           className={css({
-            w: '6px',
-            h: '6px',
-            borderRadius: '50%',
-            bg: isActive ? 'primary.foreground' : 'muted.foreground',
-            transition: 'background 0.18s',
+            w: '2',
+            h: '2',
+            borderRadius: 'pill',
+            bg: isActive ? 'text.inverse' : 'text.secondary',
+            transitionProperty: 'background-color',
+            transitionDuration: '150ms',
             flexShrink: 0,
           })}
         />
         {label}
-      </span>
+      </button>
     )
   }
 
   if (variant === 'region') {
     return (
-      <span
+      <button
+        type="button"
         onClick={onClick}
         className={css(baseStyle, {
-          padding: '5px 12px',
-          fontSize: '11.5px',
-          bg: isActive ? 'primary' : 'secondary',
-          color: isActive ? 'primary.foreground' : 'muted.foreground',
-          borderColor: isActive ? 'primary' : 'transparent',
+          px: '3',
+          py: '1',
+          fontSize: 'xs',
+          bg: isActive ? 'primary' : 'bg.muted',
+          color: isActive ? 'text.inverse' : 'text.secondary',
           _hover: {
-            bg: isActive ? 'primary' : 'primary/10',
-            color: isActive ? 'primary.foreground' : 'primary',
-            borderColor: isActive ? 'primary' : 'primary/30',
+            bg: isActive ? 'primary' : 'primary.soft',
+            color: isActive ? 'text.inverse' : 'primary',
           },
         })}
       >
         {label}
-      </span>
+      </button>
     )
   }
 
-  // default variant
   return (
-    <span
+    <button
+      type="button"
       onClick={onClick}
       className={css(baseStyle, {
-        padding: '6px 14px',
-        fontSize: '12px',
-        bg: isActive ? 'primary' : 'secondary',
-        color: isActive ? 'primary.foreground' : 'muted.foreground',
-        borderColor: isActive ? 'primary' : 'transparent',
+        px: '4',
+        py: '2',
+        fontSize: 'xs',
+        bg: isActive ? 'primary' : 'bg.muted',
+        color: isActive ? 'text.inverse' : 'text.secondary',
         _hover: {
-          bg: isActive ? 'primary' : 'primary/10',
-          color: isActive ? 'primary.foreground' : 'primary',
-          borderColor: isActive ? 'primary' : 'primary/30',
+          bg: isActive ? 'primary' : 'primary.soft',
+          color: isActive ? 'text.inverse' : 'primary',
         },
       })}
     >
       {emoji && (
-        <span className={css({ mr: '4px', fontSize: '1rem' })}>{emoji}</span>
+        <span className={css({ mr: '1', fontSize: 'md' })}>{emoji}</span>
       )}
       {label}
-    </span>
+    </button>
   )
 }

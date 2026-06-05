@@ -13,21 +13,22 @@ export function SelectedBar({ selectedItems, onRemove }: SelectedBarProps) {
       className={css({
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '6px',
-        padding: '12px 24px',
-        bg: 'primary/8',
-        minH: '48px',
+        gap: '2',
+        px: '6',
+        py: '3',
+        bg: 'primary.soft',
+        minH: '12',
         alignItems: 'center',
-        borderRadius: '11px 11px 0 0',
+        borderTopLeftRadius: 'lg',
+        borderTopRightRadius: 'lg',
       })}
     >
       <span
         className={css({
-          fontSize: '11px',
-          fontWeight: 600,
+          fontSize: 'xs',
+          fontWeight: 'semibold',
           color: 'primary',
-          letterSpacing: '0.05em',
-          mr: '4px',
+          mr: '1',
         })}
       >
         선택됨
@@ -36,9 +37,9 @@ export function SelectedBar({ selectedItems, onRemove }: SelectedBarProps) {
       {selectedItems.length === 0 ? (
         <span
           className={css({
-            fontSize: '12px',
-            color: 'muted.foreground',
-            fontWeight: 400,
+            fontSize: 'sm',
+            color: 'text.secondary',
+            fontWeight: 'normal',
           })}
         >
           태그를 선택해보세요
@@ -48,32 +49,39 @@ export function SelectedBar({ selectedItems, onRemove }: SelectedBarProps) {
           <span
             key={item.id}
             className={css({
-              bg: 'card',
-              border: '1.5px solid',
-              borderColor: 'primary/30',
+              bg: 'bg.surface',
+              borderWidth: '1px',
+              borderColor: 'primary',
               color: 'primary',
-              fontSize: '11px',
-              fontWeight: 600,
-              padding: '3px 10px',
-              borderRadius: '50px',
+              fontSize: 'xs',
+              fontWeight: 'semibold',
+              px: '3',
+              py: '1',
+              borderRadius: 'pill',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '1',
             })}
           >
             {item.label}
-            <span
+            <button
+              type="button"
+              aria-label={`${item.label} 선택 해제`}
               onClick={() => onRemove(item.id)}
               className={css({
                 cursor: 'pointer',
-                color: 'muted.foreground',
-                fontSize: '13px',
+                color: 'text.secondary',
+                fontSize: 'sm',
                 lineHeight: 1,
-                _hover: { color: 'foreground' },
+                border: 'none',
+                bg: 'transparent',
+                p: '0',
+                _hover: { color: 'text.primary' },
+                _focusVisible: { outline: 'none', boxShadow: 'focus' },
               })}
             >
               ×
-            </span>
+            </button>
           </span>
         ))
       )}
