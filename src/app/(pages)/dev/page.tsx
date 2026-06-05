@@ -10,6 +10,7 @@ import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
 import { PlaceCardPlayground } from './PlaceCardPlayground'
 import { ReviewModalPlayground } from './ReviewModalPlayground'
+import { FilterPlayground } from './FilterPlayground'
 
 const buttonVariants = [
   'primary',
@@ -267,6 +268,13 @@ export default function DevPage() {
           description="리뷰 작성/수정/삭제 모달을 확인합니다."
         >
           <ReviewModalPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="Filter"
+          description="FilterCard(탭형), FilterSection(아코디언), SelectedBar(선택 칩), SubTagFilter 두 버전을 확인합니다."
+        >
+          <FilterPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection

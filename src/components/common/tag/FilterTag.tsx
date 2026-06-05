@@ -1,7 +1,6 @@
 'use client'
 
 import type { ReactNode } from 'react'
-
 import { css } from '@/styled-system/css'
 
 export interface FilterTagProps {
@@ -11,6 +10,43 @@ export interface FilterTagProps {
   onClick?: () => void
   disabled?: boolean
 }
+
+const filterTagStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '2',
+  minH: '8',
+  px: '4',
+  borderRadius: 'pill',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  lineHeight: 'normal',
+  whiteSpace: 'nowrap',
+  bg: 'primary.soft',
+  color: 'primary',
+  transitionProperty: 'background-color, color',
+  transitionDuration: '150ms',
+  _pressed: {
+    bg: 'primary',
+    color: 'text.inverse',
+  },
+  _hover: {
+    bg: 'bg.muted',
+    _pressed: {
+      bg: 'primary.hover',
+    },
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+  _disabled: {
+    opacity: 0.4,
+    cursor: 'not-allowed',
+    pointerEvents: 'none',
+  },
+})
 
 export function FilterTag({
   label,
@@ -25,42 +61,7 @@ export function FilterTag({
       aria-pressed={isSelected}
       disabled={disabled}
       onClick={onClick}
-      className={css({
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '2',
-        minH: '8',
-        px: '4',
-        borderRadius: 'pill',
-        fontSize: 'sm',
-        fontWeight: 'medium',
-        lineHeight: 'normal',
-        whiteSpace: 'nowrap',
-        bg: 'primary.soft',
-        color: 'primary',
-        transitionProperty: 'background-color, color',
-        transitionDuration: '150ms',
-        _pressed: {
-          bg: 'primary',
-          color: 'text.inverse',
-        },
-        _hover: {
-          bg: 'bg.muted',
-          _pressed: {
-            bg: 'primary.hover',
-          },
-        },
-        _focusVisible: {
-          outline: 'none',
-          boxShadow: 'focus',
-        },
-        _disabled: {
-          opacity: 0.4,
-          cursor: 'not-allowed',
-          pointerEvents: 'none',
-        },
-      })}
+      className={filterTagStyle}
     >
       {icon}
       {label}
