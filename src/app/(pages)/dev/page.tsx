@@ -9,6 +9,7 @@ import { TravelCard } from '../test/_components/TravelCard'
 import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
 import { PlaceCardPlayground } from './PlaceCardPlayground'
+import { ReviewModalPlayground } from './ReviewModalPlayground'
 
 const buttonVariants = [
   'primary',
@@ -259,6 +260,13 @@ export default function DevPage() {
               />
             </div>
           </ExampleGroup>
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="ReviewModal"
+          description="리뷰 작성/수정/삭제 모달을 확인합니다."
+        >
+          <ReviewModalPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
