@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { css } from '@/styled-system/css'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { css } from '@/styled-system/css'
 
 export type BadgeVariant = 'multi' | 'single' | 'bool'
 
@@ -20,6 +20,51 @@ const badgeTextMap: Record<BadgeVariant, string> = {
   single: '1개 선택',
   bool: 'on / off',
 }
+
+const sectionButtonStyle = css({
+  width: 'full',
+  py: '3',
+  px: '5',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  cursor: 'pointer',
+  border: 'none',
+  bg: 'transparent',
+  transitionProperty: 'background-color',
+  transitionDuration: '150ms',
+  _hover: { bg: 'bg.muted' },
+  _focusVisible: { outline: 'none', boxShadow: 'focus' },
+})
+
+const sectionLabelStyle = css({
+  fontSize: 'sm',
+  fontWeight: 'bold',
+  color: 'text.primary',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+})
+
+const sectionBadgeStyle = css({
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+  px: '2',
+  py: '1',
+  borderRadius: 'xs',
+  whiteSpace: 'nowrap',
+  bg: 'primary.soft',
+  color: 'primary',
+})
+
+const sectionContentStyle = css({
+  pb: '3',
+  px: '5',
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '2',
+})
 
 export function FilterSection({
   icon,
@@ -41,56 +86,17 @@ export function FilterSection({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={css({
-          width: 'full',
-          py: '3',
-          px: '5',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '3',
-          cursor: 'pointer',
-          border: 'none',
-          bg: 'transparent',
-          transitionProperty: 'background-color',
-          transitionDuration: '150ms',
-          _hover: { bg: 'bg.muted' },
-          _focusVisible: { outline: 'none', boxShadow: 'focus' },
-        })}
+        className={sectionButtonStyle}
       >
-        <span
-          className={css({
-            fontSize: 'sm',
-            fontWeight: 'bold',
-            color: 'text.primary',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1',
-          })}
-        >
+        <span className={sectionLabelStyle}>
           <span>{icon}</span>
           {label}
         </span>
 
         <div
-          className={css({
-            display: 'flex',
-            alignItems: 'center',
-            gap: '2',
-          })}
+          className={css({ display: 'flex', alignItems: 'center', gap: '2' })}
         >
-          <span
-            className={css({
-              fontSize: 'xs',
-              fontWeight: 'semibold',
-              px: '2',
-              py: '1',
-              borderRadius: 'xs',
-              whiteSpace: 'nowrap',
-              bg: 'primary.soft',
-              color: 'primary',
-            })}
-          >
+          <span className={sectionBadgeStyle}>
             {badgeTextMap[badgeVariant]}
           </span>
           {isOpen ? (
@@ -107,19 +113,7 @@ export function FilterSection({
         </div>
       </button>
 
-      {isOpen && (
-        <div
-          className={css({
-            pb: '3',
-            px: '5',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '2',
-          })}
-        >
-          {children}
-        </div>
-      )}
+      {isOpen && <div className={sectionContentStyle}>{children}</div>}
     </div>
   )
 }
