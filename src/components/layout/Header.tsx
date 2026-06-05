@@ -1,7 +1,11 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { LoginModal } from '@/components/auth/LoginModal'
 import { Button, IconButton } from '@/components/common/button'
 import { ROUTES } from '@/constants/routes'
 import { css, cx } from '@/styled-system/css'
-import Link from 'next/link'
 
 const navigationItems = [
   { href: ROUTES.TEST, label: 'Travel Style' },
@@ -117,52 +121,63 @@ interface HeaderProps {
 }
 
 export function Header({ isAuthenticated = false, className }: HeaderProps) {
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+
+  const openLoginModal = () => setIsLoginModalOpen(true)
+  const closeLoginModal = () => setIsLoginModalOpen(false)
+
   return (
-    <header className={cx(headerStyle, className)}>
-      <div className={headerInnerStyle}>
-        <Link href={ROUTES.HOME} className={logoStyle}>
-          TravelMaker
-        </Link>
+    <>
+      <header className={cx(headerStyle, className)}>
+        <div className={headerInnerStyle}>
+          <Link href={ROUTES.HOME} className={logoStyle}>
+            TravelMaker
+          </Link>
 
-        <div className={headerActionsStyle}>
-          <nav aria-label="주요 메뉴" className={navStyle}>
-            {navigationItems.map((item) => (
-              <Link key={item.href} href={item.href} className={navLinkStyle}>
-                {item.label}
+          <div className={headerActionsStyle}>
+            <nav aria-label="주요 메뉴" className={navStyle}>
+              {navigationItems.map((item) => (
+                <Link key={item.href} href={item.href} className={navLinkStyle}>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {isAuthenticated ? (
+              <Link
+                href={ROUTES.PROFILE('me')}
+                aria-label="마이페이지로 이동"
+                className={profileLinkStyle}
+              >
+                TM
               </Link>
-            ))}
-          </nav>
-
-          {isAuthenticated ? (
-            <Link
-              href={ROUTES.PROFILE('me')}
-              aria-label="마이페이지로 이동"
-              className={profileLinkStyle}
-            >
-              TM
-            </Link>
-          ) : (
-            <>
-              <Button
-                className={desktopLoginButtonStyle}
-                variant="secondary"
-                size="sm"
-                shape="pill"
-              >
-                Login
-              </Button>
-              <IconButton
-                aria-label="로그인"
-                className={mobileLoginButtonStyle}
-                size="sm"
-              >
-                <LoginIcon />
-              </IconButton>
-            </>
-          )}
+            ) : (
+              <>
+                <Button
+                  className={desktopLoginButtonStyle}
+                  onClick={openLoginModal}
+                  variant="secondary"
+                  size="sm"
+                  shape="pill"
+                >
+                  로그인
+                </Button>
+                <IconButton
+                  aria-label="로그인"
+                  className={mobileLoginButtonStyle}
+                  onClick={openLoginModal}
+                  size="sm"
+                >
+                  <LoginIcon />
+                </IconButton>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+    </>
   )
 }
 
