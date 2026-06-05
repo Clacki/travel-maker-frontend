@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Header } from '@/components/layout'
+import { Footer, Header } from '@/components/layout'
 import { css } from '@/styled-system/css'
 
 const overlayHeaderStyle = css({
@@ -13,9 +13,17 @@ const overlayHeaderStyle = css({
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <div className={css({ position: 'relative', minH: '100vh' })}>
+    <div
+      className={css({
+        position: 'relative',
+        display: 'flex',
+        flexDir: 'column',
+        minH: '100vh',
+      })}
+    >
       <Header className={overlayHeaderStyle} />
-      {children}
+      <main className={css({ flex: 1, minW: 0 })}>{children}</main>
+      <Footer />
     </div>
   )
 }
