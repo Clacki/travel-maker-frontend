@@ -98,8 +98,9 @@ const ctaButtonStyle = css({
   py: '3',
   bg: 'bg.surface',
   borderRadius: 'xl',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
   cursor: 'pointer',
-  border: 'none',
   transition: 'background-color 0.15s ease',
   _hover: {
     bg: 'bg.muted',
