@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
-import { Footer, Header, ThemeProvider } from '@/components/layout'
 import { css } from '@/styled-system/css'
 import '@/styles/globals.css'
 
@@ -24,33 +23,15 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning className={pretendard.variable}>
       <body>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
+        <div
+          className={css({
+            minH: '100vh',
+            bg: 'bg.canvas',
+            color: 'text.primary',
+          })}
         >
-          <div
-            className={css({
-              minH: '100vh',
-              display: 'flex',
-              flexDirection: 'column',
-              bg: 'bg.canvas',
-              color: 'text.primary',
-            })}
-          >
-            <Header />
-            <main
-              className={css({
-                flex: 1,
-                minW: 0,
-              })}
-            >
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </ThemeProvider>
+          {children}
+        </div>
       </body>
     </html>
   )
