@@ -2,6 +2,7 @@ import { css } from '@/styled-system/css'
 
 import { PageLayout } from '@/components/layout/PageLayout'
 import { ResultCard } from './_components/ResultCard'
+import { TravelCard } from './_components/TravelCard'
 
 export default function TestPage() {
   return (
@@ -28,6 +29,15 @@ export default function TestPage() {
             keywords={['감성적', '야외활동', '소규모']}
             matchScore={64}
             typeRank={1}
+          />
+        </div>
+
+        <div className={css({ w: 'full', maxW: '400px' })}>
+          <TravelCard
+            title="제주 서귀포"
+            description="올레길·바다 힐링"
+            region="제주특별자치도"
+            hashtags={['올레길', '자연', '산책']}
           />
         </div>
       </div>

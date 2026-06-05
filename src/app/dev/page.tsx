@@ -5,6 +5,7 @@ import { css } from '@/styled-system/css'
 import type { ReactNode } from 'react'
 import { ResultCard } from '../test/_components/ResultCard'
 import { ModalPlayground } from './ModalPlayground'
+import { TravelCard } from '../test/_components/TravelCard'
 import { StatusPlayground } from './StatusPlayground'
 import { TagPlayground } from './TagPlayground'
 import { PlaceCardPlayground } from './PlaceCardPlayground'
@@ -229,6 +230,35 @@ export default function DevPage() {
           description="북마크/리뷰 variant의 카드 컴포넌트를 확인합니다."
         >
           <PlaceCardPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="TravelCard"
+          description="여행카드의 기본 상태, 이미지 에러 폴백, 해시태그 표시를 확인합니다."
+        >
+          <ExampleGroup title="Default (기본 이미지)">
+            <div className={css({ w: 'full', maxW: '400px' })}>
+              <TravelCard
+                title="제주 서귀포"
+                description="올레길·바다 힐링"
+                region="제주특별자치도"
+                hashtags={['올레길', '자연', '산책']}
+              />
+            </div>
+          </ExampleGroup>
+
+          <ExampleGroup title="이미지 에러 (잘못된 src → 기본 이미지 폴백)">
+            <div className={css({ w: 'full', maxW: '400px' })}>
+              <TravelCard
+                title="제주 서귀포"
+                description="올레길·바다 힐링"
+                region="제주특별자치도"
+                hashtags={['올레길', '자연', '산책']}
+                imageSrc="/invalid-image.png"
+                imageAlt="여행 사진"
+              />
+            </div>
+          </ExampleGroup>
         </PlaygroundSection>
 
         <PlaygroundSection
