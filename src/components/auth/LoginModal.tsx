@@ -1,6 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/common/modal'
+import { getKakaoAuthorizeUrl } from '@/services/auth'
 import { css } from '@/styled-system/css'
 
 interface LoginModalProps {
@@ -152,8 +153,11 @@ const guideItems = [
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleKakaoLogin = () => {
-    // TODO: 카카오 OAuth 시작 API와 연결합니다.
-    console.log('Start Kakao login')
+    try {
+      window.location.href = getKakaoAuthorizeUrl()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
