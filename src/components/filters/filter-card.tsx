@@ -49,7 +49,8 @@ const cardWrapperStyle = css({
 const tabBarStyle = cva({
   base: {
     display: 'flex',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: '2',
     px: '4',
     py: '3',
@@ -270,28 +271,38 @@ export function FilterCard({
 
       <div className={css({ position: 'relative' })}>
         <div className={tabBarStyle({ isExpanded: !!activeSection })}>
-          {sections.map((section) => {
-            const isActive = activeSection === section.id
-            const sectionCount = (selected[section.id] || []).length
+          <div className={css({ display: 'flex', flexWrap: 'wrap', gap: '2' })}>
+            {sections.map((section) => {
+              const isActive = activeSection === section.id
+              const sectionCount = (selected[section.id] || []).length
 
-            return (
-              <button
-                key={section.id}
-                type="button"
-                onClick={() => handleTabClick(section.id)}
-                className={tabButtonStyle({ isActive })}
-              >
-                <span>{section.icon}</span>
-                {section.label}
-                {sectionCount > 0 && (
-                  <span className={badgeCountStyle({ isActive })}>
-                    {sectionCount}
-                  </span>
-                )}
-                {isActive && <ChevronDown size={12} />}
-              </button>
-            )
-          })}
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => handleTabClick(section.id)}
+                  className={tabButtonStyle({ isActive })}
+                >
+                  <span>{section.icon}</span>
+                  {section.label}
+                  {sectionCount > 0 && (
+                    <span className={badgeCountStyle({ isActive })}>
+                      {sectionCount}
+                    </span>
+                  )}
+                  {isActive && <ChevronDown size={12} />}
+                </button>
+              )
+            })}
+          </div>
+          <div className={buttonGroupStyle}>
+            <Button variant="neutral" size="sm" onClick={handleReset}>
+              초기화
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleApply}>
+              여행지 보기 →
+            </Button>
+          </div>
         </div>
 
         {activeSectionData && (
@@ -337,14 +348,6 @@ export function FilterCard({
           </strong>
           개 여행지 검색 가능
         </span>
-        <div className={buttonGroupStyle}>
-          <Button variant="neutral" size="sm" onClick={handleReset}>
-            초기화
-          </Button>
-          <Button variant="primary" size="sm" onClick={handleApply}>
-            여행지 보기 →
-          </Button>
-        </div>
       </div>
     </div>
   )

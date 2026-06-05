@@ -272,7 +272,7 @@ export default function DevPage() {
 
         <PlaygroundSection
           title="Filter"
-          description="FilterCard(탭형), FilterSection(아코디언), SelectedBar(선택 칩), SubTagFilter 두 버전을 확인합니다."
+          description="FilterCard(탭형), SubTagFilter 두 버전을 확인합니다."
         >
           <FilterPlayground />
         </PlaygroundSection>
