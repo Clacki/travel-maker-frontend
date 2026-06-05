@@ -4,7 +4,7 @@ import emptyStatusImage from '@/assets/images/status/empty-status.svg'
 import { Button } from '@/components/common/button'
 import { StatusLayout } from './StatusLayout'
 
-export type EmptyStateProps = {
+export interface EmptyStateProps {
   title?: string
   description?: string
   actionLabel?: string
