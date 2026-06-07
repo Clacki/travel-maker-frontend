@@ -11,6 +11,7 @@ import { TagPlayground } from './TagPlayground'
 import { PlaceCardPlayground } from './PlaceCardPlayground'
 import { ReviewModalPlayground } from './ReviewModalPlayground'
 import { FilterPlayground } from './FilterPlayground'
+import { WithdrawModalPlayground } from './WithdrawModalPlayground'
 
 const buttonVariants = [
   'primary',
@@ -268,6 +269,13 @@ export default function DevPage() {
           description="리뷰 작성/수정/삭제 모달을 확인합니다."
         >
           <ReviewModalPlayground />
+        </PlaygroundSection>
+
+        <PlaygroundSection
+          title="WithdrawModal"
+          description="회원탈퇴 2단계 확인 모달을 확인합니다."
+        >
+          <WithdrawModalPlayground />
         </PlaygroundSection>
 
         <PlaygroundSection
