@@ -1,16 +1,17 @@
 'use client'
 
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { travelCategories, getAllDestinations } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
 import { FilterCard } from '@/components/filters/filter-card'
-import { DestinationCard } from '@/components/cards/destination-card'
+import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { css } from '@/styled-system/css'
+
+const ITEMS_PER_PAGE = 12
 
 type SortKey = 'popular' | 'bookmarks' | 'reviews'
 
@@ -80,16 +81,37 @@ function ExploreContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
   const selected = useMemo(() => parseParams(searchParams), [searchParams])
   const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
+  const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
+  const gridRef = useRef<HTMLElement>(null)
+
+  const currentPage = Math.max(1, Number(searchParams.get('page') ?? '1'))
+
+  const handleFilterChange = useCallback(
+    (liveSelected: Record<string, string[]>) => {
+      setPreviewStyle(liveSelected.style ?? [])
+    },
+    []
+  )
+
+  const activeCategoryId = useMemo(() => {
+    const effectiveStyle = previewStyle ?? selected.style ?? []
+    const nonAllStyles = effectiveStyle.filter((s) => s !== 'all')
+    if (nonAllStyles.length > 0) {
+      const lastStyle = nonAllStyles[nonAllStyles.length - 1]
+      return STYLE_TO_CATEGORY[lastStyle] ?? categoryId ?? null
+    }
+    if (categoryId) return categoryId
+    return null
+  }, [categoryId, previewStyle, selected.style])
+
   const activeCategory = useMemo(
-    () => travelCategories.find((c) => c.id === categoryId) ?? null,
-    [categoryId]
+    () => travelCategories.find((c) => c.id === activeCategoryId) ?? null,
+    [activeCategoryId]
   )
 
   const bgImage = activeCategory?.image ?? DEFAULT_BG
@@ -138,31 +160,83 @@ function ExploreContent() {
     return arr
   }, [filtered, sort])
 
-  function setCategory(id: string | null) {
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)
+  const paginatedItems = useMemo(
+    () =>
+      sorted.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+      ),
+    [sorted, currentPage]
+  )
+
+  function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString())
-    if (id) {
-      params.set('category', id)
-    } else {
-      params.delete('category')
+    params.set('page', String(page))
+    router.push(`/explore?${params.toString()}`, { scroll: false })
+    gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function getPageNumbers(): (number | 'ellipsis')[] {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1)
     }
-    router.push(`/explore?${params.toString()}`)
+    if (currentPage <= 4) {
+      return [1, 2, 3, 4, 5, 'ellipsis', totalPages]
+    }
+    if (currentPage >= totalPages - 3) {
+      return [
+        1,
+        'ellipsis',
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ]
+    }
+    return [
+      1,
+      'ellipsis',
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      'ellipsis',
+      totalPages,
+    ]
   }
 
   function setSort(key: SortKey) {
     const params = new URLSearchParams(searchParams.toString())
     params.set('sort', key)
-    router.push(`/explore?${params.toString()}`)
+    params.set('page', '1')
+    router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
   function applyFilters(newSelected: Record<string, string[]>) {
     const params = new URLSearchParams()
-    if (categoryId) params.set('category', categoryId)
-    if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
-    for (const [key, values] of Object.entries(newSelected)) {
-      if (values.length > 0) params.set(key, values.join(','))
+
+    const styleValues = newSelected.style ?? []
+    let newCategoryId = categoryId
+    if (styleValues.length === 1 && styleValues[0] !== 'all') {
+      newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
+    } else if (styleValues.length === 0 || styleValues.includes('all')) {
+      newCategoryId = null
     }
-    router.push(`/explore?${params.toString()}`)
-    setIsFilterOpen(false)
+
+    if (newCategoryId) {
+      params.set('category', newCategoryId)
+    }
+    if (searchParams.get('sort')) {
+      params.set('sort', searchParams.get('sort')!)
+    }
+    for (const [key, values] of Object.entries(newSelected)) {
+      if (values.length > 0) {
+        params.set(key, values.join(','))
+      }
+    }
+    params.set('page', '1')
+    router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
   function removeFilter(sectionId: string, tagId: string) {
@@ -175,21 +249,23 @@ function ExploreContent() {
     } else {
       params.delete(sectionId)
     }
-    router.push(`/explore?${params.toString()}`)
+    params.set('page', '1')
+    router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
   function clearAllFilters() {
     const params = new URLSearchParams()
-    if (categoryId) params.set('category', categoryId)
-    if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
-    router.push(`/explore${params.toString() ? `?${params.toString()}` : ''}`)
+    if (categoryId) {
+      params.set('category', categoryId)
+    }
+    if (searchParams.get('sort')) {
+      params.set('sort', searchParams.get('sort')!)
+    }
+    params.set('page', '1')
+    router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
   const hasFilter = filterChips.length > 0
-  const totalFilterCount = Object.values(selected).reduce(
-    (sum, arr) => sum + arr.length,
-    0
-  )
 
   return (
     <main className={css({ minH: '100vh', bg: 'bg.canvas' })}>
@@ -238,25 +314,6 @@ function ExploreContent() {
           })}
         >
           <div className={css({ maxW: '7xl', mx: 'auto' })}>
-            <Link
-              href="/"
-              className={css({
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 2,
-                color: 'text.secondary',
-                textDecoration: 'none',
-                mb: 4,
-                fontSize: 'sm',
-                _hover: { color: 'text.primary' },
-                transitionProperty: 'color',
-                transitionDuration: '200ms',
-                transitionTimingFunction: 'ease-in-out',
-              })}
-            >
-              <ArrowLeft className={css({ w: 4, h: 4 })} />
-              홈으로
-            </Link>
             <AnimatePresence mode="wait">
               <motion.div
                 key={heroTitle}
@@ -284,185 +341,27 @@ function ExploreContent() {
         </div>
       </section>
 
-      {/* Category Tabs + 필터 토글 */}
+      {/* FilterCard */}
       <section
         className={css({
-          py: 5,
           px: 6,
+          py: 4,
           borderBottom: '1px solid',
           borderColor: 'border',
+          bg: 'bg.canvas',
         })}
       >
-        <div
-          className={css({
-            maxW: '7xl',
-            mx: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 3,
-          })}
-        >
-          {/* 카테고리 탭 (스크롤 가능) */}
-          <div
-            className={css({
-              flex: 1,
-              overflowX: 'auto',
-              display: 'flex',
-              gap: '8px',
-              minW: 0,
-            })}
-          >
-            <button
-              type="button"
-              onClick={() => setCategory(null)}
-              className={css({
-                px: '16px',
-                py: '8px',
-                borderRadius: '20px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                border: '1.5px solid',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
-                transitionProperty: 'background-color, color, border-color',
-                transitionDuration: '150ms',
-                transitionTimingFunction: 'ease-in-out',
-                borderColor: !categoryId ? 'primary' : 'border',
-                bg: !categoryId ? 'primary' : 'bg.surface',
-                color: !categoryId ? 'text.inverse' : 'text.secondary',
-                _hover: !categoryId
-                  ? {}
-                  : { borderColor: 'primary', color: 'text.primary' },
-              })}
-            >
-              전체
-            </button>
-            {travelCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setCategory(cat.id)}
-                className={css({
-                  px: '16px',
-                  py: '8px',
-                  borderRadius: '20px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: '1.5px solid',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transitionProperty: 'background-color, color, border-color',
-                  transitionDuration: '150ms',
-                  transitionTimingFunction: 'ease-in-out',
-                  borderColor: categoryId === cat.id ? 'primary' : 'border',
-                  bg: categoryId === cat.id ? 'primary' : 'bg.surface',
-                  color:
-                    categoryId === cat.id ? 'text.inverse' : 'text.secondary',
-                  _hover:
-                    categoryId === cat.id
-                      ? {}
-                      : { borderColor: 'primary', color: 'text.primary' },
-                })}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* 필터 토글 버튼 */}
-          <button
-            type="button"
-            onClick={() => setIsFilterOpen((prev) => !prev)}
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              px: '14px',
-              py: '8px',
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: '1.5px solid',
-              flexShrink: 0,
-              transitionProperty: 'background-color, color, border-color',
-              transitionDuration: '150ms',
-              transitionTimingFunction: 'ease-in-out',
-              borderColor:
-                isFilterOpen || totalFilterCount > 0 ? 'primary' : 'border',
-              bg: isFilterOpen
-                ? 'primary'
-                : totalFilterCount > 0
-                  ? 'primary/10'
-                  : 'bg.surface',
-              color: isFilterOpen
-                ? 'text.inverse'
-                : totalFilterCount > 0
-                  ? 'primary'
-                  : 'text.secondary',
-              _hover: isFilterOpen
-                ? {}
-                : { borderColor: 'primary', color: 'primary' },
-            })}
-          >
-            <SlidersHorizontal className={css({ w: '14px', h: '14px' })} />
-            필터
-            {totalFilterCount > 0 && (
-              <span
-                className={css({
-                  w: '16px',
-                  h: '16px',
-                  borderRadius: '50%',
-                  bg: isFilterOpen ? 'text.inverse' : 'primary',
-                  color: isFilterOpen ? 'primary' : 'text.inverse',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                })}
-              >
-                {totalFilterCount}
-              </span>
-            )}
-          </button>
+        <div className={css({ maxW: '7xl', mx: 'auto' })}>
+          <FilterCard
+            sections={travelFilterSections}
+            initialSelected={selected}
+            resultCount={sorted.length}
+            onApply={applyFilters}
+            onReset={clearAllFilters}
+            onChange={handleFilterChange}
+          />
         </div>
       </section>
-
-      {/* FilterCard (접힘/펼침) */}
-      <AnimatePresence>
-        {isFilterOpen && (
-          <motion.section
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
-            style={{ overflow: 'hidden' }}
-          >
-            <div
-              className={css({
-                px: 6,
-                py: 4,
-                borderBottom: '1px solid',
-                borderColor: 'border',
-                bg: 'bg.canvas',
-              })}
-            >
-              <div className={css({ maxW: '7xl', mx: 'auto' })}>
-                <FilterCard
-                  sections={travelFilterSections}
-                  initialSelected={selected}
-                  resultCount={sorted.length}
-                  onApply={applyFilters}
-                  onReset={clearAllFilters}
-                />
-              </div>
-            </div>
-          </motion.section>
-        )}
-      </AnimatePresence>
 
       {/* Sort + Count + Filter Chips */}
       <section
@@ -592,29 +491,159 @@ function ExploreContent() {
       </section>
 
       {/* Destinations Grid */}
-      <section className={css({ py: 10, px: 6 })}>
+      <section ref={gridRef} className={css({ py: 10, px: 6 })}>
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           {sorted.length > 0 ? (
-            <div
-              className={css({
-                display: 'grid',
-                gridTemplateColumns: {
-                  base: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  lg: 'repeat(3, 1fr)',
-                  xl: 'repeat(4, 1fr)',
-                },
-                gap: 6,
-              })}
-            >
-              {sorted.map((destination, index) => (
-                <DestinationCard
-                  key={destination.id}
-                  destination={destination}
-                  index={index}
-                />
-              ))}
-            </div>
+            <>
+              <div
+                className={css({
+                  display: 'grid',
+                  gridTemplateColumns: {
+                    base: '1fr',
+                    sm: 'repeat(2, 1fr)',
+                    lg: 'repeat(3, 1fr)',
+                    xl: 'repeat(4, 1fr)',
+                  },
+                  gap: 6,
+                })}
+              >
+                {paginatedItems.map((destination, index) => (
+                  <PlaceCard
+                    key={destination.id}
+                    placeId={(currentPage - 1) * ITEMS_PER_PAGE + index}
+                    placeName={destination.name}
+                    description={destination.description}
+                    tags={destination.tags}
+                    rating={destination.rating}
+                    imageUrl={destination.image}
+                    variant="bookmark"
+                    isLiked={false}
+                    onLikeToggle={() => {}}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div
+                  className={css({
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '2',
+                    mt: 12,
+                  })}
+                >
+                  <button
+                    type="button"
+                    aria-label="이전 페이지"
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={css({
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      w: '36px',
+                      h: '36px',
+                      borderRadius: '8px',
+                      border: '1.5px solid',
+                      borderColor: 'border',
+                      bg: 'bg.surface',
+                      color: 'text.secondary',
+                      cursor: 'pointer',
+                      _hover: { borderColor: 'primary', color: 'primary' },
+                      _disabled: {
+                        opacity: 0.35,
+                        cursor: 'not-allowed',
+                        _hover: {
+                          borderColor: 'border',
+                          color: 'text.secondary',
+                        },
+                      },
+                    })}
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+
+                  {getPageNumbers().map((page, i) =>
+                    page === 'ellipsis' ? (
+                      <span
+                        key={`ellipsis-${i}`}
+                        className={css({
+                          px: '2',
+                          color: 'text.secondary',
+                          fontSize: 'sm',
+                        })}
+                      >
+                        …
+                      </span>
+                    ) : (
+                      <button
+                        key={page}
+                        type="button"
+                        onClick={() => goToPage(page)}
+                        className={css({
+                          w: '36px',
+                          h: '36px',
+                          borderRadius: '8px',
+                          border: '1.5px solid',
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transitionProperty:
+                            'background-color, color, border-color',
+                          transitionDuration: '150ms',
+                          transitionTimingFunction: 'ease-in-out',
+                          borderColor:
+                            currentPage === page ? 'primary' : 'border',
+                          bg: currentPage === page ? 'primary' : 'bg.surface',
+                          color:
+                            currentPage === page
+                              ? 'text.inverse'
+                              : 'text.secondary',
+                          _hover:
+                            currentPage === page
+                              ? {}
+                              : { borderColor: 'primary', color: 'primary' },
+                        })}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    type="button"
+                    aria-label="다음 페이지"
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={css({
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      w: '36px',
+                      h: '36px',
+                      borderRadius: '8px',
+                      border: '1.5px solid',
+                      borderColor: 'border',
+                      bg: 'bg.surface',
+                      color: 'text.secondary',
+                      cursor: 'pointer',
+                      _hover: { borderColor: 'primary', color: 'primary' },
+                      _disabled: {
+                        opacity: 0.35,
+                        cursor: 'not-allowed',
+                        _hover: {
+                          borderColor: 'border',
+                          color: 'text.secondary',
+                        },
+                      },
+                    })}
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className={css({ textAlign: 'center', py: 20 })}>
               <p

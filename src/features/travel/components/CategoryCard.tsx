@@ -19,7 +19,19 @@ interface CategoryCardProps {
   style: CardPositionStyle
 }
 
+const CATEGORY_TO_STYLE: Record<string, string> = {
+  beach: 'beach',
+  mountain: 'mountain',
+  city: 'city',
+  culture: 'culture',
+  food: 'food',
+  adventure: 'activity',
+  romantic: 'romantic',
+}
+
 export function CategoryCard({ category, index, style }: CategoryCardProps) {
+  const styleId = CATEGORY_TO_STYLE[category.id] ?? category.id
+
   return (
     <motion.div
       style={{
@@ -44,7 +56,7 @@ export function CategoryCard({ category, index, style }: CategoryCardProps) {
       }}
     >
       <Link
-        href={`/explore?category=${category.id}`}
+        href={`/explore?category=${category.id}&style=${styleId}`}
         className={css({
           display: 'flex',
           flexDir: 'column',
