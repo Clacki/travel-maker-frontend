@@ -1,8 +1,8 @@
 import api from '@/lib/api'
 
 const KAKAO_AUTHORIZE_URL = 'https://kauth.kakao.com/oauth/authorize'
-const KAKAO_LOGIN_PATH = '/auth/kakao/login/'
-const TOKEN_REFRESH_PATH = '/auth/token/refresh/'
+const KAKAO_LOGIN_PATH = '/auth/kakao/login'
+const TOKEN_REFRESH_PATH = '/auth/token/refresh'
 export const ACCESS_TOKEN_STORAGE_KEY = 'accessToken'
 
 export type KakaoLoginResponse = {

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Button, IconButton } from '@/components/common/button'
+import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { ROUTES } from '@/constants/routes'
 import { css, cx } from '@/styled-system/css'
 
@@ -22,11 +23,7 @@ const headerStyle = css({
 })
 
 const headerInnerStyle = css({
-  width: '100%',
-  maxW: '1120px',
   minH: '72px',
-  mx: 'auto',
-  px: { base: '4', md: '6' },
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -129,7 +126,7 @@ export function Header({ isAuthenticated = false, className }: HeaderProps) {
   return (
     <>
       <header className={cx(headerStyle, className)}>
-        <div className={headerInnerStyle}>
+        <LayoutContainer className={headerInnerStyle}>
           <Link href={ROUTES.HOME} className={logoStyle}>
             TravelMaker
           </Link>
@@ -173,7 +170,7 @@ export function Header({ isAuthenticated = false, className }: HeaderProps) {
               </>
             )}
           </div>
-        </div>
+        </LayoutContainer>
       </header>
 
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />

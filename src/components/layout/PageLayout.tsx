@@ -1,7 +1,12 @@
+import { css } from '@/styled-system/css'
+import { LayoutContainer } from './LayoutContainer'
+
 interface PageLayoutProps {
   children: React.ReactNode
 }
 
 export function PageLayout({ children }: PageLayoutProps) {
-  return <div className="mx-auto w-full max-w-6xl px-6 py-10">{children}</div>
+  return (
+    <LayoutContainer className={css({ py: '10' })}>{children}</LayoutContainer>
+  )
 }

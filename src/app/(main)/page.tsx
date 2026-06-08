@@ -1,7 +1,8 @@
-import { Sparkles } from 'lucide-react'
+import { LayoutContainer } from '@/components/layout'
 import { CategoryCard } from '@/features/travel/components/CategoryCard'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { css } from '@/styled-system/css'
+import { Sparkles } from 'lucide-react'
 
 // 전체적으로 우측으로 이동해 히어로 텍스트 가림 방지
 const cardPositions = [
@@ -34,7 +35,7 @@ export default function Home() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         })}
-        style={{ backgroundImage: "url('/images/travel-bg.jpg')" }}
+        style={{ backgroundImage: "url('/images/travel-bg.webp')" }}
       />
       {/* Gradient overlay */}
       <div
@@ -45,13 +46,12 @@ export default function Home() {
         }}
       />
 
-      <div
+      <LayoutContainer
         className={css({
           flex: 1,
           display: 'flex',
           flexDir: { base: 'column', lg: 'row' },
           alignItems: 'center',
-          px: 6,
           pt: { base: 20, lg: 0 },
           position: 'relative',
           zIndex: 10,
@@ -64,7 +64,6 @@ export default function Home() {
             minW: { lg: '320px' },
             flexShrink: 0,
             textAlign: { base: 'center', lg: 'left' },
-            pl: { lg: 12, xl: 20 },
             py: { base: 8, lg: 0 },
             wordBreak: 'keep-all',
             overflowWrap: 'break-word',
@@ -101,7 +100,9 @@ export default function Home() {
               mb: 6,
             })}
           >
-            당신의 여행 스타일은
+            <span className={css({ whiteSpace: 'nowrap' })}>
+              당신의 여행 스타일은
+            </span>
             <br />
             <span className={css({ color: 'primary' })}>무엇인가요?</span>
           </h1>
@@ -136,7 +137,7 @@ export default function Home() {
               />
             ))}
         </section>
-      </div>
+      </LayoutContainer>
     </main>
   )
 }
