@@ -8,12 +8,13 @@ import { css, cx } from '@/styled-system/css'
 type CallbackStatus = 'loading' | 'success' | 'error'
 
 const sectionStyle = css({
-  minH: 'calc(100vh - 72px)',
+  minH: '100vh',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   px: '4',
   py: '16',
+  bg: 'bg.canvas',
 })
 
 const panelStyle = css({
