@@ -24,7 +24,6 @@ const cardBase = css({
   overflow: 'hidden',
   cursor: 'pointer',
   w: 'full',
-  h: 'full',
   boxShadow: 'md',
   transitionProperty: 'border-color, box-shadow',
   transitionDuration: '250ms',
@@ -47,8 +46,7 @@ const cardRotateB = css({ transform: 'rotate(3deg)' })
 
 const imageWrapper = css({
   position: 'relative',
-  flex: '1',
-  minH: '0',
+  aspectRatio: '4/3',
   overflow: 'hidden',
   borderRadius: 'xl',
   mx: '3',

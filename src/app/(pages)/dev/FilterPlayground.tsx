@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { SubTagFilter as CommonSubTagFilter } from '@/components/filters/sub-tag-filter'
-import { SubTagFilter as FeatureSubTagFilter } from '@/features/travel/components/SubTagFilter'
+import { SubTagFilter as FeatureSubTagFilter } from '@/features/explore/components/SubTagFilter'
 import { FilterCard } from '@/components/filters/filter-card'
 import { travelFilterSections } from '@/lib/filter-data'
 import type { SubTag } from '@/types/travel.types'
@@ -59,9 +59,9 @@ export function FilterPlayground() {
         </div>
 
         <div>
-          <Label>SubTagFilter — features/travel 버전 (SubTagFilter.tsx)</Label>
+          <Label>SubTagFilter — features/explore 버전 (SubTagFilter.tsx)</Label>
           <Desc>
-            travel 피처에 남아 있는 이전 버전. py:&quot;10px&quot;,
+            explore 피처에 남아 있는 이전 버전. py:&quot;10px&quot;,
             rounded:&quot;full&quot; 등 비토큰 값 사용, type=&quot;button&quot;
             누락.
           </Desc>

@@ -51,8 +51,6 @@ const cardsRow = css({
   justifyContent: 'center',
   gap: '6',
   w: 'full',
-  flex: '1',
-  minH: '0',
   overflow: 'visible',
 })
 
@@ -102,7 +100,7 @@ export function QuizSection() {
       </div>
 
       <div className={cardsRow}>
-        <div className={css({ w: '50%', maxW: '472px', h: 'full' })}>
+        <div className={css({ w: '50%', maxW: '472px' })}>
           <QuizCard
             choice={question.choiceA}
             side="A"
@@ -111,7 +109,7 @@ export function QuizSection() {
             onClick={() => selectChoice('A')}
           />
         </div>
-        <div className={css({ w: '50%', maxW: '472px', h: 'full' })}>
+        <div className={css({ w: '50%', maxW: '472px' })}>
           <QuizCard
             choice={question.choiceB}
             side="B"

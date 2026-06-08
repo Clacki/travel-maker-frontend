@@ -1,3 +1,3 @@
-import ExplorePage from '@/features/travel/ExplorePage'
+import ExplorePage from '@/features/explore/ExplorePage'
 
 export default ExplorePage
