@@ -4,10 +4,11 @@ import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { travelCategories, getAllDestinations } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
 import { FilterCard } from '@/components/filters/filter-card'
+import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { css } from '@/styled-system/css'
 
@@ -178,35 +179,6 @@ function ExploreContent() {
     params.set('page', String(page))
     router.push(`/explore?${params.toString()}`, { scroll: false })
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  function getPageNumbers(): (number | 'ellipsis')[] {
-    if (totalPages <= 7) {
-      return Array.from({ length: totalPages }, (_, i) => i + 1)
-    }
-    if (currentPage <= 4) {
-      return [1, 2, 3, 4, 5, 'ellipsis', totalPages]
-    }
-    if (currentPage >= totalPages - 3) {
-      return [
-        1,
-        'ellipsis',
-        totalPages - 4,
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      ]
-    }
-    return [
-      1,
-      'ellipsis',
-      currentPage - 1,
-      currentPage,
-      currentPage + 1,
-      'ellipsis',
-      totalPages,
-    ]
   }
 
   function setSort(key: SortKey) {
@@ -532,126 +504,11 @@ function ExploreContent() {
                 ))}
               </div>
 
-              {totalPages > 1 && (
-                <div
-                  className={css({
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '2',
-                    mt: 12,
-                  })}
-                >
-                  <button
-                    type="button"
-                    aria-label="이전 페이지"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={css({
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      w: '36px',
-                      h: '36px',
-                      borderRadius: '8px',
-                      border: '1.5px solid',
-                      borderColor: 'border',
-                      bg: 'bg.surface',
-                      color: 'text.secondary',
-                      cursor: 'pointer',
-                      _hover: { borderColor: 'primary', color: 'primary' },
-                      _disabled: {
-                        opacity: 0.35,
-                        cursor: 'not-allowed',
-                        _hover: {
-                          borderColor: 'border',
-                          color: 'text.secondary',
-                        },
-                      },
-                    })}
-                  >
-                    <ChevronLeft size={16} />
-                  </button>
-
-                  {getPageNumbers().map((page, i) =>
-                    page === 'ellipsis' ? (
-                      <span
-                        key={`ellipsis-${i}`}
-                        className={css({
-                          px: '2',
-                          color: 'text.secondary',
-                          fontSize: 'sm',
-                        })}
-                      >
-                        …
-                      </span>
-                    ) : (
-                      <button
-                        key={page}
-                        type="button"
-                        onClick={() => goToPage(page)}
-                        className={css({
-                          w: '36px',
-                          h: '36px',
-                          borderRadius: '8px',
-                          border: '1.5px solid',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          transitionProperty:
-                            'background-color, color, border-color',
-                          transitionDuration: '150ms',
-                          transitionTimingFunction: 'ease-in-out',
-                          borderColor:
-                            currentPage === page ? 'primary' : 'border',
-                          bg: currentPage === page ? 'primary' : 'bg.surface',
-                          color:
-                            currentPage === page
-                              ? 'text.inverse'
-                              : 'text.secondary',
-                          _hover:
-                            currentPage === page
-                              ? {}
-                              : { borderColor: 'primary', color: 'primary' },
-                        })}
-                      >
-                        {page}
-                      </button>
-                    )
-                  )}
-
-                  <button
-                    type="button"
-                    aria-label="다음 페이지"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={css({
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      w: '36px',
-                      h: '36px',
-                      borderRadius: '8px',
-                      border: '1.5px solid',
-                      borderColor: 'border',
-                      bg: 'bg.surface',
-                      color: 'text.secondary',
-                      cursor: 'pointer',
-                      _hover: { borderColor: 'primary', color: 'primary' },
-                      _disabled: {
-                        opacity: 0.35,
-                        cursor: 'not-allowed',
-                        _hover: {
-                          borderColor: 'border',
-                          color: 'text.secondary',
-                        },
-                      },
-                    })}
-                  >
-                    <ChevronRight size={16} />
-                  </button>
-                </div>
-              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={goToPage}
+              />
             </>
           ) : (
             <div className={css({ textAlign: 'center', py: 20 })}>
