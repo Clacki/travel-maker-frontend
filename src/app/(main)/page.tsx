@@ -100,7 +100,9 @@ export default function Home() {
               mb: 6,
             })}
           >
-            당신의 여행 스타일은
+            <span className={css({ whiteSpace: 'nowrap' })}>
+              당신의 여행 스타일은
+            </span>
             <br />
             <span className={css({ color: 'primary' })}>무엇인가요?</span>
           </h1>
