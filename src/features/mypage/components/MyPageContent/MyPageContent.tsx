@@ -8,6 +8,7 @@ import { ProfileCard } from '../ProfileCard'
 import { ProfileTabs } from '../ProfileTabs'
 import type { TabType } from '../ProfileTabs'
 import { PlaceCard } from '@/components/ui/PlaceCard'
+import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
@@ -21,6 +22,8 @@ import {
 interface MyPageContentProps {
   userId: string
 }
+
+const PAGE_SIZE = 8
 
 const containerStyle = css({
   display: 'flex',
@@ -54,6 +57,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const isMyProfile = true
 
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
+  const [bookmarkPage, setBookmarkPage] = useState(1)
+  const [reviewPage, setReviewPage] = useState(1)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean
@@ -73,6 +78,18 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const user = mockMyProfile
   const bookmarks = mockBookmarks
   const reviews = mockReviews
+
+  const bookmarkTotalPages = Math.ceil(bookmarks.length / PAGE_SIZE)
+  const reviewTotalPages = Math.ceil(reviews.length / PAGE_SIZE)
+
+  const paginatedBookmarks = bookmarks.slice(
+    (bookmarkPage - 1) * PAGE_SIZE,
+    bookmarkPage * PAGE_SIZE
+  )
+  const paginatedReviews = reviews.slice(
+    (reviewPage - 1) * PAGE_SIZE,
+    reviewPage * PAGE_SIZE
+  )
 
   const handleEditProfile = () => {
     router.push(`/profile/${userId}/edit`)
@@ -121,6 +138,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     // TODO: 리뷰 삭제 API 호출
   }
 
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab)
+    setBookmarkPage(1)
+    setReviewPage(1)
+  }
+
   return (
     <div className={containerStyle}>
       <ProfileCard
@@ -136,25 +159,32 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           bookmarkCount={bookmarks.length}
           reviewCount={reviews.length}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
 
         {activeTab === 'bookmark' &&
           (bookmarks.length > 0 ? (
-            <div className={gridStyle}>
-              {bookmarks.map((bookmark) => (
-                <PlaceCard
-                  key={bookmark.place_id}
-                  variant="bookmark"
-                  placeId={bookmark.place_id}
-                  placeName={bookmark.place_name}
-                  imageUrl={bookmark.image_url || undefined}
-                  rating={bookmark.rating}
-                  isLiked={true}
-                  onLikeToggle={handleLikeToggle}
-                />
-              ))}
-            </div>
+            <>
+              <div className={gridStyle}>
+                {paginatedBookmarks.map((bookmark) => (
+                  <PlaceCard
+                    key={bookmark.place_id}
+                    variant="bookmark"
+                    placeId={bookmark.place_id}
+                    placeName={bookmark.place_name}
+                    imageUrl={bookmark.image_url || undefined}
+                    rating={bookmark.rating}
+                    isLiked={true}
+                    onLikeToggle={handleLikeToggle}
+                  />
+                ))}
+              </div>
+              <Pagination
+                currentPage={bookmarkPage}
+                totalPages={bookmarkTotalPages}
+                onPageChange={setBookmarkPage}
+              />
+            </>
           ) : (
             <EmptyState
               title="첫 번째 여행지의 시작"
@@ -164,22 +194,35 @@ export function MyPageContent({ userId }: MyPageContentProps) {
             />
           ))}
 
-        {activeTab === 'review' && (
-          <div className={gridStyle}>
-            {reviews.map((review) => (
-              <PlaceCard
-                key={review.review_id}
-                variant="review"
-                placeId={review.review_id}
-                placeName="부산 광안리 야경"
-                description={review.content}
-                rating={review.rating}
-                onEditClick={handleReviewEdit}
-                onDeleteClick={handleReviewDelete}
+        {activeTab === 'review' &&
+          (reviews.length > 0 ? (
+            <>
+              <div className={gridStyle}>
+                {paginatedReviews.map((review) => (
+                  <PlaceCard
+                    key={review.review_id}
+                    variant="review"
+                    placeId={review.review_id}
+                    placeName="부산 광안리 야경"
+                    description={review.content}
+                    rating={review.rating}
+                    onEditClick={handleReviewEdit}
+                    onDeleteClick={handleReviewDelete}
+                  />
+                ))}
+              </div>
+              <Pagination
+                currentPage={reviewPage}
+                totalPages={reviewTotalPages}
+                onPageChange={setReviewPage}
               />
-            ))}
-          </div>
-        )}
+            </>
+          ) : (
+            <EmptyState
+              title="작성한 리뷰가 없어요"
+              description="여행지를 방문하고 리뷰를 남겨보세요"
+            />
+          ))}
 
         {activeTab === 'test' && (
           <EmptyState
