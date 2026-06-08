@@ -4,14 +4,11 @@ import { useState } from 'react'
 
 import Image from 'next/image'
 
-import { LikeButton } from '@/components/ui/PlaceCard/LikeButton'
 import { css, cx } from '@/styled-system/css'
 
 interface GallerySectionProps {
   images: string[]
   placeId: number
-  isLiked: boolean
-  onLikeToggle: (placeId: number) => void
 }
 
 const wrapperStyle = css({
@@ -73,8 +70,6 @@ const THUMBNAIL_COUNT = 4
 export default function GallerySection({
   images,
   placeId,
-  isLiked,
-  onLikeToggle,
 }: GallerySectionProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
 
@@ -90,11 +85,6 @@ export default function GallerySection({
           fill
           style={{ objectFit: 'cover' }}
           priority
-        />
-        <LikeButton
-          isLiked={isLiked}
-          placeId={placeId}
-          onLikeToggle={onLikeToggle}
         />
       </div>
 

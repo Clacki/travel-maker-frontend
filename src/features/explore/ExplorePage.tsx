@@ -489,7 +489,8 @@ function ExploreContent() {
                   <div
                     key={destination.id}
                     onClick={(e) => {
-                      if (!(e.target as HTMLElement).closest('button, a')) {
+                      if (!(e.target as HTMLElement).closest('button')) {
+                        e.preventDefault()
                         router.push(ROUTES.DETAIL(destination.id))
                       }
                     }}
