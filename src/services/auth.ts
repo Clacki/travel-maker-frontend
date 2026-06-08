@@ -1,6 +1,8 @@
 import api from '@/lib/api'
 
 const KAKAO_AUTHORIZE_URL = 'https://kauth.kakao.com/oauth/authorize'
+const DEFAULT_KAKAO_REDIRECT_URI =
+  'https://www.travel-maker.site/social-callback'
 const KAKAO_LOGIN_PATH = '/auth/kakao/login'
 const TOKEN_REFRESH_PATH = '/auth/token/refresh'
 export const ACCESS_TOKEN_STORAGE_KEY = 'accessToken'
@@ -16,9 +18,11 @@ export type TokenRefreshResponse = {
 
 export function getKakaoAuthorizeUrl() {
   const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID?.trim()
-  const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI?.trim()
+  const redirectUri =
+    process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI?.trim() ||
+    DEFAULT_KAKAO_REDIRECT_URI
 
-  if (!clientId || !redirectUri) {
+  if (!clientId) {
     throw new Error('카카오 로그인 환경변수가 설정되지 않았습니다.')
   }
 

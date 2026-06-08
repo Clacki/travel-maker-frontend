@@ -32,7 +32,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // TODO: /auth/token/refresh/로 Silent Refresh 후 재요청합니다.
+      // TODO: /auth/token/refresh로 Silent Refresh 후 재요청합니다.
       // TODO: Refresh Token 만료 시 auth store 정리와 로그인 유도 처리가 필요합니다.
     }
 
