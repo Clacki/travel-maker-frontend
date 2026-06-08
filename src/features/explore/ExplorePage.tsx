@@ -10,6 +10,7 @@ import { travelFilterSections } from '@/lib/filter-data'
 import { FilterCard } from '@/components/filters/filter-card'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
+import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
 
 const ITEMS_PER_PAGE = 12
@@ -485,18 +486,27 @@ function ExploreContent() {
                 })}
               >
                 {paginatedItems.map((destination, index) => (
-                  <PlaceCard
+                  <div
                     key={destination.id}
-                    placeId={(currentPage - 1) * ITEMS_PER_PAGE + index}
-                    placeName={destination.name}
-                    description={destination.description}
-                    tags={destination.tags}
-                    rating={destination.rating}
-                    imageUrl={destination.image}
-                    variant="bookmark"
-                    isLiked={false}
-                    onLikeToggle={() => {}}
-                  />
+                    onClick={(e) => {
+                      if (!(e.target as HTMLElement).closest('button, a')) {
+                        router.push(ROUTES.DETAIL(destination.id))
+                      }
+                    }}
+                    className={css({ cursor: 'pointer' })}
+                  >
+                    <PlaceCard
+                      placeId={(currentPage - 1) * ITEMS_PER_PAGE + index}
+                      placeName={destination.name}
+                      description={destination.description}
+                      tags={destination.tags}
+                      rating={destination.rating}
+                      imageUrl={destination.image}
+                      variant="bookmark"
+                      isLiked={false}
+                      onLikeToggle={() => {}}
+                    />
+                  </div>
                 ))}
               </div>
 
