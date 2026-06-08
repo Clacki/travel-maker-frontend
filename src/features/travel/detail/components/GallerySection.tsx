@@ -5,7 +5,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 
 import { LikeButton } from '@/components/ui/PlaceCard/LikeButton'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 interface GallerySectionProps {
   images: string[]
@@ -108,7 +108,10 @@ export default function GallerySection({
               type="button"
               aria-label={`${actualIndex + 1}번째 이미지 보기`}
               aria-pressed={isSelected}
-              className={`${thumbnailWrapperStyle} ${isSelected ? thumbnailSelectedStyle : ''}`}
+              className={cx(
+                thumbnailWrapperStyle,
+                isSelected && thumbnailSelectedStyle
+              )}
               onClick={() => setSelectedIndex(actualIndex)}
             >
               <Image
