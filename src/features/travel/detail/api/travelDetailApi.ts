@@ -1,9 +1,9 @@
 import { travelDetailMock } from '@/mocks/data/travelDetail'
 import type { TravelDetail } from '../types/travelDetail.types'
 
-export const getTravelDetail = async (_id: string): Promise<TravelDetail> => {
+export const getTravelDetail = async (id: string): Promise<TravelDetail> => {
   // TODO: 실제 API 연동 시 아래 코드로 교체
-  // const response = await api.get<TravelDetail>(`/travels/${_id}`)
+  // const response = await api.get<TravelDetail>(`/travels/${id}`)
   // return response.data
-  return Promise.resolve(travelDetailMock)
+  return Promise.resolve({ ...travelDetailMock, id })
 }
