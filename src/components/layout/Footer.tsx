@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { ROUTES } from '@/constants/routes'
 import { css, cx } from '@/styled-system/css'
 
@@ -38,10 +39,6 @@ const footerStyle = css({
 })
 
 const footerInnerStyle = css({
-  width: '100%',
-  maxW: '1120px',
-  mx: 'auto',
-  px: { base: '4', md: '6' },
   py: { base: '8', md: '10' },
 })
 
@@ -173,7 +170,7 @@ interface FooterProps {
 export function Footer({ className }: FooterProps) {
   return (
     <footer className={cx(footerStyle, className)}>
-      <div className={footerInnerStyle}>
+      <LayoutContainer className={footerInnerStyle}>
         <div className={footerGridStyle}>
           <div>
             <Link href={ROUTES.HOME} className={footerLogoStyle}>
@@ -223,7 +220,7 @@ export function Footer({ className }: FooterProps) {
             </p>
           </div>
         </div>
-      </div>
+      </LayoutContainer>
     </footer>
   )
 }
