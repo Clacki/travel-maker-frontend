@@ -1,8 +1,8 @@
+import type { Review } from '../types/travelDetail.types'
+
 import { Button } from '@/components/common/button'
 import { EmptyState } from '@/components/common/status/EmptyState'
 import { css } from '@/styled-system/css'
-
-import type { Review } from '../types/travelDetail.types'
 import ReviewCard from './ReviewCard'
 import ReviewWriteButton from './ReviewWriteButton'
 
@@ -67,7 +67,8 @@ export default function ReviewsSection({
 
       {reviewCount > reviews.length && (
         <div className={moreButtonWrapperStyle}>
-          <Button variant="secondary">
+          {/* TODO: 리뷰 더 보기 페이지네이션 또는 무한스크롤 연결 */}
+          <Button variant="secondary" disabled>
             리뷰 더 보기 ({reviewCount.toLocaleString()}개)
           </Button>
         </div>

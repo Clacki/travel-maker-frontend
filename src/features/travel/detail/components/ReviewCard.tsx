@@ -1,6 +1,6 @@
-import { css } from '@/styled-system/css'
-
 import type { Review } from '../types/travelDetail.types'
+
+import { css } from '@/styled-system/css'
 
 interface ReviewCardProps {
   review: Review
@@ -82,6 +82,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   return (
     <article className={cardStyle}>
       <div className={headerStyle}>
+        {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
         {author.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
