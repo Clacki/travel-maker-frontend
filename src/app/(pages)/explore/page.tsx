@@ -89,7 +89,10 @@ function ExploreContent() {
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
   const gridRef = useRef<HTMLElement>(null)
 
-  const currentPage = Math.max(1, Number(searchParams.get('page') ?? '1'))
+  const currentPage = Math.max(
+    1,
+    parseInt(searchParams.get('page') ?? '1', 10) || 1
+  )
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -457,17 +460,23 @@ function ExploreContent() {
                   })}
                 >
                   {chip.label}
-                  <span
+                  <button
+                    type="button"
+                    aria-label={`${chip.label} 필터 제거`}
                     onClick={() => removeFilter(chip.sectionId, chip.tagId)}
                     className={css({
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
+                      border: 'none',
+                      bg: 'transparent',
+                      color: 'inherit',
+                      p: 0,
                       _hover: { color: 'text.primary' },
                     })}
                   >
                     <X className={css({ w: '10px', h: '10px' })} />
-                  </span>
+                  </button>
                 </span>
               ))}
               <button

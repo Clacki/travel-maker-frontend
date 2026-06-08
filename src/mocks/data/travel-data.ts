@@ -396,7 +396,3 @@ export function getAllDestinations(): DestinationWithCategory[] {
     cat.destinations.map((d) => ({ ...d, categoryId: cat.id }))
   )
 }
-
-export function getCategoryById(id: string): TravelCategory | undefined {
-  return travelCategories.find((cat) => cat.id === id)
-}
