@@ -62,6 +62,7 @@ export const travelFilterSections: FilterSectionData[] = [
       { id: 'theme-park', label: '테마파크·시설' },
       { id: 'spa', label: '스파·웰니스' },
       { id: 'resort', label: '숙박·리조트' },
+      { id: 'nightview', label: '야경·뷰포인트' },
     ],
   },
   {
