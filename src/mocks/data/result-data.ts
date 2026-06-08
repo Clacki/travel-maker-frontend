@@ -113,7 +113,7 @@ export const mockResultData: TestResultResponse = {
     centerLabel: '달빛 아래 걷는 고양이',
     axes: [
       { subject: '활동성', badge: '자연형', value: 40 },
-      { subject: '경험지향', badge: '단세형', value: 75 },
+      { subject: '경험지향', badge: '단체형', value: 75 },
       { subject: '소비스타일', badge: '계획형', value: 68 },
       { subject: '공간지향', badge: '도시형', value: 82 },
       { subject: '사교성', badge: '혼자형', value: 25 },

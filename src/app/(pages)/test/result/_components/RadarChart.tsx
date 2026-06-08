@@ -9,25 +9,23 @@ interface RadarChartProps {
 }
 
 /**
- * SVG fill/stroke 속성에는 Panda CSS 토큰을 직접 사용할 수 없어 hex값을 사용합니다.
- * design-system.md 토큰 기준:
- *   primary       #2CA6BE  (tokens.colors.primary)
- *   primary.soft  #D8F3FA  (tokens.colors.primary.soft)
- *   text.secondary #8A9AA0 (tokens.colors.text.secondary)
- *   border.subtle  #C8DCE2 (tokens.colors.border.subtle) → grid 색상으로 사용
+ * SVG fill/stroke 속성은 Panda css() 함수 밖이지만,
+ * Panda가 생성하는 CSS custom property(var(--colors-*))는 SVG에서도 동작합니다.
+ * → 토큰이 있는 색상은 var() 로 참조해 토큰 변경 시 자동 반영됩니다.
  *
- * 디자인 전용 값 (design-system.md 외):
+ * 예외 (토큰 없음 — hex 유지):
  *   gradOuter #D6DEF1 — 중앙 원 방사형 그라데이션 바깥색 (디자인팀 지정값)
+ *   dataFill  rgba(...) — primary + 18% 불투명도, var()로 표현 불가
  */
 const C = {
-  primary: '#2CA6BE',
-  primarySoft: '#D8F3FA',
-  gradInner: '#FFFFFF',
-  gradOuter: '#D6DEF1', // 디자인팀 지정값 — design-system.md 토큰 외
-  grid: '#C8DCE2', // border.subtle 토큰값
-  textSec: '#8A9AA0', // text.secondary 토큰값
-  white: '#FFFFFF',
-  dataFill: 'rgba(44,166,190,0.18)',
+  primary: 'var(--colors-primary)', // tokens.colors.primary  #2CA6BE
+  primarySoft: 'var(--colors-primary-soft)', // tokens.colors.primary.soft #D8F3FA
+  gradInner: 'var(--colors-bg-surface)', // tokens.colors.bg.surface #FFFFFF
+  gradOuter: '#D6DEF1', // 디자인팀 지정값 — 토큰 없음
+  grid: 'var(--colors-border-subtle)', // tokens.colors.border.subtle #DCE5E8
+  textSec: 'var(--colors-text-secondary)', // tokens.colors.text.secondary #8A9AA0
+  white: 'var(--colors-bg-surface)', // tokens.colors.bg.surface #FFFFFF
+  dataFill: 'rgba(44,166,190,0.18)', // primary(#2CA6BE) + opacity — hex 유지
 } as const
 
 const S = 580 // viewBox 크기
@@ -36,6 +34,12 @@ const CY = S / 2 // 290
 const MAX_R = 175 // 최외곽 육각형 반지름
 const LEVELS = 4 // 동심 육각형 단계 수
 const CTR_R = 40 // 중앙 원 반지름
+
+const svgStyle = css({
+  display: 'block',
+  maxWidth: '480px',
+  mx: 'auto',
+})
 
 // 꼭짓점 각도: 위(N)부터 시계방향 60° 간격
 const ANGLES = Array.from(
@@ -110,12 +114,6 @@ export function RadarChart({
   // 원 하단(CY - 6 + CTR_R)에서 10px 간격
   const circleCY = CY - 6
   const pillY = circleCY + CTR_R + 10
-
-  const svgStyle = css({
-    display: 'block',
-    maxWidth: '480px',
-    mx: 'auto',
-  })
 
   return (
     <svg
