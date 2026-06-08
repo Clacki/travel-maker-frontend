@@ -1,8 +1,8 @@
 import { LayoutContainer } from '@/components/layout'
-import { CategoryCard } from '@/features/travel/components/CategoryCard'
+import { Sparkles } from 'lucide-react'
+import { CategoryCard } from '@/features/explore/components/CategoryCard'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { css } from '@/styled-system/css'
-import { Sparkles } from 'lucide-react'
 
 // 전체적으로 우측으로 이동해 히어로 텍스트 가림 방지
 const cardPositions = [

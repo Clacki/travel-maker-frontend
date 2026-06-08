@@ -31,8 +31,8 @@ src/
   features/
     home/
     auth/
-    travel/
-    recommendation/
+    explore/
+    test/
     result/
     mypage/
   mocks/
