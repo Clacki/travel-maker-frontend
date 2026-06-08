@@ -39,7 +39,7 @@ export const mockOtherProfile: UserProfile = {
 }
 
 export const mockBookmarks: BookmarkItem[] = Array.from(
-  { length: 8 },
+  { length: 20 },
   (_, i) => ({
     place_id: i + 1,
     place_name: '부산 광안리 야경',
@@ -49,7 +49,7 @@ export const mockBookmarks: BookmarkItem[] = Array.from(
   })
 )
 
-export const mockReviews: ReviewItem[] = Array.from({ length: 8 }, (_, i) => ({
+export const mockReviews: ReviewItem[] = Array.from({ length: 20 }, (_, i) => ({
   review_id: i + 1,
   user_id: 1,
   user_nickname: '김 여행',
