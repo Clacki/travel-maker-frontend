@@ -234,7 +234,7 @@ export default function InfoCard({ detail }: InfoCardProps) {
                 strokeLinejoin="round"
                 style={{
                   color: isWished
-                    ? 'var(--colors-text-inverse)'
+                    ? 'var(--colors-primary)'
                     : 'var(--colors-text-secondary)',
                 }}
                 aria-hidden="true"
