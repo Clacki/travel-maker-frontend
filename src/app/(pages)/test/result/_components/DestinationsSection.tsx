@@ -4,6 +4,8 @@ import { TravelCard } from '@/app/(pages)/test/_components/TravelCard/TravelCard
 
 import type { RecommendedDestination } from '@/features/result/result.types'
 
+import { SectionHeader } from './SectionHeader'
+
 interface DestinationsSectionProps {
   destinations: RecommendedDestination[]
   typeName: string
@@ -21,34 +23,6 @@ const innerStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '10',
-})
-
-const headerStyle = css({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-  gap: '2',
-})
-
-const labelStyle = css({
-  fontSize: 'sm',
-  fontWeight: 'semibold',
-  color: 'primary',
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-})
-
-const headingStyle = css({
-  fontSize: '2xl',
-  fontWeight: 'bold',
-  color: 'text.primary',
-})
-
-const subheadingStyle = css({
-  fontSize: 'md',
-  color: 'text.secondary',
-  lineHeight: 'normal',
 })
 
 const gridStyle = css({
@@ -70,13 +44,12 @@ export function DestinationsSection({
   return (
     <section className={sectionStyle}>
       <div className={innerStyle}>
-        <div className={headerStyle}>
-          <span className={labelStyle}>CURATED FOR YOU</span>
-          <h2 className={headingStyle}>이 타입에게 어울리는 여행지</h2>
-          <p className={subheadingStyle}>
-            {typeName} 타입을 위해 선별한 여행지예요.
-          </p>
-        </div>
+        <SectionHeader
+          label="CURATED FOR YOU"
+          heading="이 타입에게 어울리는 여행지"
+          subheading={`${typeName} 타입을 위해 선별한 여행지예요.`}
+          align="center"
+        />
 
         <div className={gridStyle}>
           {destinations.map((dest) => (

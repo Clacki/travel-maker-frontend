@@ -34,6 +34,7 @@ export type RecommendedDestination = {
 export type TravelType = {
   typeCode: string
   icon: string
+  imageSrc?: string
   title: string
   subtitle: string
   description: string

@@ -1,4 +1,4 @@
-'use client'
+import { css } from '@/styled-system/css'
 
 import type { CompassAxis } from '@/features/result/result.types'
 
@@ -9,18 +9,23 @@ interface RadarChartProps {
 }
 
 /**
- * SVG 직접 색상값 사용 — Panda CSS 토큰이 SVG 속성에 미지원
- * design-system.md 기준값 사용
- * primary: #2CA6BE / primary.soft: #D8F3FA
- * text.secondary: #8A9AA0 / border.subtle: #C8DCE2
+ * SVG fill/stroke 속성에는 Panda CSS 토큰을 직접 사용할 수 없어 hex값을 사용합니다.
+ * design-system.md 토큰 기준:
+ *   primary       #2CA6BE  (tokens.colors.primary)
+ *   primary.soft  #D8F3FA  (tokens.colors.primary.soft)
+ *   text.secondary #8A9AA0 (tokens.colors.text.secondary)
+ *   border.subtle  #C8DCE2 (tokens.colors.border.subtle) → grid 색상으로 사용
+ *
+ * 디자인 전용 값 (design-system.md 외):
+ *   gradOuter #D6DEF1 — 중앙 원 방사형 그라데이션 바깥색 (디자인팀 지정값)
  */
 const C = {
   primary: '#2CA6BE',
   primarySoft: '#D8F3FA',
   gradInner: '#FFFFFF',
-  gradOuter: '#D6DEF1',
-  grid: '#C8DCE2',
-  textSec: '#8A9AA0',
+  gradOuter: '#D6DEF1', // 디자인팀 지정값 — design-system.md 토큰 외
+  grid: '#C8DCE2', // border.subtle 토큰값
+  textSec: '#8A9AA0', // text.secondary 토큰값
   white: '#FFFFFF',
   dataFill: 'rgba(44,166,190,0.18)',
 } as const
@@ -46,7 +51,12 @@ function hexPoints(r: number) {
   return ANGLES.map((a) => `${f(px(a, r))},${f(py(a, r))}`).join(' ')
 }
 
-/** 꼭짓점 바깥 라벨 위치 계산 */
+/** 꼭짓점 바깥 라벨 위치 계산
+ *  텍스트(12px) + 간격(6px) + 배지(22px) = 40px 그룹을 ly 기준으로 배치
+ *  - 상단 꼭짓점(sinA≈-1): 그룹이 ly 위로
+ *  - 하단 꼭짓점(sinA≈+1): 그룹이 ly 아래로
+ *  - 사이드 꼭짓점(|sinA|≈0.5): 그룹 중앙을 ly에 맞춰 좌우 대칭 보장
+ */
 function getLabelLayout(i: number) {
   const a = ANGLES[i]
   const cosA = Math.cos(a)
@@ -60,10 +70,24 @@ function getLabelLayout(i: number) {
   if (cosA > 0.4) anchor = 'start'
   else if (cosA < -0.4) anchor = 'end'
 
-  // 위쪽 꼭짓점(sinA < 0): 카테고리→배지 위→아래 순
-  // 아래쪽 꼭짓점(sinA > 0): 카테고리→배지 위→아래 순 (라벨이 아래로 뻗음)
-  const catY = sinA <= 0 ? ly - 16 : ly + 14
-  const badgeTopY = sinA <= 0 ? ly + 0 : ly + 28
+  // 사이드 꼭짓점: 그룹(40px)을 ly 중앙 정렬 → catY baseline = ly-8, badgeTopY = ly-2
+  // 상단 꼭짓점: 그룹 전체가 위로
+  // 하단 꼭짓점: 그룹 전체가 아래로
+  let catY: number
+  let badgeTopY: number
+  if (Math.abs(sinA) < 0.8) {
+    // 사이드 꼭짓점 (경험지향, 소비스타일, 계획성, 사교성)
+    catY = ly - 8
+    badgeTopY = ly + 6
+  } else if (sinA < 0) {
+    // 상단 꼭짓점 (활동성)
+    catY = ly - 28
+    badgeTopY = ly - 14
+  } else {
+    // 하단 꼭짓점 (공간지향)
+    catY = ly + 20
+    badgeTopY = ly + 34
+  }
 
   return { lx, ly, anchor, catY, badgeTopY }
 }
@@ -87,13 +111,19 @@ export function RadarChart({
   const circleCY = CY - 6
   const pillY = circleCY + CTR_R + 10
 
+  const svgStyle = css({
+    display: 'block',
+    maxWidth: '480px',
+    mx: 'auto',
+  })
+
   return (
     <svg
       viewBox={`0 0 ${S} ${S}`}
       width="100%"
       role="img"
       aria-label="여행 성향 나침반 레이더 차트"
-      style={{ display: 'block', maxWidth: '480px', margin: '0 auto' }}
+      className={svgStyle}
     >
       <defs>
         <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">

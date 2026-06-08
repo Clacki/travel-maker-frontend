@@ -92,13 +92,13 @@ const retryLinkStyle = css({
   minHeight: '44px',
   px: '6',
   mt: '2',
-  borderRadius: 'md',
+  borderRadius: 'pill',
   bg: 'bg.surface',
   color: 'text.primary',
   fontWeight: 'medium',
   fontSize: 'sm',
   borderWidth: '1px',
-  borderColor: 'border',
+  borderColor: 'primary.soft',
   transitionProperty: 'background-color',
   transitionDuration: '150ms',
   _hover: {
@@ -122,7 +122,7 @@ const cardStackStyle = css({
   pt: '14',
   pb: '8',
   w: 'full',
-  maxWidth: '480px',
+  maxWidth: '480px' /* ResultCard 최대 표시 너비 — 디자인 기준값 */,
   mx: 'auto',
   md: {
     mx: '0',
@@ -168,7 +168,7 @@ const polaroidBottomStyle = css({
   w: '140px',
   zIndex: '0',
   bottom: '0',
-  right: '-12px',
+  right: '-3' /* -12px: 폴라로이드 우측 살짝 넘침 효과 */,
   transform: 'rotate(10deg)',
 })
 

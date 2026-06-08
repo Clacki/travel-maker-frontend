@@ -3,6 +3,7 @@ import { css } from '@/styled-system/css'
 import type { CompassData } from '@/features/result/result.types'
 
 import { RadarChart } from './RadarChart'
+import { SectionHeader } from './SectionHeader'
 
 interface CompassSectionProps {
   compassData: CompassData
@@ -22,34 +23,6 @@ const innerStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '10',
-})
-
-const headerStyle = css({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  textAlign: 'center',
-  gap: '2',
-})
-
-const labelStyle = css({
-  fontSize: 'sm',
-  fontWeight: 'semibold',
-  color: 'primary',
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-})
-
-const headingStyle = css({
-  fontSize: '2xl',
-  fontWeight: 'bold',
-  color: 'text.primary',
-})
-
-const subheadingStyle = css({
-  fontSize: 'md',
-  color: 'text.secondary',
-  lineHeight: 'normal',
 })
 
 const contentStyle = css({
@@ -140,14 +113,12 @@ export function CompassSection({ compassData }: CompassSectionProps) {
   return (
     <section className={sectionStyle}>
       <div className={innerStyle}>
-        {/* Section header */}
-        <div className={headerStyle}>
-          <span className={labelStyle}>TRAVEL COMPASS</span>
-          <h2 className={headingStyle}>나의 여행 성향 나침반</h2>
-          <p className={subheadingStyle}>
-            6가지 축으로 분석한 당신의 여행 성향을 확인해보세요.
-          </p>
-        </div>
+        <SectionHeader
+          label="TRAVEL COMPASS"
+          heading="나의 여행 성향 나침반"
+          subheading="6가지 축으로 분석한 당신의 여행 성향을 확인해보세요."
+          align="center"
+        />
 
         {/* Chart + Traits + Reading */}
         <div className={contentStyle}>

@@ -68,7 +68,9 @@ const ctaLinkStyle = buttonRecipe({
 })
 
 export function CtaSection({ isAuthenticated }: CtaSectionProps) {
-  if (isAuthenticated) return null
+  if (isAuthenticated) {
+    return null
+  }
 
   return (
     <section className={sectionStyle}>

@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers'
+import { isAuthenticated } from '@/lib/auth'
 
 import { getTestResult } from '@/features/result/resultApi'
 
@@ -9,9 +9,10 @@ import { OtherTypesSection } from './OtherTypesSection'
 import { CtaSection } from './CtaSection'
 
 export async function ResultPage() {
-  const result = await getTestResult()
-  const cookieStore = await cookies()
-  const isAuthenticated = cookieStore.has('refresh_token')
+  const [result, authenticated] = await Promise.all([
+    getTestResult(),
+    isAuthenticated(),
+  ])
 
   return (
     <>
@@ -22,7 +23,7 @@ export async function ResultPage() {
         typeName={result.typeName}
       />
       <OtherTypesSection allTypes={result.allTypes} />
-      <CtaSection isAuthenticated={isAuthenticated} />
+      <CtaSection isAuthenticated={authenticated} />
     </>
   )
 }
