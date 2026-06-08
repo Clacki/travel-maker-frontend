@@ -27,7 +27,7 @@ export const travelDetailMock: TravelDetail = {
   reviews: [
     {
       id: 1,
-      author: { name: '파도타는 호랑이', avatarUrl: undefined },
+      author: { name: '파도타는 호랑이' },
       rating: 5,
       createdAt: '2026-05-20',
       content:
@@ -35,7 +35,7 @@ export const travelDetailMock: TravelDetail = {
     },
     {
       id: 2,
-      author: { name: '여름바다', avatarUrl: undefined },
+      author: { name: '여름바다' },
       rating: 4,
       createdAt: '2026-05-15',
       content:
@@ -43,7 +43,7 @@ export const travelDetailMock: TravelDetail = {
     },
     {
       id: 3,
-      author: { name: '서울에서온여행객', avatarUrl: undefined },
+      author: { name: '서울에서온여행객' },
       rating: 5,
       createdAt: '2026-05-10',
       content:
