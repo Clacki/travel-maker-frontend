@@ -241,6 +241,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       />
 
       <ReviewModal
+        key={`${reviewModal.mode}-${reviewModal.reviewId}`}
         isOpen={reviewModal.isOpen}
         onClose={() => setReviewModal((prev) => ({ ...prev, isOpen: false }))}
         mode={reviewModal.mode}
