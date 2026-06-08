@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import { ChevronDown } from 'lucide-react'
 import { FilterTag } from '@/components/common/tag'
 import { Button } from '@/components/common/button'
@@ -29,6 +29,7 @@ interface FilterCardProps {
   onReset?: () => void
   resultCount?: number
   initialSelected?: Record<string, string[]>
+  onChange?: (selected: Record<string, string[]>) => void
 }
 
 const badgeTextMap: Record<string, string> = {
@@ -185,11 +186,16 @@ export function FilterCard({
   onReset,
   resultCount,
   initialSelected,
+  onChange,
 }: FilterCardProps) {
   const [selected, setSelected] = useState<Record<string, string[]>>(
     initialSelected ?? {}
   )
   const [activeSection, setActiveSection] = useState<string | null>(null)
+
+  useEffect(() => {
+    onChange?.(selected)
+  }, [selected, onChange])
 
   const handleTagClick = useCallback(
     (sectionId: string, tagId: string, selectionMode: 'multi' | 'single') => {
@@ -239,6 +245,7 @@ export function FilterCard({
   }, [onReset])
 
   const handleApply = useCallback(() => {
+    setActiveSection(null)
     onApply?.(selected)
   }, [onApply, selected])
 

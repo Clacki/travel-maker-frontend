@@ -16,7 +16,7 @@ const cardPositions = [
 
 export default function Home() {
   return (
-    <div
+    <main
       className={css({
         h: '100vh',
         overflow: 'hidden',
@@ -66,7 +66,7 @@ export default function Home() {
             textAlign: { base: 'center', lg: 'left' },
             pl: { lg: 12, xl: 20 },
             py: { base: 8, lg: 0 },
-            wordBreak: 'keep-all', // 한국어 어절 단위 줄바꿈
+            wordBreak: 'keep-all',
             overflowWrap: 'break-word',
           })}
         >
@@ -137,6 +137,6 @@ export default function Home() {
             ))}
         </section>
       </div>
-    </div>
+    </main>
   )
 }

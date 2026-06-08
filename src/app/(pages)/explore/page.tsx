@@ -1,5 +1,3 @@
-import { PageLayout } from '@/components/layout/PageLayout'
+import ExplorePage from '@/features/travel/ExplorePage'
 
-export default function ExplorePage() {
-  return <PageLayout>Explore Page</PageLayout>
-}
+export default ExplorePage
