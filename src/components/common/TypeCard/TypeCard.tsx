@@ -7,11 +7,12 @@ const cardStyle = cva({
   base: {
     position: 'relative',
     display: 'flex',
-    alignItems: 'center',
-    gap: '4',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: '2',
     width: '305px',
     height: '170px',
-    padding: '6',
+    padding: '5',
     borderWidth: '1px',
     borderStyle: 'solid',
     borderRadius: '2xl',
@@ -39,21 +40,35 @@ const cardStyle = cva({
         borderColor: 'border.subtle',
       },
     },
+    fullWidth: {
+      true: {
+        width: 'full',
+      },
+    },
   },
   defaultVariants: {
     myType: false,
+    fullWidth: false,
   },
 })
 
-const iconWrapperStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 'pill',
-  flexShrink: 0,
-  width: '40px',
-  height: '40px',
-  bg: 'primary.soft',
+const iconWrapperStyle = cva({
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 'pill',
+    flexShrink: 0,
+    width: '40px',
+    height: '40px',
+  },
+  variants: {
+    myType: {
+      true: { bg: 'bg.surface' },
+      false: { bg: 'primary.soft' },
+    },
+  },
+  defaultVariants: { myType: false },
 })
 
 const badgeStyle = css({
@@ -82,6 +97,7 @@ export interface TypeCardProps extends Omit<
   subtitle: string
   description: string
   isMyType?: boolean
+  fullWidth?: boolean
 }
 
 export function TypeCard({
@@ -90,6 +106,7 @@ export function TypeCard({
   subtitle,
   description,
   isMyType = false,
+  fullWidth = false,
   className,
   type = 'button',
   ...props
@@ -97,18 +114,18 @@ export function TypeCard({
   return (
     <button
       type={type}
-      className={cx(cardStyle({ myType: isMyType }), className)}
+      className={cx(cardStyle({ myType: isMyType, fullWidth }), className)}
       {...props}
     >
       {isMyType && <span className={badgeStyle}>MY TYPE</span>}
 
-      <div className={iconWrapperStyle}>{icon}</div>
+      <div className={iconWrapperStyle({ myType: isMyType })}>{icon}</div>
 
       <div
         className={css({
           display: 'flex',
           flexDirection: 'column',
-          gap: '1',
+          gap: '0.5',
           minWidth: 0,
         })}
       >
@@ -135,7 +152,7 @@ export function TypeCard({
             fontSize: 'xs',
             color: 'text.secondary',
             lineHeight: 'normal',
-            mt: '1',
+            mt: '0',
           })}
         >
           {description}

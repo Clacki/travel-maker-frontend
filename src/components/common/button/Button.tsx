@@ -1,7 +1,7 @@
 import { cva, cx } from '@/styled-system/css'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-const buttonRecipe = cva({
+export const buttonRecipe = cva({
   base: {
     display: 'inline-flex',
     alignItems: 'center',
