@@ -1,4 +1,4 @@
-import { PageLayout } from '@/components/layout/PageLayout'
+import { MyPageContent } from '@/features/mypage/components/MyPageContent'
 
 interface ProfilePageProps {
   params: Promise<{ userId: string }>
@@ -7,5 +7,5 @@ interface ProfilePageProps {
 export default async function ProfilePage({ params }: ProfilePageProps) {
   const { userId } = await params
 
-  return <PageLayout>Profile Page - {userId}</PageLayout>
+  return <MyPageContent userId={userId} />
 }
