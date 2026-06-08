@@ -27,6 +27,7 @@ export type TravelDetail = {
   tags: string[]
   description: string
   infoItems: InfoItem[]
-  mapAddress: string
+  latitude: number
+  longitude: number
   reviews: Review[]
 }

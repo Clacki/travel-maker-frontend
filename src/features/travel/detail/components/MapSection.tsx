@@ -2,7 +2,9 @@ import { buttonRecipe } from '@/components/common/button/Button'
 import { css, cx } from '@/styled-system/css'
 
 interface MapSectionProps {
-  address: string
+  name: string
+  latitude: number
+  longitude: number
 }
 
 const wrapperStyle = css({
@@ -44,20 +46,24 @@ const mapButtonStyle = css({
   right: '3',
 })
 
-export default function MapSection({ address }: MapSectionProps) {
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`
+export default function MapSection({
+  name,
+  latitude,
+  longitude,
+}: MapSectionProps) {
+  const kakaoMapUrl = `https://map.kakao.com/link/map/${encodeURIComponent(name)},${latitude},${longitude}`
 
   return (
     <div className={wrapperStyle}>
       <div className={placeholderStyle} aria-label="지도 영역">
         지도
       </div>
-      <span className={addressOverlayStyle}>{address}</span>
+      <span className={addressOverlayStyle}>{name}</span>
       <a
-        href={mapsUrl}
+        href={kakaoMapUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="구글 지도에서 위치 보기"
+        aria-label="카카오맵에서 위치 보기"
         className={cx(
           buttonRecipe({ variant: 'primary', size: 'sm' }),
           mapButtonStyle
