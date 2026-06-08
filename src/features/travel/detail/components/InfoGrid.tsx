@@ -1,6 +1,6 @@
-import { css } from '@/styled-system/css'
-
 import type { InfoItem } from '../types/travelDetail.types'
+
+import { css } from '@/styled-system/css'
 
 interface InfoGridProps {
   items: InfoItem[]

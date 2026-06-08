@@ -1,8 +1,8 @@
-import { css } from '@/styled-system/css'
-
 import type { TravelDetail } from '../types/travelDetail.types'
+
 import InfoGrid from './InfoGrid'
 import TagList from './TagList'
+import { css } from '@/styled-system/css'
 
 interface InfoCardProps {
   detail: Pick<

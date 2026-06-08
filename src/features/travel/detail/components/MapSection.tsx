@@ -1,5 +1,5 @@
 import { buttonRecipe } from '@/components/common/button/Button'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 interface MapSectionProps {
   address: string
@@ -58,7 +58,10 @@ export default function MapSection({ address }: MapSectionProps) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="구글 지도에서 위치 보기"
-        className={`${buttonRecipe({ variant: 'primary', size: 'sm' })} ${mapButtonStyle}`}
+        className={cx(
+          buttonRecipe({ variant: 'primary', size: 'sm' }),
+          mapButtonStyle
+        )}
       >
         지도 보기
       </a>
