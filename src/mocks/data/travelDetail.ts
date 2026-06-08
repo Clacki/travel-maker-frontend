@@ -23,7 +23,8 @@ export const travelDetailMock: TravelDetail = {
     { label: '입장료', value: '무료 (서핑 강습 별도)' },
     { label: '주차', value: '유료 주차장 운영' },
   ],
-  mapAddress: '강원도 양양군 현북면 하조대해변길 119',
+  latitude: 38.2074,
+  longitude: 128.618,
   reviews: [
     {
       id: 1,
