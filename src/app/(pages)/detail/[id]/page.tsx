@@ -1,4 +1,5 @@
-import { PageLayout } from '@/components/layout/PageLayout'
+import { getTravelDetail } from '@/features/travel/detail/api/travelDetailApi'
+import TravelDetailPage from '@/features/travel/detail/TravelDetailPage'
 
 interface DetailPageProps {
   params: Promise<{ id: string }>
@@ -6,6 +7,7 @@ interface DetailPageProps {
 
 export default async function DetailPage({ params }: DetailPageProps) {
   const { id } = await params
+  const detail = await getTravelDetail(id)
 
-  return <PageLayout>Detail Page - {id}</PageLayout>
+  return <TravelDetailPage detail={detail} />
 }
