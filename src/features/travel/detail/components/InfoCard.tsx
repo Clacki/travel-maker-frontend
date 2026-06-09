@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react'
 
-import InfoGrid from './InfoGrid'
 import TagList from './TagList'
 import { LoginModal } from '@/components/auth/LoginModal'
 
@@ -13,7 +12,7 @@ import { css } from '@/styled-system/css'
 interface InfoCardProps {
   detail: Pick<
     TravelDetail,
-    'title' | 'rating' | 'reviewCount' | 'tags' | 'description' | 'infoItems'
+    'place_name' | 'rating_avg' | 'review_count' | 'tags' | 'description'
   >
   isAuthenticated: boolean
 }
@@ -127,7 +126,7 @@ const descriptionStyle = css({
 })
 
 export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
-  const { title, rating, reviewCount, tags, description, infoItems } = detail
+  const { place_name, rating_avg, review_count, tags, description } = detail
   const [copied, setCopied] = useState(false)
   const [isWished, setIsWished] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -148,7 +147,7 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
     try {
       const url = window.location.href
       if (navigator.share) {
-        await navigator.share({ title, url })
+        await navigator.share({ title: place_name, url })
       } else {
         await navigator.clipboard.writeText(url)
         setCopied(true)
@@ -164,7 +163,7 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
       <div className={cardStyle}>
         <div className={headerStyle}>
           <div className={titleInfoStyle}>
-            <h1 className={titleStyle}>{title}</h1>
+            <h1 className={titleStyle}>{place_name}</h1>
             <div className={ratingRowStyle}>
               <svg
                 width="16"
@@ -176,9 +175,9 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
               >
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <span className={ratingTextStyle}>{rating.toFixed(1)}</span>
+              <span className={ratingTextStyle}>{rating_avg.toFixed(1)}</span>
               <span className={reviewCountStyle}>
-                ({reviewCount.toLocaleString()}개 리뷰)
+                ({review_count.toLocaleString()}개 리뷰)
               </span>
             </div>
           </div>
@@ -270,8 +269,6 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
         <TagList tags={tags} />
 
         <p className={descriptionStyle}>{description}</p>
-
-        <InfoGrid items={infoItems} />
       </div>
 
       <LoginModal

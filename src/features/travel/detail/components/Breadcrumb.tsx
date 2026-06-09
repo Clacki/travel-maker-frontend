@@ -3,8 +3,7 @@ import Link from 'next/link'
 import { css } from '@/styled-system/css'
 
 interface BreadcrumbProps {
-  region: string
-  subRegion: string
+  placeName: string
 }
 
 const containerStyle = css({
@@ -28,7 +27,7 @@ const homeLinkStyle = css({
   _focusVisible: { outline: 'none', boxShadow: 'focus' },
 })
 
-export default function Breadcrumb({ region, subRegion }: BreadcrumbProps) {
+export default function Breadcrumb({ placeName }: BreadcrumbProps) {
   return (
     <nav aria-label="breadcrumb" className={containerStyle}>
       <Link href="/" aria-label="홈으로 이동" className={homeLinkStyle}>
@@ -50,11 +49,13 @@ export default function Breadcrumb({ region, subRegion }: BreadcrumbProps) {
       <span aria-hidden="true" className={separatorStyle}>
         ›
       </span>
-      <span>{region}</span>
+      <Link href="/explore" className={homeLinkStyle}>
+        여행지 탐색
+      </Link>
       <span aria-hidden="true" className={separatorStyle}>
         ›
       </span>
-      <span aria-current="page">{subRegion}</span>
+      <span aria-current="page">{placeName}</span>
     </nav>
   )
 }

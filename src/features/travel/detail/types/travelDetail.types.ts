@@ -3,6 +3,11 @@ export type InfoItem = {
   value: string
 }
 
+export type Tag = {
+  id: number
+  tag_name: string
+}
+
 export type ReviewAuthor = {
   name: string
   avatarUrl?: string
@@ -14,22 +19,18 @@ export type Review = {
   rating: number
   createdAt: string
   content: string
-  // TODO: API 연동 시 백엔드와 isOwner(서버 계산) vs userId(클라이언트 비교) 방식 합의 필요
   isOwner?: boolean
 }
 
 export type TravelDetail = {
-  id: string
-  title: string
-  region: string
-  subRegion: string
-  images: string[]
-  rating: number
-  reviewCount: number
-  tags: string[]
+  id: number
+  place_name: string
   description: string
-  infoItems: InfoItem[]
   latitude: number
   longitude: number
-  reviews: Review[]
+  rating_avg: number
+  review_count: number
+  bookmark_count: number
+  images: string[]
+  tags: Tag[]
 }
