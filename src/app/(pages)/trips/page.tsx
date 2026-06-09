@@ -1,5 +1,5 @@
-import { TripsPlaceholderPage } from '@/features/trips/components/TripsPlaceholderPage'
+import { TripsListPage } from '@/features/trips/TripsListPage'
 
 export default function TripsPage() {
-  return <TripsPlaceholderPage mode="list" />
+  return <TripsListPage />
 }
