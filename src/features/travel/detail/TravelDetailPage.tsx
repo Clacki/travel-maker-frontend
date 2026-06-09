@@ -11,6 +11,7 @@ import { css } from '@/styled-system/css'
 
 interface TravelDetailPageProps {
   detail: TravelDetail
+  isAuthenticated: boolean
 }
 
 const pageStyle = css({
@@ -32,7 +33,10 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
+export default function TravelDetailPage({
+  detail,
+  isAuthenticated,
+}: TravelDetailPageProps) {
   return (
     <PageLayout>
       <div className={pageStyle}>
@@ -42,7 +46,7 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
           <GallerySectionContainer images={detail.images} placeId={0} />
 
           <div className={rightColumnStyle}>
-            <InfoCard detail={detail} />
+            <InfoCard detail={detail} isAuthenticated={isAuthenticated} />
             <MapSection
               name={detail.title}
               latitude={detail.latitude}
@@ -54,6 +58,7 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
         <ReviewsSection
           reviews={detail.reviews}
           reviewCount={detail.reviewCount}
+          isAuthenticated={isAuthenticated}
         />
       </div>
     </PageLayout>
