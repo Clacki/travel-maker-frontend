@@ -36,7 +36,7 @@ export const useInitializeAuth = () => {
       return
     }
 
-    if (pathname === '/social-callback') {
+    if (pathname === '/auth/callback' || pathname === '/social-callback') {
       setAuthInitialized(true)
       return
     }
@@ -60,6 +60,8 @@ export const useInitializeAuth = () => {
       } catch {
         clearAuth()
         clearUserProfile()
+      } finally {
+        setAuthInitialized(true)
       }
     }
 

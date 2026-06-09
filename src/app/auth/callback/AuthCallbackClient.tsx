@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
-import { loginWithKakaoCode } from '@/services/auth'
 import { css, cx } from '@/styled-system/css'
 
 type CallbackStatus = 'loading' | 'success' | 'error'
@@ -62,36 +61,46 @@ const errorDotStyle = css({
   borderColor: 'warning',
 })
 
-export function SocialCallbackClient() {
+export function AuthCallbackClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const setAccessToken = useAuthStore((state) => state.setAccessToken)
+  const clearAuth = useAuthStore((state) => state.clearAuth)
   const clearUserProfile = useUserProfileStore(
     (state) => state.clearUserProfile
   )
-  const code = searchParams.get('code')
+  const callbackAccessToken =
+    searchParams.get('access_token') ?? searchParams.get('accessToken')
+  const callbackError = searchParams.get('error')
   const hasRequestedRef = useRef(false)
   const [status, setStatus] = useState<CallbackStatus>(
-    code ? 'loading' : 'error'
+    callbackAccessToken && !callbackError ? 'loading' : 'error'
   )
   const [message, setMessage] = useState(
-    code
-      ? '카카오 로그인을 처리하고 있습니다.'
-      : '로그인 인증 코드가 없습니다. 다시 시도해주세요.'
+    callbackError
+      ? '로그인에 실패했습니다. 다시 시도해 주세요.'
+      : callbackAccessToken
+        ? '카카오 로그인을 처리하고 있습니다.'
+        : '로그인 토큰이 없습니다. 다시 시도해 주세요.'
   )
 
   useEffect(() => {
-    if (!code || hasRequestedRef.current) {
+    if (hasRequestedRef.current) {
+      return
+    }
+
+    if (callbackError || !callbackAccessToken) {
+      hasRequestedRef.current = true
+      clearAuth()
+      clearUserProfile()
       return
     }
 
     hasRequestedRef.current = true
 
-    const exchangeCode = async () => {
+    const completeLogin = async () => {
       try {
-        const { access_token: accessToken } = await loginWithKakaoCode({ code })
-
-        setAccessToken(accessToken)
+        setAccessToken(callbackAccessToken)
         try {
           await loadCurrentUserProfile()
         } catch (error) {
@@ -103,13 +112,22 @@ export function SocialCallbackClient() {
         router.replace('/')
       } catch (error) {
         console.error(error)
+        clearAuth()
+        clearUserProfile()
         setStatus('error')
-        setMessage('로그인 처리 중 문제가 발생했습니다. 다시 시도해주세요.')
+        setMessage('로그인 처리 중 문제가 발생했습니다. 다시 시도해 주세요.')
       }
     }
 
-    void exchangeCode()
-  }, [clearUserProfile, code, router, setAccessToken])
+    void completeLogin()
+  }, [
+    callbackAccessToken,
+    callbackError,
+    clearAuth,
+    clearUserProfile,
+    router,
+    setAccessToken,
+  ])
 
   const isError = status === 'error'
 
