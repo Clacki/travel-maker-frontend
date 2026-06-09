@@ -107,11 +107,14 @@ function getInitials(name: string): string {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
-  const { author, rating, createdAt, content, isOwner } = review
+  const { author, createdAt, isOwner } = review
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [displayRating, setDisplayRating] = useState(review.rating)
+  const [displayContent, setDisplayContent] = useState(review.content)
 
   const handleEditSubmit = (newRating: number, newContent: string) => {
-    console.log('review edit', review.id, newRating, newContent)
+    setDisplayRating(newRating)
+    setDisplayContent(newContent)
     // TODO: 리뷰 수정 API 호출
   }
 
@@ -140,9 +143,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           <div className={authorInfoStyle}>
             <span className={authorNameStyle}>{author.name}</span>
             <div className={metaStyle}>
-              <span aria-label={`별점 ${rating}점`}>
-                {'★'.repeat(rating)}
-                {'☆'.repeat(5 - rating)}
+              <span aria-label={`별점 ${displayRating}점`}>
+                {'★'.repeat(displayRating)}
+                {'☆'.repeat(5 - displayRating)}
               </span>
               <span aria-hidden="true">·</span>
               <time dateTime={createdAt}>{formatDate(createdAt)}</time>
@@ -158,18 +161,19 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             </button>
           )}
         </div>
-        <p className={contentStyle}>{content}</p>
+        <p className={contentStyle}>{displayContent}</p>
       </article>
 
-      <ReviewModal
-        key={`edit-${review.id}-${isEditOpen}`}
-        isOpen={isEditOpen}
-        onClose={() => setIsEditOpen(false)}
-        mode="edit"
-        initialRating={rating}
-        initialContent={content}
-        onSubmit={handleEditSubmit}
-      />
+      {isOwner && isEditOpen && (
+        <ReviewModal
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+          mode="edit"
+          initialRating={displayRating}
+          initialContent={displayContent}
+          onSubmit={handleEditSubmit}
+        />
+      )}
     </>
   )
 }

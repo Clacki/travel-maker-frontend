@@ -33,6 +33,7 @@ export const travelDetailMock: TravelDetail = {
       createdAt: '2026-05-20',
       content:
         '파도가 정말 좋았어요! 서핑 초보인데 강사님이 친절하게 가르쳐 주셔서 금방 탈 수 있었습니다. 꼭 다시 오고 싶네요.',
+      // TODO: API 연동 시 제거 — 서버 응답의 isOwner 필드로 대체
       isOwner: true,
     },
     {
