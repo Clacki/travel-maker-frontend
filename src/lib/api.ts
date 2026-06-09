@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getStoredAccessToken } from '@/features/auth/utils/tokenStorage'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -12,14 +12,12 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    if (typeof window === 'undefined') {
-      return config
-    }
-
-    const accessToken = getStoredAccessToken()
+    const accessToken = useAuthStore.getState().accessToken
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`
+    } else {
+      delete config.headers.Authorization
     }
 
     return config
@@ -29,14 +27,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // TODO: /auth/token/refresh로 Silent Refresh 후 재요청합니다.
-      // TODO: Refresh Token 만료 시 auth store 정리와 로그인 유도 처리가 필요합니다.
-    }
-
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 export default api

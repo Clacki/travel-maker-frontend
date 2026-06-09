@@ -1,25 +1,23 @@
 import { create } from 'zustand'
 
+export type UserProfile = {
+  id: string
+  nickname: string
+  profileImageUrl?: string | null
+}
+
 export type UserProfileState = {
-  id: number | null
-  nickname: string | null
-  profileImageUrl: string | null
-  setUserProfile: (profile: {
-    id: number
-    nickname: string
-    profileImageUrl?: string | null
-  }) => void
+  userProfile: UserProfile | null
+  setUserProfile: (userProfile: UserProfile) => void
   clearUserProfile: () => void
 }
 
 export const useUserProfileStore = create<UserProfileState>((set) => ({
-  id: null,
-  nickname: null,
-  profileImageUrl: null,
-  setUserProfile: ({ id, nickname, profileImageUrl = null }) => {
-    set({ id, nickname, profileImageUrl })
+  userProfile: null,
+  setUserProfile: (userProfile) => {
+    set({ userProfile })
   },
   clearUserProfile: () => {
-    set({ id: null, nickname: null, profileImageUrl: null })
+    set({ userProfile: null })
   },
 }))

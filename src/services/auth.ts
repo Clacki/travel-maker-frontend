@@ -1,15 +1,10 @@
 import api from '@/lib/api'
 import { logout, refreshAccessToken } from '@/features/auth/api/authApi'
-import {
-  ACCESS_TOKEN_STORAGE_KEY,
-  setStoredAccessToken,
-} from '@/features/auth/utils/tokenStorage'
 
 const KAKAO_AUTHORIZE_URL = 'https://kauth.kakao.com/oauth/authorize'
 const DEFAULT_KAKAO_REDIRECT_URI =
   'https://www.travel-maker.site/social-callback'
 const KAKAO_LOGIN_PATH = '/auth/kakao/login'
-export { ACCESS_TOKEN_STORAGE_KEY }
 
 export type KakaoLoginResponse = {
   access_token: string
@@ -44,7 +39,3 @@ export async function loginWithKakaoCode({ code }: { code: string }) {
 }
 
 export { logout, refreshAccessToken }
-
-export function saveAccessToken(accessToken: string) {
-  setStoredAccessToken(accessToken)
-}

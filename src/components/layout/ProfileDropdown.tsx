@@ -58,6 +58,12 @@ const avatarFallbackStyle = css({
   justifyContent: 'center',
   width: 'full',
   height: 'full',
+  bg: 'primary.soft',
+  color: 'primary',
+  '& svg': {
+    width: '20px',
+    height: '20px',
+  },
 })
 
 const profileMenuStyle = css({
@@ -114,13 +120,13 @@ export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasAvatarError, setHasAvatarError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const userId = useUserProfileStore((state) => state.id)
-  const nickname = useUserProfileStore((state) => state.nickname)
-  const profileImageUrl = useUserProfileStore((state) => state.profileImageUrl)
+  const userProfile = useUserProfileStore((state) => state.userProfile)
   const { isLoggingOut, logout } = useLogout()
 
-  const profileHref = ROUTES.PROFILE(userId ? String(userId) : 'me')
-  const avatarLabel = nickname?.trim().slice(0, 2).toUpperCase() || 'TM'
+  // TODO: Replace /profile/me with the real current-user id once profile API is connected.
+  const profileHref = ROUTES.PROFILE(userProfile?.id ?? 'me')
+  const profileImageUrl = userProfile?.profileImageUrl ?? null
+  const nickname = userProfile?.nickname ?? null
   const canShowAvatarImage = !!profileImageUrl && !hasAvatarError
 
   const closeMenu = () => setIsOpen(false)
@@ -176,7 +182,9 @@ export function ProfileDropdown() {
             onError={() => setHasAvatarError(true)}
           />
         ) : (
-          <span className={avatarFallbackStyle}>{avatarLabel}</span>
+          <span className={avatarFallbackStyle} aria-hidden="true">
+            <User />
+          </span>
         )}
       </button>
 
