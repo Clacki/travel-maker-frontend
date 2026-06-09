@@ -58,6 +58,12 @@ const avatarFallbackStyle = css({
   justifyContent: 'center',
   width: 'full',
   height: 'full',
+  bg: 'primary.soft',
+  color: 'primary',
+  '& svg': {
+    width: '20px',
+    height: '20px',
+  },
 })
 
 const profileMenuStyle = css({
@@ -119,8 +125,8 @@ export function ProfileDropdown() {
   const profileImageUrl = useUserProfileStore((state) => state.profileImageUrl)
   const { isLoggingOut, logout } = useLogout()
 
+  // TODO: Replace /profile/me with the real current-user id once profile API is connected.
   const profileHref = ROUTES.PROFILE(userId ? String(userId) : 'me')
-  const avatarLabel = nickname?.trim().slice(0, 2).toUpperCase() || 'TM'
   const canShowAvatarImage = !!profileImageUrl && !hasAvatarError
 
   const closeMenu = () => setIsOpen(false)
@@ -176,7 +182,9 @@ export function ProfileDropdown() {
             onError={() => setHasAvatarError(true)}
           />
         ) : (
-          <span className={avatarFallbackStyle}>{avatarLabel}</span>
+          <span className={avatarFallbackStyle} aria-hidden="true">
+            <User />
+          </span>
         )}
       </button>
 

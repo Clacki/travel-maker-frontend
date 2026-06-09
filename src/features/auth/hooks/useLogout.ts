@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { logout } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import { markExplicitLogout } from '@/features/auth/utils/tokenStorage'
 
 export const useLogout = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -24,6 +25,7 @@ export const useLogout = () => {
     } catch (error) {
       console.error('Logout request failed.', error)
     } finally {
+      markExplicitLogout()
       clearAccessToken()
       clearUserProfile()
       setIsLoggingOut(false)
