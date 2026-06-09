@@ -55,3 +55,6 @@ docs/work-log/
 docs/work-log/
 .claude/scripts/
 
+# Local mock data (개인 개발용 — 커밋 제외)
+src/mocks/local/
+

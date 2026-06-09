@@ -1,6 +1,11 @@
-import type { InfoItem } from '../types/travelDetail.types'
+'use client'
 
 import { css } from '@/styled-system/css'
+
+interface InfoItem {
+  label: string
+  value: string
+}
 
 interface InfoGridProps {
   items: InfoItem[]
@@ -35,12 +40,16 @@ const valueStyle = css({
 export default function InfoGrid({ items }: InfoGridProps) {
   return (
     <dl className={gridStyle}>
-      {items.map((item) => (
-        <div key={item.label} className={itemStyle}>
-          <dt className={labelStyle}>{item.label}</dt>
-          <dd className={valueStyle}>{item.value}</dd>
-        </div>
-      ))}
+      {items.map((item, index) =>
+        item.label ? (
+          <div key={item.label} className={itemStyle}>
+            <dt className={labelStyle}>{item.label}</dt>
+            <dd className={valueStyle}>{item.value}</dd>
+          </div>
+        ) : (
+          <div key={index} aria-hidden="true" />
+        )
+      )}
     </dl>
   )
 }

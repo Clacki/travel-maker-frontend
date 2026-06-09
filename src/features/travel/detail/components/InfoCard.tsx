@@ -2,8 +2,8 @@
 
 import { useRef, useState } from 'react'
 
-import InfoGrid from './InfoGrid'
 import TagList from './TagList'
+import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
 
 import type { TravelDetail } from '../types/travelDetail.types'
@@ -13,7 +13,14 @@ import { css } from '@/styled-system/css'
 interface InfoCardProps {
   detail: Pick<
     TravelDetail,
-    'title' | 'rating' | 'reviewCount' | 'tags' | 'description' | 'infoItems'
+    | 'place_name'
+    | 'rating_avg'
+    | 'review_count'
+    | 'tags'
+    | 'description'
+    | 'address_primary'
+    | 'address_detail'
+    | 'info'
   >
   isAuthenticated: boolean
 }
@@ -127,7 +134,16 @@ const descriptionStyle = css({
 })
 
 export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
-  const { title, rating, reviewCount, tags, description, infoItems } = detail
+  const {
+    place_name,
+    rating_avg,
+    review_count,
+    tags,
+    description,
+    address_primary,
+    address_detail,
+    info,
+  } = detail
   const [copied, setCopied] = useState(false)
   const [isWished, setIsWished] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -148,7 +164,7 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
     try {
       const url = window.location.href
       if (navigator.share) {
-        await navigator.share({ title, url })
+        await navigator.share({ title: place_name, url })
       } else {
         await navigator.clipboard.writeText(url)
         setCopied(true)
@@ -164,7 +180,7 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
       <div className={cardStyle}>
         <div className={headerStyle}>
           <div className={titleInfoStyle}>
-            <h1 className={titleStyle}>{title}</h1>
+            <h1 className={titleStyle}>{place_name}</h1>
             <div className={ratingRowStyle}>
               <svg
                 width="16"
@@ -176,9 +192,11 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
               >
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
-              <span className={ratingTextStyle}>{rating.toFixed(1)}</span>
+              <span className={ratingTextStyle}>
+                {(rating_avg ?? 0).toFixed(1)}
+              </span>
               <span className={reviewCountStyle}>
-                ({reviewCount.toLocaleString()}개 리뷰)
+                ({review_count.toLocaleString()}개 리뷰)
               </span>
             </div>
           </div>
@@ -271,7 +289,57 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
 
         <p className={descriptionStyle}>{description}</p>
 
-        <InfoGrid items={infoItems} />
+        <InfoGrid
+          items={[
+            address_primary
+              ? {
+                  label: '위치',
+                  value: address_detail
+                    ? `${address_primary} ${address_detail}`
+                    : address_primary,
+                }
+              : null,
+            info?.operating_hours
+              ? { label: '운영', value: info.operating_hours }
+              : null,
+            info?.closed_days
+              ? { label: '휴무일', value: info.closed_days }
+              : null,
+            info?.admission_fee
+              ? { label: '입장료', value: info.admission_fee }
+              : null,
+            info?.parking !== null && info?.parking !== undefined
+              ? { label: '주차', value: info.parking ? '가능' : '불가' }
+              : null,
+            info?.spend_time
+              ? { label: '소요시간', value: info.spend_time }
+              : null,
+            info?.pet !== null && info?.pet !== undefined
+              ? {
+                  label: '반려동물',
+                  value: info.pet ? '동반 가능' : '동반 불가',
+                }
+              : null,
+            info?.baby_carriage !== null && info?.baby_carriage !== undefined
+              ? { label: '유모차', value: info.baby_carriage ? '가능' : '불가' }
+              : null,
+            info?.credit_card !== null && info?.credit_card !== undefined
+              ? { label: '카드결제', value: info.credit_card ? '가능' : '불가' }
+              : null,
+            info?.discount_info
+              ? { label: '할인정보', value: info.discount_info }
+              : null,
+            info?.accom_count
+              ? { label: '수용인원', value: info.accom_count }
+              : null,
+          ]
+            .filter(
+              (item): item is { label: string; value: string } => item !== null
+            )
+            .slice(0, 4)
+            .concat(Array(4).fill({ label: '', value: '' }))
+            .slice(0, 4)}
+        />
       </div>
 
       <LoginModal

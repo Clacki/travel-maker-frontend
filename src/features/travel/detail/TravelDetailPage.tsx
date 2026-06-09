@@ -22,7 +22,7 @@ const pageStyle = css({
 
 const contentGridStyle = css({
   display: 'grid',
-  gridTemplateColumns: { base: '1fr', lg: '7fr 5fr' },
+  gridTemplateColumns: { base: '1fr', lg: 'minmax(0, 7fr) minmax(0, 5fr)' },
   gap: '6',
   alignItems: 'start',
 })
@@ -40,24 +40,25 @@ export default function TravelDetailPage({
   return (
     <PageLayout>
       <div className={pageStyle}>
-        <Breadcrumb region={detail.region} subRegion={detail.subRegion} />
+        <Breadcrumb placeName={detail.place_name} />
 
         <div className={contentGridStyle}>
-          <GallerySectionContainer images={detail.images} placeId={0} />
+          <GallerySectionContainer images={detail.images} placeId={detail.id} />
 
           <div className={rightColumnStyle}>
             <InfoCard detail={detail} isAuthenticated={isAuthenticated} />
             <MapSection
-              name={detail.title}
+              name={detail.place_name}
               latitude={detail.latitude}
               longitude={detail.longitude}
             />
           </div>
         </div>
 
+        {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews 교체 */}
         <ReviewsSection
-          reviews={detail.reviews}
-          reviewCount={detail.reviewCount}
+          reviews={[]}
+          reviewCount={detail.review_count}
           isAuthenticated={isAuthenticated}
         />
       </div>
