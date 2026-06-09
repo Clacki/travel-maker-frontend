@@ -55,10 +55,10 @@ export default function TravelDetailPage({
           </div>
         </div>
 
-        {/* TODO: 리뷰 목록은 GET /api/v1/places/{place_id}/reviews 별도 연동 필요 */}
+        {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews/reviewCount 교체 */}
         <ReviewsSection
           reviews={[]}
-          reviewCount={detail.review_count}
+          reviewCount={0}
           isAuthenticated={isAuthenticated}
         />
       </div>

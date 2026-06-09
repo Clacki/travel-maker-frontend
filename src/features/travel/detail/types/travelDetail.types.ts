@@ -1,8 +1,3 @@
-export type InfoItem = {
-  label: string
-  value: string
-}
-
 export type Tag = {
   id: number
   tag_name: string
