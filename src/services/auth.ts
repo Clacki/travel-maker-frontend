@@ -1,5 +1,5 @@
 import api from '@/lib/api'
-import { refreshAccessToken } from '@/features/auth/api/authApi'
+import { logout, refreshAccessToken } from '@/features/auth/api/authApi'
 import {
   ACCESS_TOKEN_STORAGE_KEY,
   setStoredAccessToken,
@@ -43,7 +43,7 @@ export async function loginWithKakaoCode({ code }: { code: string }) {
   return response.data
 }
 
-export { refreshAccessToken }
+export { logout, refreshAccessToken }
 
 export function saveAccessToken(accessToken: string) {
   setStoredAccessToken(accessToken)
