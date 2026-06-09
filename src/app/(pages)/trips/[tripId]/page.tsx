@@ -1,11 +1,20 @@
-import { TripsPlaceholderPage } from '@/features/trips/components/TripsPlaceholderPage'
+import { notFound } from 'next/navigation'
+import { findTripDetailById } from '@/features/trips/detail/data/tripDetailMock'
+import { TripDetailPage } from '@/features/trips/detail/TripDetailPage'
 
-interface TripDetailPageProps {
+interface TripDetailRoutePageProps {
   params: Promise<{ tripId: string }>
 }
 
-export default async function TripDetailPage({ params }: TripDetailPageProps) {
+export default async function TripDetailRoutePage({
+  params,
+}: TripDetailRoutePageProps) {
   const { tripId } = await params
+  const trip = findTripDetailById(tripId)
 
-  return <TripsPlaceholderPage mode="detail" tripId={tripId} />
+  if (!trip) {
+    notFound()
+  }
+
+  return <TripDetailPage trip={trip} />
 }
