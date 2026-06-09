@@ -4,21 +4,17 @@ import { useEffect, useRef, useState } from 'react'
 
 import { ChevronDown, Clock } from 'lucide-react'
 
+import type { DepartureTime } from '@/features/course/course.types'
+
 import { css } from '@/styled-system/css'
 
-interface TimeValue {
-  period: 'am' | 'pm'
-  hour: number
-  minute: number
-}
-
 interface TimePickerProps {
-  value: TimeValue
-  onChange: (time: TimeValue) => void
+  value: DepartureTime
+  onChange: (time: DepartureTime) => void
 }
 
 // 00:00 ~ 23:00 시간대 목록 생성
-const TIME_SLOTS: { label: string; value: TimeValue }[] = Array.from(
+const TIME_SLOTS: { label: string; value: DepartureTime }[] = Array.from(
   { length: 24 },
   (_, i) => {
     const period = i < 12 ? 'am' : 'pm'
@@ -28,13 +24,13 @@ const TIME_SLOTS: { label: string; value: TimeValue }[] = Array.from(
   }
 )
 
-function formatDisplay(v: TimeValue): string {
+function formatDisplay(v: DepartureTime): string {
   const periodLabel = v.period === 'am' ? '오전' : '오후'
   const minuteStr = String(v.minute).padStart(2, '0')
   return `${periodLabel} ${v.hour}:${minuteStr}`
 }
 
-function isSameTime(a: TimeValue, b: TimeValue) {
+function isSameTime(a: DepartureTime, b: DepartureTime) {
   return a.period === b.period && a.hour === b.hour && a.minute === b.minute
 }
 
@@ -68,7 +64,8 @@ const dropdownStyle = css({
   borderRadius: 'lg',
   boxShadow: 'md',
   w: 'full',
-  maxH: '48',
+  minW: '36',
+  maxH: '60',
   overflowY: 'auto',
   py: '1',
 })
@@ -76,8 +73,9 @@ const dropdownStyle = css({
 const slotStyle = css({
   display: 'flex',
   alignItems: 'center',
+  w: 'full',
   px: '4',
-  py: '2.5',
+  py: '3',
   fontSize: 'sm',
   cursor: 'pointer',
   transition: 'background-color 150ms',
@@ -87,8 +85,9 @@ const slotStyle = css({
 const slotSelectedStyle = css({
   display: 'flex',
   alignItems: 'center',
+  w: 'full',
   px: '4',
-  py: '2.5',
+  py: '3',
   fontSize: 'sm',
   cursor: 'pointer',
   bg: 'primary.soft',

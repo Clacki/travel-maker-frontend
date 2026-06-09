@@ -2,14 +2,14 @@
 
 import { Clock } from 'lucide-react'
 
-import type { CourseDateRange } from '@/features/course/course.types'
 import { useCourseStore } from '@/store/courseStore'
-
-import { css } from '@/styled-system/css'
+import type { CourseDateRange } from '@/features/course/course.types'
 
 import { DateRangePicker } from './components/DateRangePicker'
 import { DayTabGroup } from './components/DayTabGroup'
 import { TimePicker } from './components/TimePicker'
+
+import { css } from '@/styled-system/css'
 
 const panelStyle = css({
   bg: 'bg.surface',
@@ -18,8 +18,8 @@ const panelStyle = css({
   borderColor: 'border.subtle',
   boxShadow: 'md',
   p: '6',
-  w: '765px',
-  h: '365px',
+  w: 'full',
+  maxW: '765px',
 })
 
 const headerTitleStyle = css({
@@ -38,6 +38,13 @@ const gridStyle = css({
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   gap: '4',
+})
+
+const gridRowStyle = css({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '4',
+  mt: '4',
 })
 
 const labelStyle = css({
@@ -118,14 +125,7 @@ export function SchedulePanel() {
       </div>
 
       {/* Row 2: Day Selection + Estimated Duration */}
-      <div
-        className={css({
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '4',
-          mt: '4',
-        })}
-      >
+      <div className={gridRowStyle}>
         <div>
           <p className={labelStyle}>일차 선택</p>
           <DayTabGroup
@@ -151,6 +151,7 @@ export function SchedulePanel() {
               value={estimatedHours}
               onChange={(e) => setEstimatedHours(Number(e.target.value))}
               className={durationInputStyle}
+              aria-label="예상 소요 시간 (시)"
             />
             <span className={unitLabelStyle}>시간</span>
             <input
@@ -160,6 +161,7 @@ export function SchedulePanel() {
               value={estimatedMinutes}
               onChange={(e) => setEstimatedMinutes(Number(e.target.value))}
               className={durationInputStyle}
+              aria-label="예상 소요 시간 (분)"
             />
             <span className={unitLabelStyle}>분</span>
           </div>

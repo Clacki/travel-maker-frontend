@@ -19,5 +19,11 @@ export type CourseDateRange = {
   to: Date | undefined
 }
 
+export type DepartureTime = {
+  period: 'am' | 'pm'
+  hour: number
+  minute: number
+}
+
 export const MIN_PLACES = 2
 export const MAX_PLACES = 7

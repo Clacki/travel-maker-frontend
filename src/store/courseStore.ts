@@ -3,15 +3,10 @@ import { create } from 'zustand'
 import type {
   CourseDateRange,
   CoursePlace,
+  DepartureTime,
 } from '@/features/course/course.types'
 import { MAX_PLACES } from '@/features/course/course.types'
 import { mockCoursePlaces } from '@/mocks/data/course-data'
-
-type DepartureTime = {
-  period: 'am' | 'pm'
-  hour: number
-  minute: number
-}
 
 type CourseStore = {
   title: string
