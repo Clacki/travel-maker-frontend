@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import { DayPicker } from 'react-day-picker'
 import { Calendar, ChevronDown } from 'lucide-react'
 
-import type { CourseDateRange } from '@/features/course/course.types'
+import type { CourseDateRange } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 

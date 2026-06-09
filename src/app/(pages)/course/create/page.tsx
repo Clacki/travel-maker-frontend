@@ -1,5 +1,5 @@
-import CourseSidePanel from '@/features/course/CourseSidePanel'
-import SchedulePanel from '@/features/course/SchedulePanel'
+import CourseSidePanel from '@/features/trips/CourseSidePanel'
+import SchedulePanel from '@/features/trips/SchedulePanel'
 
 import { css } from '@/styled-system/css'
 

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { ChevronDown, Clock } from 'lucide-react'
 
-import type { DepartureTime } from '@/features/course/course.types'
+import type { DepartureTime } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 

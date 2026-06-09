@@ -1,4 +1,7 @@
-import { REGION_OPTIONS, THEME_OPTIONS } from '@/features/course/course.types'
+import {
+  REGION_OPTIONS,
+  THEME_OPTIONS,
+} from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 

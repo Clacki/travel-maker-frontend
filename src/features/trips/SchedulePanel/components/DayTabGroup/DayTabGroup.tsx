@@ -1,6 +1,6 @@
 'use client'
 
-import type { CourseDateRange } from '@/features/course/course.types'
+import type { CourseDateRange } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 

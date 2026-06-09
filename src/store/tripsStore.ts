@@ -4,9 +4,9 @@ import type {
   CourseDateRange,
   CoursePlace,
   DepartureTime,
-} from '@/features/course/course.types'
-import { MAX_PLACES } from '@/features/course/course.types'
-import { mockCoursePlaces } from '@/mocks/data/course-data'
+} from '@/features/trips/types/course.types'
+import { MAX_PLACES } from '@/features/trips/types/course.types'
+import { mockCoursePlaces } from '@/mocks/data/trips-data'
 
 type CourseStore = {
   title: string

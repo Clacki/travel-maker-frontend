@@ -2,8 +2,8 @@
 
 import { Clock } from 'lucide-react'
 
-import { useCourseStore } from '@/store/courseStore'
-import type { CourseDateRange } from '@/features/course/course.types'
+import { useCourseStore } from '@/store/tripsStore'
+import type { CourseDateRange } from '@/features/trips/types/course.types'
 
 import { DateRangePicker } from './components/DateRangePicker'
 import { DayTabGroup } from './components/DayTabGroup'
