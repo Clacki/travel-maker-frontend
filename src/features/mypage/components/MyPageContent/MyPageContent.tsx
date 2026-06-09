@@ -23,6 +23,7 @@ import {
   getDefaultEditableProfile,
   useProfileStore,
 } from '@/store/profileStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 
 interface MyPageContentProps {
   userId: string
@@ -65,6 +66,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const profile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
   )
+  const currentUserProfile = useUserProfileStore((state) => state.userProfile)
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [bookmarkPage, setBookmarkPage] = useState(1)
   const [reviewPage, setReviewPage] = useState(1)
@@ -87,10 +89,28 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const bookmarks = mockBookmarks
   const reviews = mockReviews
 
+  const isCurrentUserPage =
+    !!currentUserProfile &&
+    (userId === currentUserProfile.id || userId === 'me')
   const user = {
     ...mockMyProfile,
-    nickname: profile.nickname,
-    bio: profile.bio,
+    id: isCurrentUserPage ? Number(currentUserProfile.id) : mockMyProfile.id,
+    nickname: isCurrentUserPage
+      ? currentUserProfile.nickname
+      : profile.nickname,
+    bio: isCurrentUserPage ? currentUserProfile.bio || '' : profile.bio,
+    email: isCurrentUserPage
+      ? currentUserProfile.email || ''
+      : mockMyProfile.email,
+    profile_img_url: isCurrentUserPage
+      ? currentUserProfile.profileImageUrl || ''
+      : mockMyProfile.profile_img_url,
+    bookmark_count: isCurrentUserPage
+      ? (currentUserProfile.bookmarkCount ?? mockMyProfile.bookmark_count)
+      : mockMyProfile.bookmark_count,
+    review_count: isCurrentUserPage
+      ? (currentUserProfile.reviewCount ?? mockMyProfile.review_count)
+      : mockMyProfile.review_count,
     tags: mapProfileTagIdsToUserTags(profile.tagIds),
   }
 
