@@ -166,10 +166,20 @@ const sequenceDividerStyle = css({
 
 const markerPositions = [
   { left: '18%', top: '62%' },
-  { left: '36%', top: '42%' },
-  { left: '55%', top: '30%' },
-  { left: '72%', top: '48%' },
-  { left: '86%', top: '34%' },
+  { left: '29%', top: '48%' },
+  { left: '42%', top: '34%' },
+  { left: '55%', top: '45%' },
+  { left: '68%', top: '29%' },
+  { left: '82%', top: '42%' },
+  { left: '24%', top: '26%' },
+  { left: '37%', top: '68%' },
+  { left: '51%', top: '58%' },
+  { left: '64%', top: '69%' },
+  { left: '78%', top: '61%' },
+  { left: '16%', top: '38%' },
+  { left: '47%', top: '22%' },
+  { left: '88%', top: '24%' },
+  { left: '58%', top: '78%' },
 ]
 
 interface TripMapPreviewProps {
