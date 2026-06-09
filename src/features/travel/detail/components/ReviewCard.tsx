@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
+import { LoginModal } from '@/components/auth/LoginModal'
 
 import type { Review } from '../types/travelDetail.types'
 
@@ -10,6 +11,7 @@ import { css } from '@/styled-system/css'
 
 interface ReviewCardProps {
   review: Review
+  isAuthenticated: boolean
 }
 
 const cardStyle = css({
@@ -106,11 +108,23 @@ function getInitials(name: string): string {
   return name.slice(0, 1).toUpperCase()
 }
 
-export default function ReviewCard({ review }: ReviewCardProps) {
+export default function ReviewCard({
+  review,
+  isAuthenticated,
+}: ReviewCardProps) {
   const { author, createdAt, isOwner } = review
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
+
+  const handleEditClick = () => {
+    if (!isAuthenticated) {
+      setIsLoginModalOpen(true)
+      return
+    }
+    setIsEditOpen(true)
+  }
 
   const handleEditSubmit = (newRating: number, newContent: string) => {
     setDisplayRating(newRating)
@@ -155,7 +169,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             <button
               type="button"
               className={editButtonStyle}
-              onClick={() => setIsEditOpen(true)}
+              onClick={handleEditClick}
             >
               수정
             </button>
@@ -174,6 +188,10 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           onSubmit={handleEditSubmit}
         />
       )}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </>
   )
 }

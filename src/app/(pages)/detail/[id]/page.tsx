@@ -1,3 +1,4 @@
+import { isAuthenticated } from '@/lib/auth'
 import { getTravelDetail } from '@/features/travel/detail/api/travelDetailApi'
 import TravelDetailPage from '@/features/travel/detail/TravelDetailPage'
 
@@ -7,7 +8,10 @@ interface DetailPageProps {
 
 export default async function DetailPage({ params }: DetailPageProps) {
   const { id } = await params
-  const detail = await getTravelDetail(id)
+  const [detail, authenticated] = await Promise.all([
+    getTravelDetail(id),
+    isAuthenticated(),
+  ])
 
-  return <TravelDetailPage detail={detail} />
+  return <TravelDetailPage detail={detail} isAuthenticated={authenticated} />
 }
