@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -127,15 +127,22 @@ export default function InfoCard({ detail }: InfoCardProps) {
   const { title, rating, reviewCount, tags, description, infoItems } = detail
   const [copied, setCopied] = useState(false)
   const [isWished, setIsWished] = useState(false)
+  const isSharing = useRef(false)
 
   const handleShare = async () => {
-    const url = window.location.href
-    if (navigator.share) {
-      await navigator.share({ title, url })
-    } else {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+    if (isSharing.current) return
+    isSharing.current = true
+    try {
+      const url = window.location.href
+      if (navigator.share) {
+        await navigator.share({ title, url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      }
+    } finally {
+      isSharing.current = false
     }
   }
 
