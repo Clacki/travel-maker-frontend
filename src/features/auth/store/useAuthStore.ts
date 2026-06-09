@@ -1,8 +1,7 @@
 import { create } from 'zustand'
 import {
-  getStoredAccessToken,
-  removeStoredAccessToken,
-  setStoredAccessToken,
+  clearAuthLoggedOut,
+  clearLegacyStoredAccessToken,
 } from '@/features/auth/utils/tokenStorage'
 
 type AuthState = {
@@ -10,8 +9,8 @@ type AuthState = {
   isLoggedIn: boolean
   isAuthInitialized: boolean
   setAccessToken: (accessToken: string) => void
-  clearAccessToken: () => void
-  initializeAuth: () => void
+  clearAuth: () => void
+  setAuthInitialized: (isAuthInitialized: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,28 +18,23 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoggedIn: false,
   isAuthInitialized: false,
   setAccessToken: (accessToken) => {
-    setStoredAccessToken(accessToken)
+    clearAuthLoggedOut()
+    clearLegacyStoredAccessToken()
     set({
       accessToken,
       isLoggedIn: true,
       isAuthInitialized: true,
     })
   },
-  clearAccessToken: () => {
-    removeStoredAccessToken()
+  clearAuth: () => {
+    clearLegacyStoredAccessToken()
     set({
       accessToken: null,
       isLoggedIn: false,
       isAuthInitialized: true,
     })
   },
-  initializeAuth: () => {
-    const accessToken = getStoredAccessToken()
-
-    set({
-      accessToken,
-      isLoggedIn: !!accessToken,
-      isAuthInitialized: true,
-    })
+  setAuthInitialized: (isAuthInitialized) => {
+    set({ isAuthInitialized })
   },
 }))

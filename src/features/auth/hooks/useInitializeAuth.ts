@@ -6,9 +6,9 @@ import { refreshAccessToken } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import {
-  clearExplicitLogout,
-  getStoredAccessToken,
-  hasExplicitLogout,
+  clearAuthLoggedOut,
+  clearLegacyStoredAccessToken,
+  getAuthLoggedOut,
 } from '@/features/auth/utils/tokenStorage'
 
 let authInitializationPromise: Promise<void> | null = null
@@ -17,8 +17,8 @@ export const useInitializeAuth = () => {
   const pathname = usePathname()
   const hasInitializedRef = useRef(false)
   const setAccessToken = useAuthStore((state) => state.setAccessToken)
-  const clearAccessToken = useAuthStore((state) => state.clearAccessToken)
-  const initializeAuth = useAuthStore((state) => state.initializeAuth)
+  const clearAuth = useAuthStore((state) => state.clearAuth)
+  const setAuthInitialized = useAuthStore((state) => state.setAuthInitialized)
   const clearUserProfile = useUserProfileStore(
     (state) => state.clearUserProfile
   )
@@ -29,46 +29,40 @@ export const useInitializeAuth = () => {
     }
 
     hasInitializedRef.current = true
+    clearLegacyStoredAccessToken()
 
     if (useAuthStore.getState().isAuthInitialized) {
       return
     }
 
-    const initialize = async () => {
-      const storedAccessToken = getStoredAccessToken()
+    if (pathname === '/social-callback') {
+      setAuthInitialized(true)
+      return
+    }
 
-      if (storedAccessToken) {
-        clearExplicitLogout()
-        initializeAuth()
-        return
-      }
+    if (getAuthLoggedOut()) {
+      setAuthInitialized(true)
+      return
+    }
 
-      if (pathname === '/social-callback') {
-        initializeAuth()
-        return
-      }
-
-      if (hasExplicitLogout()) {
-        initializeAuth()
-        return
-      }
-
+    const initializeWithRefresh = async () => {
       try {
         const { access_token: accessToken } = await refreshAccessToken()
+        clearAuthLoggedOut()
         setAccessToken(accessToken)
       } catch {
-        clearAccessToken()
+        clearAuth()
         clearUserProfile()
       }
     }
 
-    authInitializationPromise ??= initialize()
+    authInitializationPromise ??= initializeWithRefresh()
     void authInitializationPromise
   }, [
-    clearAccessToken,
+    clearAuth,
     clearUserProfile,
-    initializeAuth,
     pathname,
     setAccessToken,
+    setAuthInitialized,
   ])
 }

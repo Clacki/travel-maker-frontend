@@ -120,13 +120,13 @@ export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasAvatarError, setHasAvatarError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const userId = useUserProfileStore((state) => state.id)
-  const nickname = useUserProfileStore((state) => state.nickname)
-  const profileImageUrl = useUserProfileStore((state) => state.profileImageUrl)
+  const userProfile = useUserProfileStore((state) => state.userProfile)
   const { isLoggingOut, logout } = useLogout()
 
   // TODO: Replace /profile/me with the real current-user id once profile API is connected.
-  const profileHref = ROUTES.PROFILE(userId ? String(userId) : 'me')
+  const profileHref = ROUTES.PROFILE(userProfile?.id ?? 'me')
+  const profileImageUrl = userProfile?.profileImageUrl ?? null
+  const nickname = userProfile?.nickname ?? null
   const canShowAvatarImage = !!profileImageUrl && !hasAvatarError
 
   const closeMenu = () => setIsOpen(false)
