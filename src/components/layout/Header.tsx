@@ -83,8 +83,14 @@ const navLinkStyle = css({
 })
 
 const authPlaceholderStyle = css({
+  display: 'inline-flex',
   width: { base: '8', sm: '72px' },
   height: '8',
+  flexShrink: 0,
+  borderRadius: 'pill',
+  bg: 'bg.muted',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
 })
 
 const desktopLoginButtonStyle = css({
