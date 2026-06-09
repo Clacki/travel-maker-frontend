@@ -2,6 +2,7 @@ import { create } from 'zustand'
 
 import type { CoursePlace } from '@/features/course/course.types'
 import { MAX_PLACES } from '@/features/course/course.types'
+import { mockCoursePlaces } from '@/mocks/data/course-data'
 
 type CourseStore = {
   title: string
@@ -25,20 +26,7 @@ export const useCourseStore = create<CourseStore>((set) => ({
   description: '',
   selectedRegion: null,
   selectedThemes: [],
-  places: [
-    {
-      id: '1',
-      name: '안목해변 카페거리',
-      address: '강원 강릉시 창해로 14번길 20',
-    },
-    { id: '2', name: '경포해변', address: '강원 강릉시 강문동 산 1' },
-    { id: '3', name: '송정 솔숲길', address: '강원 강릉시 송정동 일원' },
-    {
-      id: '4',
-      name: '주문진 수산물 식당',
-      address: '강원 강릉시 주문진읍 해안로 1762',
-    },
-  ],
+  places: mockCoursePlaces, // TODO: API 연결 후 [] 로 교체
 
   setTitle: (title) => set({ title }),
 

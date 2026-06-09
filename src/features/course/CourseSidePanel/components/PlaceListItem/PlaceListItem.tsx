@@ -1,3 +1,5 @@
+import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
+
 import type { CoursePlace } from '@/features/course/course.types'
 
 import { css } from '@/styled-system/css'
@@ -109,7 +111,7 @@ export function PlaceListItem({
           disabled={isFirst}
           onClick={() => onMoveUp(place.id)}
         >
-          ↑
+          <ArrowUp size={14} />
         </button>
         <button
           type="button"
@@ -118,7 +120,7 @@ export function PlaceListItem({
           disabled={isLast}
           onClick={() => onMoveDown(place.id)}
         >
-          ↓
+          <ArrowDown size={14} />
         </button>
         <button
           type="button"
@@ -126,7 +128,7 @@ export function PlaceListItem({
           aria-label={`${place.name} 삭제`}
           onClick={() => onRemove(place.id)}
         >
-          ✕
+          <Trash2 size={14} />
         </button>
       </div>
     </div>
