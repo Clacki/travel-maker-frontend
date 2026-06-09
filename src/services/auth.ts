@@ -1,19 +1,19 @@
 import api from '@/lib/api'
+import { refreshAccessToken } from '@/features/auth/api/authApi'
+import {
+  ACCESS_TOKEN_STORAGE_KEY,
+  setStoredAccessToken,
+} from '@/features/auth/utils/tokenStorage'
 
 const KAKAO_AUTHORIZE_URL = 'https://kauth.kakao.com/oauth/authorize'
 const DEFAULT_KAKAO_REDIRECT_URI =
   'https://www.travel-maker.site/social-callback'
 const KAKAO_LOGIN_PATH = '/auth/kakao/login'
-const TOKEN_REFRESH_PATH = '/auth/token/refresh'
-export const ACCESS_TOKEN_STORAGE_KEY = 'accessToken'
+export { ACCESS_TOKEN_STORAGE_KEY }
 
 export type KakaoLoginResponse = {
   access_token: string
   is_new_user?: boolean
-}
-
-export type TokenRefreshResponse = {
-  access_token: string
 }
 
 export function getKakaoAuthorizeUrl() {
@@ -43,16 +43,8 @@ export async function loginWithKakaoCode({ code }: { code: string }) {
   return response.data
 }
 
-export async function refreshAccessToken() {
-  const response = await api.post<TokenRefreshResponse>(TOKEN_REFRESH_PATH)
-
-  return response.data
-}
+export { refreshAccessToken }
 
 export function saveAccessToken(accessToken: string) {
-  if (typeof window === 'undefined') {
-    return
-  }
-
-  localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, accessToken)
+  setStoredAccessToken(accessToken)
 }

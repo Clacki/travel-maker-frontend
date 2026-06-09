@@ -292,9 +292,6 @@ export default function DevPage() {
           <PreviewFrame>
             <Header />
           </PreviewFrame>
-          <PreviewFrame>
-            <Header isAuthenticated />
-          </PreviewFrame>
         </PlaygroundSection>
 
         <PlaygroundSection
