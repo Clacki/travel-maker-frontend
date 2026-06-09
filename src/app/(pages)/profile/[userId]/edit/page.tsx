@@ -1,4 +1,4 @@
-import { PageLayout } from '@/components/layout/PageLayout'
+import { ProfileEditContent } from '@/features/mypage/components/ProfileEditContent'
 
 interface ProfileEditPageProps {
   params: Promise<{ userId: string }>
@@ -9,5 +9,5 @@ export default async function ProfileEditPage({
 }: ProfileEditPageProps) {
   const { userId } = await params
 
-  return <PageLayout>Profile Edit Page - {userId}</PageLayout>
+  return <ProfileEditContent userId={userId} />
 }

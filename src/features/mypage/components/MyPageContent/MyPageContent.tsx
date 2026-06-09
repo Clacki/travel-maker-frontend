@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { css } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
@@ -18,6 +18,11 @@ import {
   mockBookmarks,
   mockReviews,
 } from '@/mocks/data/mypage-data'
+import { mapProfileTagIdsToUserTags } from '../../lib/profile-tags'
+import {
+  getDefaultEditableProfile,
+  useProfileStore,
+} from '@/store/profileStore'
 
 interface MyPageContentProps {
   userId: string
@@ -56,6 +61,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   // TODO: 실제 API 연동 시 세션에서 현재 유저 ID 확인
   const isMyProfile = true
 
+  const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
+  const profile = useProfileStore((state) =>
+    state.getProfile(userId, fallbackProfile)
+  )
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [bookmarkPage, setBookmarkPage] = useState(1)
   const [reviewPage, setReviewPage] = useState(1)
@@ -75,9 +84,15 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   })
 
   // TODO: 실제 API 연동
-  const user = mockMyProfile
   const bookmarks = mockBookmarks
   const reviews = mockReviews
+
+  const user = {
+    ...mockMyProfile,
+    nickname: profile.nickname,
+    bio: profile.bio,
+    tags: mapProfileTagIdsToUserTags(profile.tagIds),
+  }
 
   const bookmarkTotalPages = Math.ceil(bookmarks.length / PAGE_SIZE)
   const reviewTotalPages = Math.ceil(reviews.length / PAGE_SIZE)
