@@ -31,7 +31,7 @@ const thumbnailRowStyle = css({
   gap: '2',
   overflowX: 'auto',
   scrollbarWidth: 'none',
-  _webkit_scrollbar: { display: 'none' },
+  '&::-webkit-scrollbar': { display: 'none' },
   cursor: 'grab',
   userSelect: 'none',
 })
