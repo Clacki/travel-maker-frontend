@@ -14,6 +14,7 @@ export type Review = {
   rating: number
   createdAt: string
   content: string
+  isOwner?: boolean
 }
 
 export type TravelDetail = {

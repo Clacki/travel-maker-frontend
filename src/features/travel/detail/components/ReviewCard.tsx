@@ -1,3 +1,9 @@
+'use client'
+
+import { useState } from 'react'
+
+import { ReviewModal } from '@/components/common/ReviewModal'
+
 import type { Review } from '../types/travelDetail.types'
 
 import { css } from '@/styled-system/css'
@@ -63,6 +69,30 @@ const contentStyle = css({
   lineHeight: 'relaxed',
 })
 
+const editButtonStyle = css({
+  ml: 'auto',
+  px: '3',
+  py: '1',
+  fontSize: 'xs',
+  fontWeight: 'medium',
+  color: 'text.secondary',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'pill',
+  bg: 'transparent',
+  cursor: 'pointer',
+  transitionProperty: 'color, border-color',
+  transitionDuration: '150ms',
+  _hover: {
+    color: 'primary',
+    borderColor: 'primary',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+})
+
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('ko-KR', {
@@ -77,42 +107,69 @@ function getInitials(name: string): string {
 }
 
 export default function ReviewCard({ review }: ReviewCardProps) {
-  const { author, rating, createdAt, content } = review
+  const { author, rating, createdAt, content, isOwner } = review
+  const [isEditOpen, setIsEditOpen] = useState(false)
+
+  const handleEditSubmit = (newRating: number, newContent: string) => {
+    console.log('review edit', review.id, newRating, newContent)
+    // TODO: 리뷰 수정 API 호출
+  }
 
   return (
-    <article className={cardStyle}>
-      <div className={headerStyle}>
-        {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
-        {author.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={author.avatarUrl}
-            alt={`${author.name} 프로필`}
-            className={css({
-              width: '10',
-              height: '10',
-              borderRadius: 'pill',
-              objectFit: 'cover',
-            })}
-          />
-        ) : (
-          <div className={avatarStyle} aria-hidden="true">
-            {getInitials(author.name)}
+    <>
+      <article className={cardStyle}>
+        <div className={headerStyle}>
+          {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
+          {author.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={author.avatarUrl}
+              alt={`${author.name} 프로필`}
+              className={css({
+                width: '10',
+                height: '10',
+                borderRadius: 'pill',
+                objectFit: 'cover',
+              })}
+            />
+          ) : (
+            <div className={avatarStyle} aria-hidden="true">
+              {getInitials(author.name)}
+            </div>
+          )}
+          <div className={authorInfoStyle}>
+            <span className={authorNameStyle}>{author.name}</span>
+            <div className={metaStyle}>
+              <span aria-label={`별점 ${rating}점`}>
+                {'★'.repeat(rating)}
+                {'☆'.repeat(5 - rating)}
+              </span>
+              <span aria-hidden="true">·</span>
+              <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+            </div>
           </div>
-        )}
-        <div className={authorInfoStyle}>
-          <span className={authorNameStyle}>{author.name}</span>
-          <div className={metaStyle}>
-            <span aria-label={`별점 ${rating}점`}>
-              {'★'.repeat(rating)}
-              {'☆'.repeat(5 - rating)}
-            </span>
-            <span aria-hidden="true">·</span>
-            <time dateTime={createdAt}>{formatDate(createdAt)}</time>
-          </div>
+          {isOwner && (
+            <button
+              type="button"
+              className={editButtonStyle}
+              onClick={() => setIsEditOpen(true)}
+            >
+              수정
+            </button>
+          )}
         </div>
-      </div>
-      <p className={contentStyle}>{content}</p>
-    </article>
+        <p className={contentStyle}>{content}</p>
+      </article>
+
+      <ReviewModal
+        key={`edit-${review.id}-${isEditOpen}`}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        mode="edit"
+        initialRating={rating}
+        initialContent={content}
+        onSubmit={handleEditSubmit}
+      />
+    </>
   )
 }
