@@ -1,12 +1,21 @@
 'use client'
 
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
-import { travelCategories, getAllDestinations } from '@/mocks/data/travel-data'
+import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
+import { getRecommendPlaces } from './api/placeRecommendApi'
+import type { PlaceRecommendItem } from './types/placeRecommend.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -35,14 +44,6 @@ const STYLE_TO_CATEGORY: Record<string, string> = {
   food: 'food',
   activity: 'adventure',
   romantic: 'romantic',
-}
-
-function hash(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0
-  }
-  return Math.abs(h)
 }
 
 function parseParams(
@@ -80,6 +81,14 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [places, setPlaces] = useState<PlaceRecommendItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    getRecommendPlaces()
+      .then(setPlaces)
+      .finally(() => setIsLoading(false))
+  }, [])
 
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
@@ -124,48 +133,13 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   const heroDesc =
     activeCategory?.description ?? '세계 각지의 여행지를 탐색해 보세요'
 
-  const all = useMemo(() => getAllDestinations(), [])
-
-  const filtered = useMemo(() => {
-    let result = all
-
-    if (categoryId) {
-      result = result.filter((d) => d.categoryId === categoryId)
-    }
-
-    if (selected.style?.length && !selected.style.includes('all')) {
-      const cats = selected.style
-        .map((s) => STYLE_TO_CATEGORY[s])
-        .filter(Boolean)
-      if (cats.length) {
-        result = result.filter((d) => cats.includes(d.categoryId))
-      }
-    }
-
-    if (selected.region?.length) {
-      result = result.filter((d) => d.location.includes('대한민국'))
-    }
-
-    return result
-  }, [all, categoryId, selected])
-
   const sorted = useMemo(() => {
-    const arr = [...filtered]
-    if (sort === 'popular') {
-      return arr.sort((a, b) => b.rating - a.rating)
-    }
+    const arr = [...places]
     if (sort === 'bookmarks') {
-      return arr.sort(
-        (a, b) => (hash(b.id + 'bm') % 1000) - (hash(a.id + 'bm') % 1000)
-      )
+      return arr.sort((a, b) => b.bookmark_count - a.bookmark_count)
     }
-    if (sort === 'reviews') {
-      return arr.sort(
-        (a, b) => (hash(b.id + 'rv') % 5000) - (hash(a.id + 'rv') % 5000)
-      )
-    }
-    return arr
-  }, [filtered, sort])
+    return arr.sort((a, b) => b.rating_avg - a.rating_avg)
+  }, [places, sort])
 
   const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)
   const paginatedItems = useMemo(
@@ -477,7 +451,13 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
       {/* Destinations Grid */}
       <section ref={gridRef} className={css({ py: 10, px: 6 })}>
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
-          {sorted.length > 0 ? (
+          {isLoading ? (
+            <div className={css({ textAlign: 'center', py: 20 })}>
+              <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
+                불러오는 중...
+              </p>
+            </div>
+          ) : sorted.length > 0 ? (
             <>
               <div
                 className={css({
@@ -491,24 +471,24 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
                   gap: 6,
                 })}
               >
-                {paginatedItems.map((destination, index) => (
+                {paginatedItems.map((place) => (
                   <div
-                    key={destination.id}
+                    key={place.id}
                     onClick={(e) => {
                       if (!(e.target as HTMLElement).closest('button')) {
                         e.preventDefault()
-                        router.push(ROUTES.DETAIL(destination.id))
+                        router.push(ROUTES.DETAIL(String(place.id)))
                       }
                     }}
                     className={css({ cursor: 'pointer' })}
                   >
                     <PlaceCard
-                      placeId={(currentPage - 1) * ITEMS_PER_PAGE + index}
-                      placeName={destination.name}
-                      description={destination.description}
-                      tags={destination.tags}
-                      rating={destination.rating}
-                      imageUrl={destination.image}
+                      placeId={place.id}
+                      placeName={place.place_name}
+                      description={place.description}
+                      tags={place.tags.map((t) => t.tag_name)}
+                      rating={place.rating_avg}
+                      imageUrl={place.image_url}
                       variant="bookmark"
                       isLiked={false}
                       onLikeToggle={() => {
