@@ -1,6 +1,5 @@
 import axios from 'axios'
-
-const ACCESS_TOKEN_STORAGE_KEY = 'accessToken'
+import { getStoredAccessToken } from '@/features/auth/utils/tokenStorage'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -17,7 +16,7 @@ api.interceptors.request.use(
       return config
     }
 
-    const accessToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY)
+    const accessToken = getStoredAccessToken()
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`

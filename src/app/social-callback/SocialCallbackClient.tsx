@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { loginWithKakaoCode, saveAccessToken } from '@/services/auth'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { loginWithKakaoCode } from '@/services/auth'
 import { css, cx } from '@/styled-system/css'
 
 type CallbackStatus = 'loading' | 'success' | 'error'
@@ -62,6 +63,7 @@ const errorDotStyle = css({
 export function SocialCallbackClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const setAccessToken = useAuthStore((state) => state.setAccessToken)
   const code = searchParams.get('code')
   const hasRequestedRef = useRef(false)
   const [status, setStatus] = useState<CallbackStatus>(
@@ -84,7 +86,7 @@ export function SocialCallbackClient() {
       try {
         const { access_token: accessToken } = await loginWithKakaoCode({ code })
 
-        saveAccessToken(accessToken)
+        setAccessToken(accessToken)
         setStatus('success')
         setMessage('로그인이 완료되었습니다. 홈으로 이동합니다.')
         router.replace('/')
@@ -96,7 +98,7 @@ export function SocialCallbackClient() {
     }
 
     void exchangeCode()
-  }, [code, router])
+  }, [code, router, setAccessToken])
 
   const isError = status === 'error'
 
