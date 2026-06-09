@@ -24,3 +24,9 @@ export type GetPlacesParams = {
   page?: number
   page_size?: number
 }
+
+export type GetPlacesFilterParams = {
+  tags?: number | number[]
+  page?: number
+  page_size?: number
+}

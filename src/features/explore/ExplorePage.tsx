@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
-import { getPlaces } from './api/placesApi'
+import { getPlaces, getPlacesFilter } from './api/placesApi'
 import type { Place } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -44,6 +44,16 @@ const STYLE_TO_CATEGORY: Record<string, string> = {
   food: 'food',
   activity: 'adventure',
   romantic: 'romantic',
+}
+
+const CATEGORY_TO_TAG_ID: Record<string, number> = {
+  beach: 1,
+  mountain: 2,
+  city: 3,
+  culture: 4,
+  food: 5,
+  adventure: 6,
+  romantic: 7,
 }
 
 function parseParams(
@@ -90,7 +100,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
   const [places, setPlaces] = useState<Place[]>([])
   const [totalCount, setTotalCount] = useState(0)
-  const [fetchedPage, setFetchedPage] = useState<number | null>(null)
+  const [fetchedKey, setFetchedKey] = useState<string | null>(null)
   const gridRef = useRef<HTMLElement>(null)
 
   const currentPage = Math.max(
@@ -98,20 +108,31 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
 
-  const isLoading = fetchedPage !== currentPage
+  const currentKey = `${currentPage}-${categoryId ?? ''}`
+  const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
-    getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+    const key = `${currentPage}-${categoryId ?? ''}`
+    const tagId = categoryId ? CATEGORY_TO_TAG_ID[categoryId] : undefined
+    const request = tagId
+      ? getPlacesFilter({
+          tags: tagId,
+          page: currentPage,
+          page_size: ITEMS_PER_PAGE,
+        })
+      : getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+
+    request
       .then((data) => {
         setPlaces(data.results)
         setTotalCount(data.count)
-        setFetchedPage(currentPage)
+        setFetchedKey(key)
       })
       .catch(() => {
         setPlaces([])
-        setFetchedPage(currentPage)
+        setFetchedKey(key)
       })
-  }, [currentPage])
+  }, [currentPage, categoryId])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {

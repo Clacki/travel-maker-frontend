@@ -1,11 +1,37 @@
 import api from '@/lib/api'
-import type { PlacesResponse, GetPlacesParams } from '../types/places.types'
+import type {
+  PlacesResponse,
+  GetPlacesParams,
+  GetPlacesFilterParams,
+} from '../types/places.types'
 
 const PLACES_PATH = '/api/v1/places'
+const PLACES_FILTER_PATH = '/api/v1/places/filter'
 
 export const getPlaces = async (
   params: GetPlacesParams = {}
 ): Promise<PlacesResponse> => {
   const response = await api.get<PlacesResponse>(PLACES_PATH, { params })
+  return response.data
+}
+
+export const getPlacesFilter = async (
+  params: GetPlacesFilterParams = {}
+): Promise<PlacesResponse> => {
+  const response = await api.get<PlacesResponse>(PLACES_FILTER_PATH, {
+    params,
+    paramsSerializer: (p) => {
+      const parts: string[] = []
+      for (const [key, value] of Object.entries(p)) {
+        if (value === undefined || value === null) continue
+        if (Array.isArray(value)) {
+          value.forEach((v) => parts.push(`${key}=${encodeURIComponent(v)}`))
+        } else {
+          parts.push(`${key}=${encodeURIComponent(value)}`)
+        }
+      }
+      return parts.join('&')
+    },
+  })
   return response.data
 }
