@@ -7,6 +7,9 @@ type SocialCallbackPageProps = {
 export default async function SocialCallbackPage({
   searchParams,
 }: SocialCallbackPageProps) {
+  // Deprecated compatibility route.
+  // Backend-driven OAuth should finish at /auth/callback; this route only
+  // preserves legacy links and never exchanges a Kakao code on the frontend.
   const params = await searchParams
   const nextParams = new URLSearchParams()
 
