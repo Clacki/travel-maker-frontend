@@ -23,27 +23,51 @@
 
 ```
 src/
-  app/                  # Next.js 라우팅 진입점
+  app/                        # Next.js 라우팅 진입점
+    (main)/                   # 메인 레이아웃 그룹
+    (pages)/                  # 페이지 라우트 그룹
+      detail/[id]/
+      explore/
+      profile/[userId]/
+        edit/
+      test/
+        result/
+      trips/
+        [tripId]/
+          edit/
+        create/
+    social-callback/
+  assets/                     # 폰트, 이미지 등 정적 리소스
   components/
-    common/             # Loading, EmptyState 등 공통 상태 컴포넌트
-    layout/             # Header, Footer 등 레이아웃
-    ui/                 # Button, Input, Card 등 기본 UI
+    auth/                     # 인증 관련 공통 컴포넌트
+    common/                   # 공통 상태 컴포넌트 (button, modal, status, tag 등)
+    filters/                  # 필터 UI 컴포넌트
+    layout/                   # Header, Footer 등 레이아웃
+    ui/                       # Pagination, PlaceCard 등 기본 UI
+  constants/                  # 라우트, 옵션 등 상수
+  data/                       # 정적 데이터
   features/
-    home/
-    auth/
+    auth/                     # 인증 (api, components, hooks, store, utils)
     explore/
-    test/
-    result/
+    home/
     mypage/
+    result/
+    test/
+    travel/
+      detail/                 # 여행 상세 (api, components, types)
+    trips/                    # 여행 일정 (api, components, types, utils)
+      CourseSidePanel/        # 코스 사이드패널
+      SchedulePanel/          # 일정 패널
+  lib/                        # axios 인스턴스, 외부 라이브러리 설정
   mocks/
-    data/               # 목업 데이터
+    data/                     # 목업 데이터
     handlers.ts
     browser.ts
-  store/                # Zustand 스토어
-  styles/               # 전역 스타일
-  lib/                  # axios 인스턴스, 외부 라이브러리 설정
-  types/                # 전역 공통 타입
-  utils/                # 순수 유틸 함수
+  services/                   # 서비스 레이어
+  store/                      # Zustand 스토어
+  styles/                     # 전역 스타일
+  types/                      # 전역 공통 타입
+  utils/                      # 순수 유틸 함수
 ```
 
 ---
