@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Star, ImageIcon } from 'lucide-react'
 import { css, cva } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
 import { LikeButton } from './LikeButton'
@@ -157,7 +158,6 @@ export function PlaceCard(props: PlaceCardProps) {
 
   return (
     <article className={cardRecipe({ variant })}>
-      {/* 이미지 영역 */}
       <div className={imageWrapperStyle}>
         {imageUrl ? (
           <Image
@@ -169,40 +169,17 @@ export function PlaceCard(props: PlaceCardProps) {
           />
         ) : (
           <div className={imagePlaceholderStyle} aria-hidden="true">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-              <circle cx="8.5" cy="8.5" r="1.5" />
-              <polyline points="21 15 16 10 5 21" />
-            </svg>
+            <ImageIcon size={32} />
           </div>
         )}
 
-        {/* 별점 오버레이 — 좌상단 */}
         {rating !== undefined && (
           <div className={ratingBadgeStyle}>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              aria-hidden="true"
-              className={ratingIconStyle}
-            >
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+            <Star size={12} fill="currentColor" className={ratingIconStyle} />
             <span>{rating.toFixed(1)}</span>
           </div>
         )}
 
-        {/* variant별 액션 버튼 — 우상단 */}
         {variant === 'bookmark' && (
           <LikeButton
             isLiked={props.isLiked}
@@ -212,7 +189,6 @@ export function PlaceCard(props: PlaceCardProps) {
         )}
       </div>
 
-      {/* review variant 편집 버튼 — article 기준 */}
       {variant === 'review' && (
         <EditButton
           placeId={placeId}
@@ -221,18 +197,15 @@ export function PlaceCard(props: PlaceCardProps) {
         />
       )}
 
-      {/* 카드 내용 */}
       <Link
         href={ROUTES.DETAIL(String(placeId))}
         className={contentStyle}
         aria-label={`${placeName} 상세 페이지로 이동`}
       >
-        {/* 장소명 */}
         <h3 className={titleStyle} style={{ WebkitBoxOrient: 'vertical' }}>
           {placeName}
         </h3>
 
-        {/* 태그 */}
         {tags.length > 0 && (
           <div className={tagRowStyle}>
             {tags.slice(0, 3).map((tag) => (
@@ -243,7 +216,6 @@ export function PlaceCard(props: PlaceCardProps) {
           </div>
         )}
 
-        {/* 설명 */}
         {description && (
           <p
             className={descriptionStyle}

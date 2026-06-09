@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Pencil, User } from 'lucide-react'
 import { css } from '@/styled-system/css'
 import type { UserProfile } from '@/types/mypage.types'
 
@@ -206,18 +207,7 @@ export function ProfileCard({
           />
         ) : (
           <div className={avatarPlaceholderStyle} aria-hidden="true">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+            <User size={32} />
           </div>
         )}
       </div>
@@ -258,18 +248,7 @@ export function ProfileCard({
 
       {isMyProfile && onEditClick && (
         <button type="button" className={editButtonStyle} onClick={onEditClick}>
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-          >
-            <path d="M12 20h9" />
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-          </svg>
+          <Pencil size={14} />
           프로필 수정
         </button>
       )}

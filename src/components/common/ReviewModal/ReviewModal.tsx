@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Star } from 'lucide-react'
 import { css } from '@/styled-system/css'
 import { Modal } from '@/components/common/modal'
 import { Button } from '@/components/common/button'
@@ -148,20 +149,14 @@ function StarRating({ value, onChange }: StarRatingProps) {
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
         >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
+          <Star
+            size={28}
             fill={(hovered || value) >= star ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            strokeWidth="1.5"
-            aria-hidden="true"
+            strokeWidth={1.5}
             className={css({
               color: (hovered || value) >= star ? 'primary' : 'text.secondary',
             })}
-          >
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
+          />
         </button>
       ))}
     </div>

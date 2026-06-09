@@ -1,8 +1,7 @@
 'use client'
 
+import { Heart, FileText, BarChart3 } from 'lucide-react'
 import { css } from '@/styled-system/css'
-
-// ─── Types ────────────────────────────────────────────────
 
 export type TabType = 'bookmark' | 'review' | 'test'
 
@@ -13,8 +12,6 @@ interface ProfileTabsProps {
   activeTab: TabType
   onTabChange: (tab: TabType) => void
 }
-
-// ─── Styles ────────────────────────────────────────────────
 
 const tabListStyle = css({
   display: 'flex',
@@ -62,8 +59,6 @@ const activeTabCountStyle = css({
   color: 'primary',
 })
 
-// ─── Component ────────────────────────────────────────────
-
 export function ProfileTabs({
   isMyProfile,
   bookmarkCount,
@@ -77,19 +72,19 @@ export function ProfileTabs({
           id: 'bookmark' as TabType,
           label: '찜 목록',
           count: bookmarkCount,
-          icon: <BookmarkIcon />,
+          icon: <Heart size={16} />,
         },
         {
           id: 'review' as TabType,
           label: '리뷰',
           count: reviewCount,
-          icon: <ReviewIcon />,
+          icon: <FileText size={16} />,
         },
         {
           id: 'test' as TabType,
           label: '성향 테스트 결과',
           count: null,
-          icon: <TestIcon />,
+          icon: <BarChart3 size={16} />,
         },
       ]
     : [
@@ -97,7 +92,7 @@ export function ProfileTabs({
           id: 'bookmark' as TabType,
           label: '찜 목록',
           count: bookmarkCount,
-          icon: <BookmarkIcon />,
+          icon: <Heart size={16} />,
         },
       ]
 
@@ -128,66 +123,5 @@ export function ProfileTabs({
         )
       })}
     </div>
-  )
-}
-
-// ─── Icons ────────────────────────────────────────────────
-
-function BookmarkIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-    </svg>
-  )
-}
-
-function ReviewIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-    </svg>
-  )
-}
-
-function TestIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 20V10" />
-      <path d="M18 20V4" />
-      <path d="M6 20v-4" />
-    </svg>
   )
 }
