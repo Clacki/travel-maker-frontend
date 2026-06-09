@@ -13,6 +13,7 @@ import { css, cx } from '@/styled-system/css'
 const navigationItems = [
   { href: ROUTES.TEST, label: 'Travel Style' },
   { href: ROUTES.EXPLORE, label: 'Explore' },
+  { href: ROUTES.TRIPS, label: 'Trips' },
 ] as const
 
 const headerStyle = css({
