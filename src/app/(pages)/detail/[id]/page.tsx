@@ -20,6 +20,7 @@ export default async function DetailPage({ params }: DetailPageProps) {
       if (error.response?.status === 404) notFound()
       throw new Error(String(error.response?.status ?? 500))
     }
+    if (error instanceof Error && error.message === '404') notFound()
     throw error
   }
 
