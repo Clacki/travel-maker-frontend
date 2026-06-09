@@ -8,7 +8,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'beach',
     name: '해변 휴양',
     description: '푸른 바다와 하얀 모래사장에서의 힐링',
-    image: '/images/bg-beach.svg',
+    image: '/images/bg_Theme/bg-beach.svg',
     subTags: [
       { id: 'sunset', name: '선셋 뷰', icon: '🌅' },
       { id: 'snorkeling', name: '스노클링', icon: '🤿' },
@@ -63,7 +63,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'mountain',
     name: '산악 탐험',
     description: '웅장한 산맥과 자연 속 모험',
-    image: '/images/bg-mountain.svg',
+    image: '/images/bg_Theme/bg-mountain.svg',
     subTags: [
       { id: 'hiking', name: '등산', icon: '🥾' },
       { id: 'camping', name: '캠핑', icon: '⛺' },
@@ -118,7 +118,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'city',
     name: '도시 탐방',
     description: '세계 각국의 문화와 건축을 만나다',
-    image: '/images/bg-city.svg',
+    image: '/images/bg_Theme/bg-city.svg',
     subTags: [
       { id: 'architecture', name: '건축물', icon: '🏛️' },
       { id: 'shopping', name: '쇼핑', icon: '🛍️' },
@@ -173,7 +173,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'culture',
     name: '문화 체험',
     description: '역사와 전통을 깊이 느끼는 여행',
-    image: '/images/bg-culture.png',
+    image: '/images/bg_Theme/bg-culture.png',
     subTags: [
       { id: 'temple', name: '사원/신전', icon: '⛩️' },
       { id: 'festival', name: '축제', icon: '🎊' },
@@ -228,7 +228,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'food',
     name: '미식 여행',
     description: '세계의 맛을 탐험하는 여정',
-    image: '/images/bg-food.svg',
+    image: '/images/bg_Theme/bg-food.svg',
     subTags: [
       { id: 'fine-dining', name: '파인 다이닝', icon: '🍽️' },
       { id: 'local-food', name: '로컬 맛집', icon: '🍲' },
@@ -283,7 +283,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'adventure',
     name: '액티비티',
     description: '짜릿한 모험과 스릴을 즐기다',
-    image: '/images/bg-adventure.svg',
+    image: '/images/bg_Theme/bg-adventure.svg',
     subTags: [
       { id: 'diving', name: '다이빙', icon: '🤿' },
       { id: 'bungee', name: '번지점프', icon: '🪂' },
@@ -338,7 +338,7 @@ export const travelCategories: TravelCategory[] = [
     id: 'romantic',
     name: '로맨틱 여행',
     description: '사랑하는 사람과 함께하는 특별한 순간',
-    image: '/images/bg-romantic.svg',
+    image: '/images/bg_Theme/bg-romantic.svg',
     subTags: [
       { id: 'honeymoon', name: '허니문', icon: '💕' },
       { id: 'proposal', name: '프로포즈', icon: '💍' },

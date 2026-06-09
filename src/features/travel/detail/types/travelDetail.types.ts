@@ -14,6 +14,8 @@ export type Review = {
   rating: number
   createdAt: string
   content: string
+  // TODO: API 연동 시 백엔드와 isOwner(서버 계산) vs userId(클라이언트 비교) 방식 합의 필요
+  isOwner?: boolean
 }
 
 export type TravelDetail = {

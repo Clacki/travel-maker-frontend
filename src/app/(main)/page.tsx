@@ -35,7 +35,7 @@ export default function Home() {
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
         })}
-        style={{ backgroundImage: "url('/images/travel-bg.webp')" }}
+        style={{ backgroundImage: "url('/images/bg_Theme/travel-bg.webp')" }}
       />
       {/* Gradient overlay */}
       <div
