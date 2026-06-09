@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 
 import TagList from './TagList'
+import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
 
 import type { TravelDetail } from '../types/travelDetail.types'
@@ -12,7 +13,14 @@ import { css } from '@/styled-system/css'
 interface InfoCardProps {
   detail: Pick<
     TravelDetail,
-    'place_name' | 'rating_avg' | 'review_count' | 'tags' | 'description'
+    | 'place_name'
+    | 'rating_avg'
+    | 'review_count'
+    | 'tags'
+    | 'description'
+    | 'address_primary'
+    | 'address_detail'
+    | 'info'
   >
   isAuthenticated: boolean
 }
@@ -126,7 +134,16 @@ const descriptionStyle = css({
 })
 
 export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
-  const { place_name, rating_avg, review_count, tags, description } = detail
+  const {
+    place_name,
+    rating_avg,
+    review_count,
+    tags,
+    description,
+    address_primary,
+    address_detail,
+    info,
+  } = detail
   const [copied, setCopied] = useState(false)
   const [isWished, setIsWished] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -271,6 +288,58 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
         <TagList tags={tags} />
 
         <p className={descriptionStyle}>{description}</p>
+
+        <InfoGrid
+          items={[
+            address_primary
+              ? {
+                  label: '위치',
+                  value: address_detail
+                    ? `${address_primary} ${address_detail}`
+                    : address_primary,
+                }
+              : null,
+            info?.operating_hours
+              ? { label: '운영', value: info.operating_hours }
+              : null,
+            info?.closed_days
+              ? { label: '휴무일', value: info.closed_days }
+              : null,
+            info?.admission_fee
+              ? { label: '입장료', value: info.admission_fee }
+              : null,
+            info?.parking !== null && info?.parking !== undefined
+              ? { label: '주차', value: info.parking ? '가능' : '불가' }
+              : null,
+            info?.spend_time
+              ? { label: '소요시간', value: info.spend_time }
+              : null,
+            info?.pet !== null && info?.pet !== undefined
+              ? {
+                  label: '반려동물',
+                  value: info.pet ? '동반 가능' : '동반 불가',
+                }
+              : null,
+            info?.baby_carriage !== null && info?.baby_carriage !== undefined
+              ? { label: '유모차', value: info.baby_carriage ? '가능' : '불가' }
+              : null,
+            info?.credit_card !== null && info?.credit_card !== undefined
+              ? { label: '카드결제', value: info.credit_card ? '가능' : '불가' }
+              : null,
+            info?.discount_info
+              ? { label: '할인정보', value: info.discount_info }
+              : null,
+            info?.accom_count
+              ? { label: '수용인원', value: info.accom_count }
+              : null,
+          ]
+            .filter(
+              (item): item is { label: string; value: string } => item !== null
+            )
+            .slice(0, 4)
+            .concat(Array(4).fill({ label: '', value: '' }))
+            .slice(0, 4)}
+        />
       </div>
 
       <LoginModal

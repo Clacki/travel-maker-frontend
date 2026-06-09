@@ -22,7 +22,7 @@ const pageStyle = css({
 
 const contentGridStyle = css({
   display: 'grid',
-  gridTemplateColumns: { base: '1fr', lg: '7fr 5fr' },
+  gridTemplateColumns: { base: '1fr', lg: 'minmax(0, 7fr) minmax(0, 5fr)' },
   gap: '6',
   alignItems: 'start',
 })
@@ -55,10 +55,10 @@ export default function TravelDetailPage({
           </div>
         </div>
 
-        {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews/reviewCount 교체 */}
+        {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews 교체 */}
         <ReviewsSection
           reviews={[]}
-          reviewCount={0}
+          reviewCount={detail.review_count}
           isAuthenticated={isAuthenticated}
         />
       </div>
