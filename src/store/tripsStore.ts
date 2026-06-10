@@ -17,6 +17,7 @@ type CourseStore = {
   dateRange: CourseDateRange | null
   departureTime: DepartureTime
   selectedDay: number
+  selectedPlaceId: string | null
   estimatedHours: number
   estimatedMinutes: number
   setTitle: (title: string) => void
@@ -35,6 +36,7 @@ type CourseStore = {
   setDateRange: (range: CourseDateRange | null) => void
   setDepartureTime: (time: DepartureTime) => void
   setSelectedDay: (day: number) => void
+  setSelectedPlaceId: (id: string | null) => void
   setEstimatedHours: (hours: number) => void
   setEstimatedMinutes: (minutes: number) => void
   resetCourse: () => void
@@ -49,6 +51,7 @@ export const useCourseStore = create<CourseStore>((set) => ({
   dateRange: null,
   departureTime: { period: 'am', hour: 10, minute: 0 },
   selectedDay: 1,
+  selectedPlaceId: null,
   estimatedHours: 0,
   estimatedMinutes: 0,
 
@@ -104,6 +107,8 @@ export const useCourseStore = create<CourseStore>((set) => ({
 
   setSelectedDay: (day) => set({ selectedDay: day }),
 
+  setSelectedPlaceId: (id) => set({ selectedPlaceId: id }),
+
   setEstimatedHours: (hours) => set({ estimatedHours: hours }),
 
   setEstimatedMinutes: (minutes) => set({ estimatedMinutes: minutes }),
@@ -118,6 +123,7 @@ export const useCourseStore = create<CourseStore>((set) => ({
       dateRange: null,
       departureTime: { period: 'am', hour: 10, minute: 0 },
       selectedDay: 1,
+      selectedPlaceId: null,
       estimatedHours: 0,
       estimatedMinutes: 0,
     }),

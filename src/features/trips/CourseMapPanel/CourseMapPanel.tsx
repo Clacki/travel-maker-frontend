@@ -27,10 +27,13 @@ interface KakaoPolyline {
 }
 interface KakaoMapInstance {
   setBounds: (bounds: KakaoLatLngBounds) => void
+  panTo: (latlng: KakaoLatLng) => void
 }
 
 // 디자인 토큰 raw 값 (카카오맵 DOM API는 Panda CSS 토큰 미지원)
 const PRIMARY_COLOR = '#2CA6BE' // semantic token 'primary'
+const SELECTED_COLOR = '#FF6B35' // 선택된 마커 색상 (코랄 오렌지)
+const ROUTE_LINE_COLOR = '#FF6B35' // 코스 경로선 색상 (코랄 오렌지)
 
 const panelStyle = css({
   display: 'flex',
@@ -76,7 +79,6 @@ const mapSubtitleStyle = css({
 const mapAreaStyle = css({
   flex: 1,
   position: 'relative',
-  overflow: 'hidden',
   mx: '3',
   my: '2',
   borderRadius: 'xl',
@@ -85,6 +87,12 @@ const mapAreaStyle = css({
 const mapContainerStyle = css({
   position: 'absolute',
   inset: 0,
+  // globals.css의 `svg { display: block; max-width: 100% }` 리셋이
+  // 카카오맵 내부 SVG(폴리라인 레이어)의 width를 0으로 만드는 문제 해결
+  '& svg': {
+    display: 'revert',
+    maxWidth: 'revert',
+  },
 })
 
 const legendRowStyle = css({
@@ -154,6 +162,7 @@ export function CourseMapPanel() {
   const polylineRef = useRef<KakaoPolyline | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
+  const [isMapReady, setIsMapReady] = useState(false)
   const isGeocodingRef = useRef(false)
   useEffect(() => {
     isGeocodingRef.current = isGeocoding
@@ -164,6 +173,7 @@ export function CourseMapPanel() {
     description,
     selectedRegion,
     selectedDay,
+    selectedPlaceId,
     dateRange,
     places,
     estimatedHours,
@@ -191,6 +201,7 @@ export function CourseMapPanel() {
       level: 13,
     })
     mapInstanceRef.current = map
+    setIsMapReady(true)
 
     // 지도 클릭 → Geocoder로 주소 변환 → 코스에 장소 추가
     const geocoder = new window.kakao.maps.services.Geocoder()
@@ -281,28 +292,51 @@ export function CourseMapPanel() {
       const position = new window.kakao.maps.LatLng(place.lat!, place.lng!)
       path.push(position)
 
+      const isSelected = place.id === selectedPlaceId
+      const markerSize = isSelected ? '32px' : '28px'
+      const markerFontSize = isSelected ? '13px' : '12px'
+      const bgColor = isSelected ? '#fff' : PRIMARY_COLOR
+      const textColor = isSelected ? PRIMARY_COLOR : '#fff'
+      const borderStyle = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
+
       const overlayContent = document.createElement('div')
       overlayContent.style.cssText = [
         'position:relative',
         'display:inline-flex',
         'align-items:center',
         'justify-content:center',
-        'min-width:28px',
-        'height:28px',
+        `min-width:${markerSize}`,
+        `height:${markerSize}`,
         'padding:0 8px',
-        `background:${PRIMARY_COLOR}`,
-        'color:#fff',
-        'font-size:12px',
+        `background:${bgColor}`,
+        `color:${textColor}`,
+        `font-size:${markerFontSize}`,
         'font-weight:bold',
         'border-radius:12px',
+        `border:${borderStyle}`,
         'box-shadow:0 2px 6px rgba(0,0,0,0.25)',
         'cursor:default',
         'white-space:nowrap',
+        'transition:all 0.2s ease',
       ].join(';')
 
-      // 말풍선 꼬리 (아래 방향 삼각형)
-      const tail = document.createElement('div')
-      tail.style.cssText = [
+      // 말풍선 꼬리 - 바깥 삼각형 (테두리 역할)
+      const tailOuter = document.createElement('div')
+      tailOuter.style.cssText = [
+        'position:absolute',
+        'bottom:-10px',
+        'left:50%',
+        'transform:translateX(-50%)',
+        'width:0',
+        'height:0',
+        'border-left:8px solid transparent',
+        'border-right:8px solid transparent',
+        `border-top:10px solid ${isSelected ? PRIMARY_COLOR : PRIMARY_COLOR}`,
+      ].join(';')
+
+      // 말풍선 꼬리 - 안쪽 삼각형 (배경색으로 덮어 테두리 효과)
+      const tailInner = document.createElement('div')
+      tailInner.style.cssText = [
         'position:absolute',
         'bottom:-7px',
         'left:50%',
@@ -311,11 +345,12 @@ export function CourseMapPanel() {
         'height:0',
         'border-left:6px solid transparent',
         'border-right:6px solid transparent',
-        `border-top:8px solid ${PRIMARY_COLOR}`,
+        `border-top:8px solid ${bgColor}`,
       ].join(';')
 
       overlayContent.textContent = String(idx + 1)
-      overlayContent.appendChild(tail)
+      overlayContent.appendChild(tailOuter)
+      overlayContent.appendChild(tailInner)
 
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
@@ -328,13 +363,13 @@ export function CourseMapPanel() {
 
     if (path.length >= 2) {
       const polyline = new window.kakao.maps.Polyline({
-        map,
         path,
-        strokeWeight: 3,
+        strokeWeight: 5,
         strokeColor: PRIMARY_COLOR,
         strokeOpacity: 0.9,
-        strokeStyle: 'dashdot',
+        strokeStyle: 'solid',
       })
+      polyline.setMap(map)
       polylineRef.current = polyline
     }
 
@@ -343,7 +378,16 @@ export function CourseMapPanel() {
       path.forEach((p) => bounds.extend(p))
       map.setBounds(bounds)
     }
-  }, [places, selectedDay])
+  }, [places, selectedDay, isMapReady, selectedPlaceId])
+
+  // 선택된 장소로 지도 이동
+  useEffect(() => {
+    const map = mapInstanceRef.current
+    if (!map || !selectedPlaceId) return
+    const place = places.find((p) => p.id === selectedPlaceId)
+    if (!place?.lat || !place?.lng) return
+    map.panTo(new window.kakao.maps.LatLng(place.lat, place.lng))
+  }, [selectedPlaceId, places])
 
   const handleCreateTrip = async () => {
     if (!selectedRegion || !dateRange?.from) {

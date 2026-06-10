@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 
 import type { CoursePlace } from '@/features/trips/types/course.types'
+import { useCourseStore } from '@/store/tripsStore'
 
 import { css } from '@/styled-system/css'
 
@@ -45,6 +46,9 @@ export function PlaceListSection({
   onRemove,
   onReorder,
 }: PlaceListSectionProps) {
+  const selectedPlaceId = useCourseStore((state) => state.selectedPlaceId)
+  const setSelectedPlaceId = useCourseStore((state) => state.setSelectedPlaceId)
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -81,7 +85,9 @@ export function PlaceListSection({
                 key={place.id}
                 index={idx + 1}
                 place={place}
+                selectedPlaceId={selectedPlaceId}
                 onRemove={onRemove}
+                onSelect={setSelectedPlaceId}
               />
             ))}
           </div>
