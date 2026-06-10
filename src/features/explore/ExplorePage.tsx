@@ -19,6 +19,7 @@ import type { Place, GetPlacesFilterParams } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
@@ -92,13 +93,10 @@ function getFilterChips(selected: Record<string, string[]>) {
   return chips
 }
 
-interface ExploreContentProps {
-  isAuthenticated: boolean
-}
-
-function ExploreContent({ isAuthenticated }: ExploreContentProps) {
+function ExploreContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   const categoryId = searchParams.get('category')
@@ -527,8 +525,10 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
                       variant="bookmark"
                       isLiked={false}
                       onLikeToggle={(_placeId) => {
-                        if (!isAuthenticated) {
+                        if (!isAuthInitialized) return
+                        if (!isLoggedIn) {
                           setIsLoginModalOpen(true)
+                          return
                         }
                         // TODO: 찜하기 API 호출 (_placeId 사용)
                       }}
@@ -584,14 +584,10 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   )
 }
 
-interface ExplorePageProps {
-  isAuthenticated: boolean
-}
-
-export default function ExplorePage({ isAuthenticated }: ExplorePageProps) {
+export default function ExplorePage() {
   return (
     <Suspense fallback={null}>
-      <ExploreContent isAuthenticated={isAuthenticated} />
+      <ExploreContent />
     </Suspense>
   )
 }

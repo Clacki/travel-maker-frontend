@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 
 import type { Review } from '../types/travelDetail.types'
 
@@ -11,7 +12,6 @@ import { css } from '@/styled-system/css'
 
 interface ReviewCardProps {
   review: Review
-  isAuthenticated: boolean
 }
 
 const cardStyle = css({
@@ -108,18 +108,17 @@ function getInitials(name: string): string {
   return name.slice(0, 1).toUpperCase()
 }
 
-export default function ReviewCard({
-  review,
-  isAuthenticated,
-}: ReviewCardProps) {
+export default function ReviewCard({ review }: ReviewCardProps) {
   const { author, createdAt, isOwner } = review
+  const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
 
   const handleEditClick = () => {
-    if (!isAuthenticated) {
+    if (!isAuthInitialized) return
+    if (!isLoggedIn) {
       setIsLoginModalOpen(true)
       return
     }
@@ -170,6 +169,8 @@ export default function ReviewCard({
               type="button"
               className={editButtonStyle}
               onClick={handleEditClick}
+              disabled={!isAuthInitialized}
+              aria-busy={!isAuthInitialized}
             >
               수정
             </button>
