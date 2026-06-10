@@ -20,7 +20,21 @@ export const getPlaces = async (
 export const getPlacesSearch = async (
   params: GetPlacesSearchParams = {}
 ): Promise<PlacesResponse> => {
-  const response = await api.get<PlacesResponse>(PLACES_SEARCH_PATH, { params })
+  const response = await api.get<PlacesResponse>(PLACES_SEARCH_PATH, {
+    params,
+    paramsSerializer: (p) => {
+      const parts: string[] = []
+      for (const [key, value] of Object.entries(p)) {
+        if (value === undefined || value === null) continue
+        if (Array.isArray(value)) {
+          value.forEach((v) => parts.push(`${key}=${encodeURIComponent(v)}`))
+        } else {
+          parts.push(`${key}=${encodeURIComponent(value)}`)
+        }
+      }
+      return parts.join('&')
+    },
+  })
   return response.data
 }
 

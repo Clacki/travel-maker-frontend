@@ -250,6 +250,9 @@ function ExploreContent() {
     if (searchParams.get('sort')) {
       params.set('sort', searchParams.get('sort')!)
     }
+    if (keyword) {
+      params.set('keyword', keyword)
+    }
     for (const [key, values] of Object.entries(newSelected)) {
       if (values.length > 0) {
         params.set(key, values.join(','))

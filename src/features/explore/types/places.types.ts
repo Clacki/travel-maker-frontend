@@ -34,10 +34,4 @@ export type GetPlacesFilterParams = {
   page_size?: number
 }
 
-export type GetPlacesSearchParams = {
-  keyword?: string
-  sort?: 'bookmark' | 'review' | 'rating'
-  order?: 'desc' | 'asc'
-  page?: number
-  page_size?: number
-}
+export type GetPlacesSearchParams = Omit<GetPlacesFilterParams, 'tags'>
