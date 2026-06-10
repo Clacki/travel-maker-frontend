@@ -153,6 +153,11 @@ export function CourseMapPanel() {
   const overlaysRef = useRef<KakaoOverlay[]>([])
   const polylineRef = useRef<KakaoPolyline | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [isGeocoding, setIsGeocoding] = useState(false)
+  const isGeocodingRef = useRef(false)
+  useEffect(() => {
+    isGeocodingRef.current = isGeocoding
+  }, [isGeocoding])
 
   const {
     title,
@@ -164,7 +169,14 @@ export function CourseMapPanel() {
     estimatedHours,
     estimatedMinutes,
     resetCourse,
+    addPlace,
   } = useCourseStore()
+
+  // ref로 최신 addPlace를 참조하여 initMap의 useCallback deps를 [] 유지
+  const addPlaceRef = useRef(addPlace)
+  useEffect(() => {
+    addPlaceRef.current = addPlace
+  }, [addPlace])
 
   // places 의존성 제거 — 초기화는 마운트 시 1회만 실행
   // 중심/줌은 마커 useEffect의 setBounds가 자동 조정
@@ -179,6 +191,52 @@ export function CourseMapPanel() {
       level: 13,
     })
     mapInstanceRef.current = map
+
+    // 지도 클릭 → Geocoder로 주소 변환 → 코스에 장소 추가
+    const geocoder = new window.kakao.maps.services.Geocoder()
+
+    window.kakao.maps.event.addListener(
+      map,
+      'click',
+      (mouseEvent: { latLng: KakaoLatLng }) => {
+        if (isGeocodingRef.current) return
+
+        const lat = mouseEvent.latLng.getLat()
+        const lng = mouseEvent.latLng.getLng()
+
+        setIsGeocoding(true)
+
+        geocoder.coord2Address(
+          lng,
+          lat,
+          (
+            result: Array<{
+              road_address?: { address_name: string }
+              address?: { address_name: string }
+            }>,
+            status: string
+          ) => {
+            if (status === window.kakao.maps.services.Status.OK) {
+              const addr = result[0]
+              const roadAddress = addr.road_address?.address_name ?? ''
+              const jibunAddress = addr.address?.address_name ?? ''
+              const displayName =
+                roadAddress || jibunAddress || '알 수 없는 장소'
+              const fullAddress = jibunAddress || roadAddress || ''
+
+              addPlaceRef.current({
+                id: crypto.randomUUID(),
+                name: displayName,
+                address: fullAddress,
+                lat,
+                lng,
+              })
+            }
+            setIsGeocoding(false)
+          }
+        )
+      }
+    )
   }, [])
 
   useEffect(() => {
@@ -358,7 +416,30 @@ export function CourseMapPanel() {
 
       {/* 지도 영역 */}
       <div className={mapAreaStyle}>
-        <div ref={mapRef} className={mapContainerStyle} />
+        <div
+          ref={mapRef}
+          className={mapContainerStyle}
+          style={{ cursor: isGeocoding ? 'wait' : 'crosshair' }}
+        />
+        {isGeocoding && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              background: 'rgba(0,0,0,0.6)',
+              color: '#fff',
+              fontSize: 12,
+              padding: '4px 12px',
+              borderRadius: 20,
+              pointerEvents: 'none',
+            }}
+          >
+            장소 확인 중...
+          </div>
+        )}
       </div>
 
       {/* 범례 */}
