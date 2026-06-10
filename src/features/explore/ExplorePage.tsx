@@ -142,6 +142,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   useEffect(() => {
     let cancelled = false
     const key = `${currentPage}-${selectedTagIdsKey}-${sort}`
+    // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
       : []
