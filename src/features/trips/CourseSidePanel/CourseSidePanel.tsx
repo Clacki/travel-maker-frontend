@@ -1,12 +1,18 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
 import { useCourseStore } from '@/store/tripsStore'
 import type { CoursePlace } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 
 import { CourseInfoSection } from './components/CourseInfoSection'
-import { PlaceListSection } from './components/PlaceListSection'
+
+const PlaceListSection = dynamic(
+  () => import('./components/PlaceListSection').then((m) => m.PlaceListSection),
+  { ssr: false }
+)
 
 const cardStyle = css({
   bg: 'bg.surface',

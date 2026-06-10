@@ -6,12 +6,14 @@ import { GripVertical, Trash2 } from 'lucide-react'
 
 import type { CoursePlace } from '@/features/trips/types/course.types'
 
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 interface PlaceListItemProps {
   index: number
   place: CoursePlace
+  isSelected: boolean
   onRemove: (placeId: string) => void
+  onSelect: (placeId: string) => void
 }
 
 const itemStyle = css({
@@ -23,6 +25,12 @@ const itemStyle = css({
   borderColor: 'border.subtle',
   borderRadius: 'sm',
   bg: 'bg.surface',
+  cursor: 'pointer',
+})
+
+const itemSelectedStyle = css({
+  borderColor: 'primary',
+  bg: 'primary.soft',
 })
 
 const indexBadgeStyle = css({
@@ -95,7 +103,13 @@ const actionsStyle = css({
   flexShrink: 0,
 })
 
-export function PlaceListItem({ index, place, onRemove }: PlaceListItemProps) {
+export function PlaceListItem({
+  index,
+  place,
+  isSelected,
+  onRemove,
+  onSelect,
+}: PlaceListItemProps) {
   const {
     attributes,
     listeners,
@@ -112,12 +126,24 @@ export function PlaceListItem({ index, place, onRemove }: PlaceListItemProps) {
     zIndex: isDragging ? 10 : undefined,
   }
 
+  const handleClick = () => {
+    if (!isDragging) {
+      onSelect(place.id)
+    }
+  }
+
   return (
-    <div ref={setNodeRef} style={style} className={itemStyle}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cx(itemStyle, isSelected && itemSelectedStyle)}
+      onClick={handleClick}
+    >
       <button
         type="button"
         className={dragHandleStyle}
         aria-label="드래그하여 순서 변경"
+        onClick={(e) => e.stopPropagation()}
         {...attributes}
         {...listeners}
       >
@@ -133,7 +159,10 @@ export function PlaceListItem({ index, place, onRemove }: PlaceListItemProps) {
           type="button"
           className={ghostButtonStyle}
           aria-label={`${place.name} 삭제`}
-          onClick={() => onRemove(place.id)}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove(place.id)
+          }}
         >
           <Trash2 size={14} />
         </button>

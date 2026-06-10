@@ -16,8 +16,18 @@ declare global {
         CustomOverlay: new (options: any) => any
         Polyline: new (options: any) => any
         LatLngBounds: new () => any
+        event: {
+          addListener: (target: any, type: string, handler: any) => void
+        }
         services: {
           Places: new () => any
+          Geocoder: new () => {
+            coord2Address: (
+              lng: number,
+              lat: number,
+              callback: (result: any, status: string) => void
+            ) => void
+          }
           Status: { OK: string }
         }
       }
