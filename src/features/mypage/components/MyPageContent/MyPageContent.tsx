@@ -195,6 +195,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const handleReviewSubmit = (rating: number, content: string) => {
     console.log('review submit', reviewModal.reviewId, rating, content)
     // TODO: 리뷰 수정 API 호출
+    setReviewModal((prev) => ({ ...prev, isOpen: false }))
   }
 
   const handleReviewDeleteConfirm = () => {

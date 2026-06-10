@@ -17,7 +17,9 @@ export interface ReviewModalProps {
   initialContent?: string
   initialImageSrc?: string | null
   initialCreatedAt?: string
-  onSubmit?: (rating: number, content: string) => void
+  isSubmitting?: boolean
+  errorMessage?: string | null
+  onSubmit?: (rating: number, content: string, image?: string) => void
   onDelete?: () => void
 }
 
@@ -88,7 +90,7 @@ const starButtonStyle = css({
   borderColor: 'transparent',
   borderRadius: 'pill',
   bg: 'transparent',
-  color: 'border',
+  color: 'primary',
   transitionProperty: 'background-color, border-color, color, box-shadow',
   transitionDuration: '150ms',
   _hover: {
@@ -239,6 +241,13 @@ const reviewMetaStyle = css({
   fontSize: 'sm',
 })
 
+const errorMessageStyle = css({
+  color: 'warning',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  lineHeight: 'normal',
+})
+
 const footerRowStyle = css({
   display: 'grid',
   gridTemplateColumns: { base: '1fr', sm: '1fr 1fr' },
@@ -342,6 +351,8 @@ export function ReviewModal({
   initialContent = '',
   initialImageSrc = null,
   initialCreatedAt,
+  isSubmitting = false,
+  errorMessage,
   onSubmit,
   onDelete,
 }: ReviewModalProps) {
@@ -370,11 +381,20 @@ export function ReviewModal({
         ? '리뷰 수정'
         : '리뷰 삭제'
   const submitText = mode === 'create' ? '작성하기' : '수정하기'
+  const submittingText = mode === 'create' ? '작성 중...' : '수정 중...'
   const createdAtText = formatDateText(initialCreatedAt)
 
   const handleSubmit = () => {
-    onSubmit?.(rating, content)
-    onClose()
+    const trimmedContent = content.trim()
+
+    if (rating < 1 || rating > 5 || trimmedContent === '' || isSubmitting) {
+      return
+    }
+
+    const image =
+      previewSrc && !previewSrc.startsWith('blob:') ? previewSrc : undefined
+
+    onSubmit?.(rating, trimmedContent, image)
   }
 
   const handleDelete = () => {
@@ -449,7 +469,13 @@ export function ReviewModal({
       size="md"
       footer={
         <div className={footerRowStyle}>
-          <Button variant="outline" shape="rounded" fullWidth onClick={onClose}>
+          <Button
+            variant="outline"
+            shape="rounded"
+            fullWidth
+            onClick={onClose}
+            disabled={isSubmitting}
+          >
             취소
           </Button>
           <Button
@@ -457,9 +483,9 @@ export function ReviewModal({
             shape="rounded"
             fullWidth
             onClick={handleSubmit}
-            disabled={rating === 0 || content.trim() === ''}
+            disabled={isSubmitting || rating === 0 || content.trim() === ''}
           >
-            {submitText}
+            {isSubmitting ? submittingText : submitText}
           </Button>
         </div>
       }
@@ -505,7 +531,7 @@ export function ReviewModal({
             />
             <label className={imageChangeButtonStyle} htmlFor={imageInputId}>
               <ImagePlus aria-hidden="true" size={18} />
-              이미지 변경
+              이미지 추가/변경
             </label>
             <button
               className={cx(imageChangeButtonStyle, imageDeleteButtonStyle)}
@@ -537,6 +563,11 @@ export function ReviewModal({
               {content.length}/{MAX_CONTENT_LENGTH}자
             </span>
           </div>
+          {errorMessage && (
+            <p className={errorMessageStyle} role="alert">
+              {errorMessage}
+            </p>
+          )}
         </section>
       </form>
     </Modal>
