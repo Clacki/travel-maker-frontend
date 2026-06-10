@@ -208,7 +208,7 @@ export function TimelineSection() {
               <p className={placeAddressStyle}>{place.address}</p>
               <div className={stayStyle}>
                 <Clock size={12} />
-                <span>{place.stayMinutes}분 머무르기</span>
+                <span>{place.stayMinutes ?? 60}분 머무르기</span>
               </div>
             </div>
           </div>

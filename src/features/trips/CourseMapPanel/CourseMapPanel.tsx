@@ -31,7 +31,6 @@ interface KakaoMapInstance {
 
 // 디자인 토큰 raw 값 (카카오맵 DOM API는 Panda CSS 토큰 미지원)
 const PRIMARY_COLOR = '#2CA6BE' // semantic token 'primary'
-const SUCCESS_COLOR = '#2DBE7E' // semantic token 'success'
 
 const panelStyle = css({
   display: 'flex',
