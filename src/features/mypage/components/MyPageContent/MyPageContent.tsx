@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { css } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
@@ -12,7 +12,8 @@ import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
-import { EmptyState } from '@/components/common/status'
+import { EmptyState, LoadingState } from '@/components/common/status'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import {
   mockMyProfile,
   mockBookmarks,
@@ -58,6 +59,8 @@ const gridStyle = css({
 
 export function MyPageContent({ userId }: MyPageContentProps) {
   const router = useRouter()
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
 
   // TODO: 실제 API 연동 시 세션에서 현재 유저 ID 확인
   const isMyProfile = true
@@ -84,6 +87,24 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     initialRating: 0,
     initialContent: '',
   })
+
+  useEffect(() => {
+    if (!isAuthInitialized) {
+      return
+    }
+
+    if (!isLoggedIn) {
+      router.replace('/?showLogin=true')
+    }
+  }, [isAuthInitialized, isLoggedIn, router])
+
+  if (!isAuthInitialized) {
+    return <LoadingState />
+  }
+
+  if (!isLoggedIn) {
+    return null
+  }
 
   // TODO: 실제 API 연동
   const bookmarks = mockBookmarks

@@ -82,17 +82,6 @@ const navLinkStyle = css({
   },
 })
 
-const authPlaceholderStyle = css({
-  display: 'inline-flex',
-  width: { base: '8', sm: '72px' },
-  height: '8',
-  flexShrink: 0,
-  borderRadius: 'pill',
-  bg: 'bg.muted',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-})
-
 const desktopLoginButtonStyle = css({
   display: { base: 'none', sm: 'inline-flex' },
 })
@@ -131,7 +120,27 @@ export function Header({ className }: HeaderProps) {
             </nav>
 
             {!isAuthInitialized ? (
-              <div aria-hidden="true" className={authPlaceholderStyle} />
+              <>
+                <Button
+                  aria-busy="true"
+                  className={desktopLoginButtonStyle}
+                  disabled
+                  variant="secondary"
+                  size="sm"
+                  shape="pill"
+                >
+                  로그인
+                </Button>
+                <IconButton
+                  aria-busy="true"
+                  aria-label="로그인"
+                  className={mobileLoginButtonStyle}
+                  disabled
+                  size="sm"
+                >
+                  <LoginIcon />
+                </IconButton>
+              </>
             ) : isLoggedIn ? (
               <ProfileDropdown />
             ) : (
