@@ -63,6 +63,7 @@ export function QuizSection() {
     goNext,
     goPrev,
     resetQuiz,
+    setCalculatedResult,
   } = useQuizStore()
 
   useEffect(() => {
@@ -84,6 +85,9 @@ export function QuizSection() {
     if (selectedChoice === null) return
     if (isLast) {
       goNext(question.id, TOTAL_QUESTIONS)
+      // goNext는 동기 set이므로 getState()로 최신 answers를 읽어 계산한다
+      const finalAnswers = useQuizStore.getState().answers
+      setCalculatedResult(finalAnswers)
       router.push(ROUTES.TEST_RESULT)
       return
     }
