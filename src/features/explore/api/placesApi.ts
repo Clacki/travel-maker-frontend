@@ -5,8 +5,8 @@ import type {
   GetPlacesFilterParams,
 } from '../types/places.types'
 
-const PLACES_PATH = '/api/v1/places'
-const PLACES_FILTER_PATH = '/api/v1/places/filter'
+const PLACES_PATH = '/places'
+const PLACES_FILTER_PATH = '/places/filter'
 
 export const getPlaces = async (
   params: GetPlacesParams = {}
