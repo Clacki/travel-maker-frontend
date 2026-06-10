@@ -117,19 +117,41 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
 
-  const currentKey = `${currentPage}-${categoryId ?? ''}-${sort}`
+  const selectedTagIds = useMemo(() => {
+    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
+    const fromStyle = styleValues
+      .map((s) => {
+        const cat = STYLE_TO_CATEGORY[s] ?? s
+        return CATEGORY_TO_TAG_ID[cat]
+      })
+      .filter((id): id is number => id !== undefined)
+
+    if (fromStyle.length === 0 && categoryId) {
+      const fallbackId = CATEGORY_TO_TAG_ID[categoryId]
+      if (fallbackId !== undefined) return [fallbackId]
+    }
+
+    return fromStyle
+  }, [selected, categoryId])
+
+  const selectedTagIdsKey = selectedTagIds.join(',')
+
+  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
     let cancelled = false
-    const key = `${currentPage}-${categoryId ?? ''}-${sort}`
-    const tagId = categoryId ? CATEGORY_TO_TAG_ID[categoryId] : undefined
+    const key = `${currentPage}-${selectedTagIdsKey}-${sort}`
+    // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
+    const tagIds = selectedTagIdsKey
+      ? selectedTagIdsKey.split(',').map(Number)
+      : []
     const sortParams = SORT_API_MAP[sort]
-    const needsFilter = tagId !== undefined || sort !== 'popular'
+    const needsFilter = tagIds.length > 0 || sort !== 'popular'
 
     const request = needsFilter
       ? getPlacesFilter({
-          ...(tagId !== undefined ? { tags: tagId } : {}),
+          ...(tagIds.length > 0 ? { tags: tagIds } : {}),
           ...sortParams,
           page: currentPage,
           page_size: ITEMS_PER_PAGE,
@@ -152,7 +174,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
     return () => {
       cancelled = true
     }
-  }, [currentPage, categoryId, sort])
+  }, [currentPage, selectedTagIdsKey, sort])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
