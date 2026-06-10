@@ -26,6 +26,7 @@ export type GetPlacesParams = {
 }
 
 export type GetPlacesFilterParams = {
+  keyword?: string
   tags?: number | number[]
   sort?: 'bookmark' | 'review' | 'rating'
   order?: 'desc' | 'asc'
