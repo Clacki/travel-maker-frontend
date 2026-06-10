@@ -37,7 +37,10 @@ export function ReviewModalPlayground() {
             ? '정말 아름다운 곳이었어요. 다음에 또 가고 싶네요!'
             : ''
         }
-        onSubmit={(rating, content) => console.log('submit', rating, content)}
+        onSubmit={(rating, content) => {
+          console.log('submit', rating, content)
+          setIsOpen(false)
+        }}
         onDelete={() => console.log('delete')}
       />
     </div>

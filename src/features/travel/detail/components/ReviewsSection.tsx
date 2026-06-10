@@ -9,6 +9,7 @@ import ReviewWriteButton from './ReviewWriteButton'
 interface ReviewsSectionProps {
   reviews: Review[]
   reviewCount: number
+  placeId: number
 }
 
 const sectionStyle = css({
@@ -44,18 +45,19 @@ const moreButtonWrapperStyle = css({
 export default function ReviewsSection({
   reviews,
   reviewCount,
+  placeId,
 }: ReviewsSectionProps) {
   return (
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
         <h2 className={headingStyle}>리뷰</h2>
-        <ReviewWriteButton />
+        <ReviewWriteButton placeId={placeId} />
       </div>
 
       {reviews.length === 0 ? (
         <EmptyState
           title="아직 리뷰가 없어요"
-          description="첫 번째 리뷰를 남겨보세요."
+          description="첫 번째 리뷰를 남겨보세요"
         />
       ) : (
         <div className={reviewListStyle}>
@@ -67,9 +69,9 @@ export default function ReviewsSection({
 
       {reviewCount > reviews.length && (
         <div className={moreButtonWrapperStyle}>
-          {/* TODO: 리뷰 더 보기 페이지네이션 또는 무한스크롤 연결 */}
+          {/* TODO: 리뷰 더보기 페이지네이션 또는 무한스크롤 연결 */}
           <Button variant="secondary" disabled>
-            리뷰 더 보기 ({reviewCount.toLocaleString()}개)
+            리뷰 더보기 ({reviewCount.toLocaleString()}개)
           </Button>
         </div>
       )}

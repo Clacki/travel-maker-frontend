@@ -52,7 +52,11 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
         </div>
 
         {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews 교체 */}
-        <ReviewsSection reviews={[]} reviewCount={detail.review_count} />
+        <ReviewsSection
+          placeId={detail.id}
+          reviews={[]}
+          reviewCount={detail.review_count}
+        />
       </div>
     </PageLayout>
   )

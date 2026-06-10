@@ -2,6 +2,7 @@
 
 import type { MouseEvent, ReactNode } from 'react'
 import { useEffect, useId, useRef } from 'react'
+import { X } from 'lucide-react'
 import { cva, css, cx } from '@/styled-system/css'
 
 export type ModalSize = 'sm' | 'md' | 'lg'
@@ -228,7 +229,7 @@ export function Modal({
             onClick={onClose}
             type="button"
           >
-            ×
+            <X aria-hidden="true" size={20} strokeWidth={2} />
           </button>
         </div>
 

@@ -129,6 +129,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
     setDisplayRating(newRating)
     setDisplayContent(newContent)
     // TODO: 리뷰 수정 API 호출
+    setIsEditOpen(false)
   }
 
   return (
