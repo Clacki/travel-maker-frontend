@@ -182,6 +182,13 @@ export function CourseMapPanel() {
     addPlace,
   } = useCourseStore()
 
+  // 페이지 이탈 시 코스 데이터 초기화
+  useEffect(() => {
+    return () => {
+      resetCourse()
+    }
+  }, [resetCourse])
+
   // ref로 최신 addPlace를 참조하여 initMap의 useCallback deps를 [] 유지
   const addPlaceRef = useRef(addPlace)
   useEffect(() => {
