@@ -6,6 +6,7 @@ import { DayPicker } from 'react-day-picker'
 import { Calendar, ChevronDown } from 'lucide-react'
 
 import type { CourseDateRange } from '@/features/trips/types/course.types'
+import { MAX_TRIP_DAYS } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 
@@ -34,18 +35,16 @@ const triggerStyle = css({
 })
 
 const dropdownStyle = css({
-  position: 'absolute',
-  top: '100%',
-  left: '0',
+  position: 'fixed',
   mt: '1',
-  zIndex: 50,
+  zIndex: 9999,
   bg: 'bg.surface',
   borderWidth: '1px',
   borderColor: 'border.subtle',
   borderRadius: 'lg',
   boxShadow: 'md',
   p: '4',
-  w: 'full',
+  w: '320px',
 })
 
 const calendarClassNames = {
@@ -230,7 +229,10 @@ function getDisplayText(value: CourseDateRange | null): string {
 
 export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 })
+  const [pendingFrom, setPendingFrom] = useState<Date | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     function handleMouseDown(e: MouseEvent) {
@@ -245,15 +247,42 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
     return () => document.removeEventListener('mousedown', handleMouseDown)
   }, [])
 
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    const handleScroll = () => setOpen(false)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => window.removeEventListener('scroll', handleScroll, true)
+  }, [open])
+
+  const handleOpen = () => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect()
+      setDropdownPos({ top: rect.bottom + 4, left: rect.left })
+    }
+    // 기존 값이 MAX_TRIP_DAYS 초과인 경우 리셋
+    if (value?.from && value?.to) {
+      const maxDate = new Date(value.from)
+      maxDate.setDate(maxDate.getDate() + (MAX_TRIP_DAYS - 1))
+      if (value.to > maxDate) {
+        onChange({ from: value.from, to: maxDate })
+      }
+    }
+    setPendingFrom(null)
+    setOpen((prev) => !prev)
+  }
+
   const hasValue = value?.from !== undefined
   const displayText = getDisplayText(value)
 
   return (
     <div ref={containerRef} className={css({ position: 'relative' })}>
       <button
+        ref={triggerRef}
         type="button"
         className={triggerStyle}
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={handleOpen}
         aria-expanded={open}
       >
         <Calendar
@@ -282,25 +311,49 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
       </button>
 
       {open && (
-        <div className={dropdownStyle}>
+        <div
+          className={dropdownStyle}
+          style={{ top: dropdownPos.top, left: dropdownPos.left }}
+        >
           <DayPicker
             mode="range"
             selected={
               value?.from ? { from: value.from, to: value.to } : undefined
             }
+            disabled={(date) => {
+              if (!pendingFrom) {
+                return false
+              }
+              const maxDate = new Date(pendingFrom)
+              maxDate.setDate(maxDate.getDate() + (MAX_TRIP_DAYS - 1))
+              maxDate.setHours(23, 59, 59, 999)
+              return date > maxDate
+            }}
             onSelect={(range) => {
-              if (!range) {
+              if (!range || !range.from) {
                 onChange(null)
+                setPendingFrom(null)
                 return
               }
-              const newRange: CourseDateRange = {
-                from: range.from,
-                to: range.to,
+
+              const from = range.from
+              let to = range.to
+
+              if (!to) {
+                // from만 선택 — 이후 선택 제한용으로 기록
+                setPendingFrom(from)
+                onChange({ from, to: undefined })
+                return
               }
-              onChange(newRange)
-              if (range.from && range.to) {
-                setOpen(false)
-              }
+
+              // to까지 선택됐을 때 MAX_TRIP_DAYS 초과 시 클램핑
+              const maxDate = new Date(from)
+              maxDate.setDate(maxDate.getDate() + (MAX_TRIP_DAYS - 1))
+              if (to > maxDate) to = maxDate
+
+              setPendingFrom(null)
+              onChange({ from, to })
+              setOpen(false)
             }}
             classNames={calendarClassNames}
           />

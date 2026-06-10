@@ -24,11 +24,6 @@ const sectionStyle = css({
   gap: '4',
 })
 
-const sectionTitleStyle = css({
-  fontSize: 'md',
-  fontWeight: 'semibold',
-})
-
 const fieldStyle = css({
   display: 'flex',
   flexDirection: 'column',
@@ -89,17 +84,33 @@ export function CourseInfoSection({
 
   return (
     <div className={sectionStyle}>
-      <h3 className={sectionTitleStyle}>코스 정보</h3>
       <div className={fieldStyle}>
-        <label htmlFor="course-title" className={labelStyle}>
-          코스 제목
-        </label>
+        <div
+          className={css({
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          })}
+        >
+          <label htmlFor="course-title" className={labelStyle}>
+            코스 제목
+          </label>
+          <span
+            className={css({
+              fontSize: 'xs',
+              color: title.length >= 20 ? 'warning' : 'text.secondary',
+            })}
+          >
+            {title.length}/20
+          </span>
+        </div>
         <input
           id="course-title"
           type="text"
           className={inputStyle}
           placeholder="예: 강릉 감성 카페 코스"
           value={title}
+          maxLength={20}
           onChange={(e) => onTitleChange(e.target.value)}
         />
       </div>

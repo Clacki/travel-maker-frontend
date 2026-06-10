@@ -1,8 +1,9 @@
 'use client'
 
 import type { CourseDateRange } from '@/features/trips/types/course.types'
+import { MAX_TRIP_DAYS } from '@/features/trips/types/course.types'
 
-import { css } from '@/styled-system/css'
+import { css, cva } from '@/styled-system/css'
 
 interface DayTabGroupProps {
   dateRange: CourseDateRange | null
@@ -20,35 +21,36 @@ function calcDayCount(dateRange: CourseDateRange | null): number {
   const diff = Math.ceil(
     (dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24)
   )
-  return Math.max(1, diff + 1)
+  return Math.min(Math.max(1, diff + 1), MAX_TRIP_DAYS)
 }
 
-const selectedTabStyle = css({
-  px: '4',
-  py: '1.5',
-  fontSize: 'sm',
-  fontWeight: 'medium',
-  borderRadius: 'pill',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'background-color 150ms, color 150ms',
-  bg: 'primary',
-  color: 'text.inverse',
-})
-
-const unselectedTabStyle = css({
-  px: '4',
-  py: '1.5',
-  fontSize: 'sm',
-  fontWeight: 'medium',
-  borderRadius: 'pill',
-  borderWidth: '1px',
-  borderColor: 'border',
-  cursor: 'pointer',
-  transition: 'background-color 150ms, color 150ms',
-  bg: 'bg.surface',
-  color: 'text.primary',
-  _hover: { borderColor: 'primary', color: 'primary' },
+const tabStyle = cva({
+  base: {
+    px: '4',
+    py: '1.5',
+    fontSize: 'sm',
+    fontWeight: 'medium',
+    borderRadius: 'pill',
+    cursor: 'pointer',
+    transitionProperty: 'background-color, color',
+    transitionDuration: '150ms',
+  },
+  variants: {
+    selected: {
+      true: {
+        bg: 'primary',
+        color: 'text.inverse',
+        border: 'none',
+      },
+      false: {
+        bg: 'bg.surface',
+        color: 'text.primary',
+        borderWidth: '1px',
+        borderColor: 'border',
+        _hover: { borderColor: 'primary', color: 'primary' },
+      },
+    },
+  },
 })
 
 export function DayTabGroup({
@@ -64,9 +66,7 @@ export function DayTabGroup({
         <button
           key={day}
           type="button"
-          className={
-            selectedDay === day ? selectedTabStyle : unselectedTabStyle
-          }
+          className={tabStyle({ selected: selectedDay === day })}
           onClick={() => onSelect(day)}
         >
           {day}일차

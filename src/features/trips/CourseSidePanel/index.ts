@@ -1,2 +1,1 @@
-export { CourseSidePanel } from './CourseSidePanel'
-export { default } from './CourseSidePanel'
+export { CourseInfoCard, CoursePlaceCard } from './CourseSidePanel'
