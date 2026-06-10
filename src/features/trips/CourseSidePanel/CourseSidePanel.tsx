@@ -1,8 +1,8 @@
 'use client'
 
-import { useCourseStore } from '@/store/courseStore'
+import { useCourseStore } from '@/store/tripsStore'
 import { Button } from '@/components/common/button/Button'
-import { MIN_PLACES } from '@/features/course/course.types'
+import { MIN_PLACES } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 

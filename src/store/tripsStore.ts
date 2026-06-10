@@ -1,8 +1,12 @@
 import { create } from 'zustand'
 
-import type { CoursePlace } from '@/features/course/course.types'
-import { MAX_PLACES } from '@/features/course/course.types'
-import { mockCoursePlaces } from '@/mocks/data/course-data'
+import type {
+  CourseDateRange,
+  CoursePlace,
+  DepartureTime,
+} from '@/features/trips/types/course.types'
+import { MAX_PLACES } from '@/features/trips/types/course.types'
+import { mockCoursePlaces } from '@/mocks/data/trips-data'
 
 type CourseStore = {
   title: string
@@ -10,6 +14,11 @@ type CourseStore = {
   selectedRegion: string | null
   selectedThemes: string[]
   places: CoursePlace[]
+  dateRange: CourseDateRange | null
+  departureTime: DepartureTime
+  selectedDay: number
+  estimatedHours: number
+  estimatedMinutes: number
   setTitle: (title: string) => void
   setDescription: (description: string) => void
   setRegion: (region: string | null) => void
@@ -18,6 +27,11 @@ type CourseStore = {
   removePlace: (placeId: string) => void
   movePlaceUp: (placeId: string) => void
   movePlaceDown: (placeId: string) => void
+  setDateRange: (range: CourseDateRange | null) => void
+  setDepartureTime: (time: DepartureTime) => void
+  setSelectedDay: (day: number) => void
+  setEstimatedHours: (hours: number) => void
+  setEstimatedMinutes: (minutes: number) => void
   resetCourse: () => void
 }
 
@@ -27,6 +41,11 @@ export const useCourseStore = create<CourseStore>((set) => ({
   selectedRegion: null,
   selectedThemes: [],
   places: mockCoursePlaces, // TODO: API 연결 후 [] 로 교체
+  dateRange: null,
+  departureTime: { period: 'am', hour: 10, minute: 0 },
+  selectedDay: 1,
+  estimatedHours: 0,
+  estimatedMinutes: 0,
 
   setTitle: (title) => set({ title }),
 
@@ -86,6 +105,16 @@ export const useCourseStore = create<CourseStore>((set) => ({
       return { places: newPlaces }
     }),
 
+  setDateRange: (range) => set({ dateRange: range }),
+
+  setDepartureTime: (time) => set({ departureTime: time }),
+
+  setSelectedDay: (day) => set({ selectedDay: day }),
+
+  setEstimatedHours: (hours) => set({ estimatedHours: hours }),
+
+  setEstimatedMinutes: (minutes) => set({ estimatedMinutes: minutes }),
+
   resetCourse: () =>
     set({
       title: '',
@@ -93,5 +122,10 @@ export const useCourseStore = create<CourseStore>((set) => ({
       selectedRegion: null,
       selectedThemes: [],
       places: [],
+      dateRange: null,
+      departureTime: { period: 'am', hour: 10, minute: 0 },
+      selectedDay: 1,
+      estimatedHours: 0,
+      estimatedMinutes: 0,
     }),
 }))

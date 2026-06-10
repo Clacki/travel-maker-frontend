@@ -11,5 +11,4 @@ export const ROUTES = {
   PROFILE_EDIT: (userId: string) => `/profile/${userId}/edit`,
   TEST: '/test',
   TEST_RESULT: '/test/result',
-  COURSE_CREATE: '/course/create',
 } as const

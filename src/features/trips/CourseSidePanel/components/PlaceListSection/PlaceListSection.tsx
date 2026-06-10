@@ -1,5 +1,5 @@
-import type { CoursePlace } from '@/features/course/course.types'
-import { MAX_PLACES } from '@/features/course/course.types'
+import type { CoursePlace } from '@/features/trips/types/course.types'
+import { MAX_PLACES } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 
