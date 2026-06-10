@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
-import { getPlaces, getPlacesFilter } from './api/placesApi'
+import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
 import type { Place, GetPlacesFilterParams } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -101,6 +101,7 @@ function ExploreContent() {
 
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
+  const keyword = searchParams.get('keyword') ?? ''
   const selected = useMemo(() => parseParams(searchParams), [searchParams])
   const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
@@ -134,27 +135,39 @@ function ExploreContent() {
 
   const selectedTagIdsKey = selectedTagIds.join(',')
 
-  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}`
+  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
     let cancelled = false
-    const key = `${currentPage}-${selectedTagIdsKey}-${sort}`
+    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
     // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
       : []
     const sortParams = SORT_API_MAP[sort]
-    const needsFilter = tagIds.length > 0 || sort !== 'popular'
+    const hasTags = tagIds.length > 0
+    const hasKeyword = keyword.trim().length > 0
+    const hasSortOption = sort !== 'popular'
 
-    const request = needsFilter
-      ? getPlacesFilter({
-          ...(tagIds.length > 0 ? { tags: tagIds } : {}),
-          ...sortParams,
-          page: currentPage,
-          page_size: ITEMS_PER_PAGE,
-        })
-      : getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+    let request: ReturnType<typeof getPlaces>
+    if (hasTags || hasSortOption) {
+      request = getPlacesFilter({
+        ...(hasTags ? { tags: tagIds } : {}),
+        ...(hasKeyword ? { keyword: keyword.trim() } : {}),
+        ...sortParams,
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      })
+    } else if (hasKeyword) {
+      request = getPlacesSearch({
+        keyword: keyword.trim(),
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      })
+    } else {
+      request = getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+    }
 
     request
       .then((data) => {
@@ -172,7 +185,7 @@ function ExploreContent() {
     return () => {
       cancelled = true
     }
-  }, [currentPage, selectedTagIdsKey, sort])
+  }, [currentPage, selectedTagIdsKey, sort, keyword])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
