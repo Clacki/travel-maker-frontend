@@ -23,8 +23,9 @@ export interface BookmarkPlaceCardProps extends PlaceCardBaseProps {
 
 export interface ReviewPlaceCardProps extends PlaceCardBaseProps {
   variant: 'review'
-  onEditClick: (placeId: number) => void
-  onDeleteClick: (placeId: number) => void
+  reviewId?: number
+  onEditClick: (id: number) => void
+  onDeleteClick: (id: number) => void
 }
 
 export type PlaceCardProps = BookmarkPlaceCardProps | ReviewPlaceCardProps
@@ -192,6 +193,7 @@ export function PlaceCard(props: PlaceCardProps) {
       {variant === 'review' && (
         <EditButton
           placeId={placeId}
+          actionId={props.reviewId}
           onEditClick={props.onEditClick}
           onDeleteClick={props.onDeleteClick}
         />

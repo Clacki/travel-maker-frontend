@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { css } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
@@ -12,25 +12,74 @@ import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
-import { EmptyState, LoadingState } from '@/components/common/status'
-import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import {
-  mockMyProfile,
-  mockBookmarks,
-  mockReviews,
-} from '@/mocks/data/mypage-data'
+  EmptyState,
+  ErrorState,
+  LoadingState,
+} from '@/components/common/status'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { mockMyProfile, mockBookmarks } from '@/mocks/data/mypage-data'
 import { mapProfileTagIdsToUserTags } from '../../lib/profile-tags'
 import {
   getDefaultEditableProfile,
   useProfileStore,
 } from '@/store/profileStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import {
+  getMyReviews,
+  type MyReviewItem,
+  type MyReviewsResponse,
+} from '../../api/myReviewsApi'
 
 interface MyPageContentProps {
   userId: string
 }
 
-const PAGE_SIZE = 8
+const BOOKMARK_PAGE_SIZE = 8
+const REVIEW_PAGE_SIZE = 4
+
+type MyReviewCardItem = {
+  reviewId: number
+  placeId: number
+  placeName: string
+  rating: number
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+function normalizeMyReviewsResponse(response: MyReviewsResponse) {
+  if (Array.isArray(response)) {
+    return {
+      count: response.length,
+      next: null,
+      previous: null,
+      results: response,
+    }
+  }
+
+  const results = response.results ?? []
+
+  return {
+    count: response.count ?? results.length,
+    next: response.next ?? null,
+    previous: response.previous ?? null,
+    results,
+  }
+}
+
+function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
+  return {
+    reviewId: review.review_id,
+    placeId: review.place_id,
+    placeName: review.place_name,
+    rating: review.rating,
+    content: review.content,
+    // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 PlaceCard imageUrl로 매핑한다.
+    createdAt: review.created_at,
+    updatedAt: review.updated_at,
+  }
+}
 
 const containerStyle = css({
   display: 'flex',
@@ -52,7 +101,11 @@ const tabContentStyle = css({
 
 const gridStyle = css({
   display: 'grid',
-  gridTemplateColumns: 'repeat(4, 1fr)',
+  gridTemplateColumns: {
+    base: '1fr',
+    sm: 'repeat(2, 1fr)',
+    lg: 'repeat(4, 1fr)',
+  },
   gap: '4',
   mt: '4',
 })
@@ -62,7 +115,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
 
-  // TODO: 실제 API 연동 시 세션에서 현재 유저 ID 확인
+  // TODO: 실제 API 연동 후 세션의 현재 유저 ID와 비교하도록 교체
   const isMyProfile = true
 
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
@@ -73,6 +126,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [bookmarkPage, setBookmarkPage] = useState(1)
   const [reviewPage, setReviewPage] = useState(1)
+  const [reviews, setReviews] = useState<MyReviewCardItem[]>([])
+  const [reviewCount, setReviewCount] = useState(0)
+  const [reviewNext, setReviewNext] = useState<string | null>(null)
+  const [reviewPrevious, setReviewPrevious] = useState<string | null>(null)
+  const [isReviewLoading, setIsReviewLoading] = useState(false)
+  const [reviewError, setReviewError] = useState<string | null>(null)
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean
@@ -92,6 +151,39 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     initialCreatedAt: undefined,
   })
 
+  const fetchMyReviews = useCallback(
+    async (page: number) => {
+      if (!isAuthInitialized || !isLoggedIn) {
+        return
+      }
+
+      setIsReviewLoading(true)
+      setReviewError(null)
+
+      try {
+        const response = await getMyReviews({
+          page,
+          pageSize: REVIEW_PAGE_SIZE,
+        })
+        const normalized = normalizeMyReviewsResponse(response)
+
+        setReviews(normalized.results.map(mapMyReviewToCard))
+        setReviewCount(normalized.count)
+        setReviewNext(normalized.next)
+        setReviewPrevious(normalized.previous)
+      } catch {
+        setReviews([])
+        setReviewCount(0)
+        setReviewNext(null)
+        setReviewPrevious(null)
+        setReviewError('리뷰 목록을 불러오지 못했습니다.')
+      } finally {
+        setIsReviewLoading(false)
+      }
+    },
+    [isAuthInitialized, isLoggedIn]
+  )
+
   useEffect(() => {
     if (!isAuthInitialized) {
       return
@@ -102,6 +194,18 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     }
   }, [isAuthInitialized, isLoggedIn, router])
 
+  useEffect(() => {
+    if (activeTab !== 'review') {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void fetchMyReviews(reviewPage)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [activeTab, fetchMyReviews, reviewPage])
+
   if (!isAuthInitialized) {
     return <LoadingState />
   }
@@ -110,9 +214,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     return null
   }
 
-  // TODO: 실제 API 연동
   const bookmarks = mockBookmarks
-  const reviews = mockReviews
 
   const isCurrentUserPage =
     !!currentUserProfile &&
@@ -138,17 +240,20 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       : mockMyProfile.review_count,
     tags: mapProfileTagIdsToUserTags(profile.tagIds),
   }
+  const displayedReviewCount =
+    activeTab === 'review' || reviewCount > 0 ? reviewCount : user.review_count
 
-  const bookmarkTotalPages = Math.ceil(bookmarks.length / PAGE_SIZE)
-  const reviewTotalPages = Math.ceil(reviews.length / PAGE_SIZE)
+  const bookmarkTotalPages = Math.ceil(bookmarks.length / BOOKMARK_PAGE_SIZE)
+  const reviewTotalPages =
+    reviewCount > 0
+      ? Math.ceil(reviewCount / REVIEW_PAGE_SIZE)
+      : reviewNext || reviewPrevious
+        ? reviewPage + (reviewNext ? 1 : 0)
+        : 1
 
   const paginatedBookmarks = bookmarks.slice(
-    (bookmarkPage - 1) * PAGE_SIZE,
-    bookmarkPage * PAGE_SIZE
-  )
-  const paginatedReviews = reviews.slice(
-    (reviewPage - 1) * PAGE_SIZE,
-    reviewPage * PAGE_SIZE
+    (bookmarkPage - 1) * BOOKMARK_PAGE_SIZE,
+    bookmarkPage * BOOKMARK_PAGE_SIZE
   )
 
   const handleEditProfile = () => {
@@ -165,26 +270,30 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     // TODO: 북마크 해제 API 호출
   }
 
-  const handleReviewEdit = (placeId: number) => {
-    const review = reviews.find((r) => r.review_id === placeId)
-    if (review) {
-      setReviewModal({
-        isOpen: true,
-        mode: 'edit',
-        reviewId: review.review_id,
-        initialRating: review.rating,
-        initialContent: review.content,
-        initialImageSrc: review.image_url,
-        initialCreatedAt: review.created_at,
-      })
+  const handleReviewEdit = (reviewId: number) => {
+    const review = reviews.find((item) => item.reviewId === reviewId)
+
+    if (!review) {
+      return
     }
+
+    setReviewModal({
+      isOpen: true,
+      mode: 'edit',
+      reviewId: review.reviewId,
+      initialRating: review.rating,
+      initialContent: review.content,
+      // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 수정 모달 초기 이미지로 전달한다.
+      initialImageSrc: null,
+      initialCreatedAt: review.createdAt,
+    })
   }
 
-  const handleReviewDelete = (placeId: number) => {
+  const handleReviewDelete = (reviewId: number) => {
     setReviewModal({
       isOpen: true,
       mode: 'delete',
-      reviewId: placeId,
+      reviewId,
       initialRating: 0,
       initialContent: '',
       initialImageSrc: null,
@@ -196,11 +305,13 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     console.log('review submit', reviewModal.reviewId, rating, content)
     // TODO: 리뷰 수정 API 호출
     setReviewModal((prev) => ({ ...prev, isOpen: false }))
+    void fetchMyReviews(reviewPage)
   }
 
   const handleReviewDeleteConfirm = () => {
     console.log('review delete', reviewModal.reviewId)
     // TODO: 리뷰 삭제 API 호출
+    void fetchMyReviews(reviewPage)
   }
 
   const handleTabChange = (tab: TabType) => {
@@ -222,7 +333,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         <ProfileTabs
           isMyProfile={isMyProfile}
           bookmarkCount={bookmarks.length}
-          reviewCount={reviews.length}
+          reviewCount={displayedReviewCount}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
@@ -252,23 +363,36 @@ export function MyPageContent({ userId }: MyPageContentProps) {
             </>
           ) : (
             <EmptyState
-              title="첫 번째 여행지의 시작"
-              description="지금 마음에 드는 곳을 찾아보세요"
+              title="첫 번째 여행지를 저장해보세요"
+              description="지금 마음에 드는 곳을 찾아보세요."
               actionLabel="여행지 찾아가기"
               onAction={() => router.push(ROUTES.EXPLORE)}
             />
           ))}
 
         {activeTab === 'review' &&
-          (reviews.length > 0 ? (
+          (isReviewLoading ? (
+            <LoadingState
+              title="리뷰를 불러오는 중이에요"
+              description="작성한 리뷰 목록을 확인하고 있어요."
+            />
+          ) : reviewError ? (
+            <ErrorState
+              title="리뷰 목록을 불러오지 못했어요"
+              description={reviewError}
+              actionLabel="다시 시도"
+              onAction={() => void fetchMyReviews(reviewPage)}
+            />
+          ) : reviews.length > 0 ? (
             <>
               <div className={gridStyle}>
-                {paginatedReviews.map((review) => (
+                {reviews.map((review) => (
                   <PlaceCard
-                    key={review.review_id}
+                    key={review.reviewId}
                     variant="review"
-                    placeId={review.review_id}
-                    placeName="부산 광안리 야경"
+                    placeId={review.placeId}
+                    reviewId={review.reviewId}
+                    placeName={review.placeName}
                     description={review.content}
                     rating={review.rating}
                     onEditClick={handleReviewEdit}
@@ -285,14 +409,14 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           ) : (
             <EmptyState
               title="작성한 리뷰가 없어요"
-              description="여행지를 방문하고 리뷰를 남겨보세요"
+              description="여행지를 방문하고 리뷰를 남겨보세요."
             />
           ))}
 
         {activeTab === 'test' && (
           <EmptyState
             title="아직 성향 테스트를 하지 않았어요"
-            description="나의 여행 성향을 알아보세요"
+            description="나의 여행 성향을 찾아보세요."
             actionLabel="테스트 하러 가기"
             onAction={() => router.push('/test')}
           />

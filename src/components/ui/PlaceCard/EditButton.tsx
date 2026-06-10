@@ -6,8 +6,9 @@ import { css } from '@/styled-system/css'
 
 export interface EditButtonProps {
   placeId: number
-  onEditClick: (placeId: number) => void
-  onDeleteClick: (placeId: number) => void
+  actionId?: number
+  onEditClick: (id: number) => void
+  onDeleteClick: (id: number) => void
 }
 
 const wrapperStyle = css({
@@ -98,11 +99,13 @@ const deleteItemStyle = css({
 
 export function EditButton({
   placeId,
+  actionId,
   onEditClick,
   onDeleteClick,
 }: EditButtonProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const targetId = actionId ?? placeId
 
   useEffect(() => {
     if (!open) {
@@ -137,7 +140,7 @@ export function EditButton({
             role="menuitem"
             className={menuItemStyle}
             onClick={() => {
-              onEditClick(placeId)
+              onEditClick(targetId)
               setOpen(false)
             }}
           >
@@ -148,7 +151,7 @@ export function EditButton({
             role="menuitem"
             className={deleteItemStyle}
             onClick={() => {
-              onDeleteClick(placeId)
+              onDeleteClick(targetId)
               setOpen(false)
             }}
           >
