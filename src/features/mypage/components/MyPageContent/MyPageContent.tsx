@@ -80,12 +80,16 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     reviewId: number | null
     initialRating: number
     initialContent: string
+    initialImageSrc: string | null
+    initialCreatedAt?: string
   }>({
     isOpen: false,
     mode: 'create',
     reviewId: null,
     initialRating: 0,
     initialContent: '',
+    initialImageSrc: null,
+    initialCreatedAt: undefined,
   })
 
   useEffect(() => {
@@ -170,6 +174,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         reviewId: review.review_id,
         initialRating: review.rating,
         initialContent: review.content,
+        initialImageSrc: review.image_url,
+        initialCreatedAt: review.created_at,
       })
     }
   }
@@ -181,6 +187,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       reviewId: placeId,
       initialRating: 0,
       initialContent: '',
+      initialImageSrc: null,
+      initialCreatedAt: undefined,
     })
   }
 
@@ -303,6 +311,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         mode={reviewModal.mode}
         initialRating={reviewModal.initialRating}
         initialContent={reviewModal.initialContent}
+        initialImageSrc={reviewModal.initialImageSrc}
+        initialCreatedAt={reviewModal.initialCreatedAt}
         onSubmit={handleReviewSubmit}
         onDelete={handleReviewDeleteConfirm}
       />
