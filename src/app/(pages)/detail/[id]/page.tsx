@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { isAxiosError } from 'axios'
 
 import { getTravelDetail } from '@/features/travel/detail/api/travelDetailApi'
+import { getPlaceReviews } from '@/features/travel/detail/api/reviewApi'
 import TravelDetailPage from '@/features/travel/detail/TravelDetailPage'
 
 interface DetailPageProps {
@@ -23,5 +24,7 @@ export default async function DetailPage({ params }: DetailPageProps) {
     throw error
   }
 
-  return <TravelDetailPage detail={detail} />
+  const reviews = await getPlaceReviews(detail.id).catch(() => [])
+
+  return <TravelDetailPage detail={detail} reviews={reviews} />
 }

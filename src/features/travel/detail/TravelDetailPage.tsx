@@ -5,12 +5,13 @@ import InfoCard from './components/InfoCard'
 import MapSection from './components/MapSection'
 import ReviewsSection from './components/ReviewsSection'
 
-import type { TravelDetail } from './types/travelDetail.types'
+import type { Review, TravelDetail } from './types/travelDetail.types'
 
 import { css } from '@/styled-system/css'
 
 interface TravelDetailPageProps {
   detail: TravelDetail
+  reviews: Review[]
 }
 
 const pageStyle = css({
@@ -32,7 +33,10 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
+export default function TravelDetailPage({
+  detail,
+  reviews,
+}: TravelDetailPageProps) {
   return (
     <PageLayout>
       <div className={pageStyle}>
@@ -51,10 +55,9 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
           </div>
         </div>
 
-        {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews 교체 */}
         <ReviewsSection
           placeId={detail.id}
-          reviews={[]}
+          reviews={reviews}
           reviewCount={detail.review_count}
         />
       </div>
