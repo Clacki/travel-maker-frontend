@@ -7,9 +7,8 @@ import type {
 export const getRecommendPlaces = async (
   params?: PlaceRecommendParams
 ): Promise<PlaceRecommendItem[]> => {
-  const response = await api.get<PlaceRecommendItem[]>(
-    '/api/v1/places/recommend',
-    { params }
-  )
+  const response = await api.get<PlaceRecommendItem[]>('/places/recommend', {
+    params,
+  })
   return response.data
 }

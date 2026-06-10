@@ -1,12 +1,21 @@
 'use client'
 
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
-import { travelCategories, getAllDestinations } from '@/mocks/data/travel-data'
+import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
+import { getPlaces, getPlacesFilter } from './api/placesApi'
+import type { Place, GetPlacesFilterParams } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -24,6 +33,15 @@ const SORT_LABELS: Record<SortKey, string> = {
   reviews: '리뷰순',
 }
 
+const SORT_API_MAP: Record<
+  SortKey,
+  Pick<GetPlacesFilterParams, 'sort' | 'order'>
+> = {
+  popular: {},
+  bookmarks: { sort: 'bookmark', order: 'desc' },
+  reviews: { sort: 'review', order: 'desc' },
+}
+
 const DEFAULT_BG =
   'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1600&h=900&fit=crop'
 
@@ -37,12 +55,14 @@ const STYLE_TO_CATEGORY: Record<string, string> = {
   romantic: 'romantic',
 }
 
-function hash(str: string): number {
-  let h = 0
-  for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0
-  }
-  return Math.abs(h)
+const CATEGORY_TO_TAG_ID: Record<string, number> = {
+  beach: 1,
+  mountain: 2,
+  city: 3,
+  culture: 4,
+  food: 5,
+  adventure: 6,
+  romantic: 7,
 }
 
 function parseParams(
@@ -87,12 +107,52 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
+  const [places, setPlaces] = useState<Place[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [fetchedKey, setFetchedKey] = useState<string | null>(null)
   const gridRef = useRef<HTMLElement>(null)
 
   const currentPage = Math.max(
     1,
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
+
+  const currentKey = `${currentPage}-${categoryId ?? ''}-${sort}`
+  const isLoading = fetchedKey !== currentKey
+
+  useEffect(() => {
+    let cancelled = false
+    const key = `${currentPage}-${categoryId ?? ''}-${sort}`
+    const tagId = categoryId ? CATEGORY_TO_TAG_ID[categoryId] : undefined
+    const sortParams = SORT_API_MAP[sort]
+    const needsFilter = tagId !== undefined || sort !== 'popular'
+
+    const request = needsFilter
+      ? getPlacesFilter({
+          ...(tagId !== undefined ? { tags: tagId } : {}),
+          ...sortParams,
+          page: currentPage,
+          page_size: ITEMS_PER_PAGE,
+        })
+      : getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+
+    request
+      .then((data) => {
+        if (cancelled) return
+        setPlaces(data.results)
+        setTotalCount(data.count)
+        setFetchedKey(key)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setPlaces([])
+        setFetchedKey(key)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentPage, categoryId, sort])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -124,58 +184,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
   const heroDesc =
     activeCategory?.description ?? '세계 각지의 여행지를 탐색해 보세요'
 
-  const all = useMemo(() => getAllDestinations(), [])
-
-  const filtered = useMemo(() => {
-    let result = all
-
-    if (categoryId) {
-      result = result.filter((d) => d.categoryId === categoryId)
-    }
-
-    if (selected.style?.length && !selected.style.includes('all')) {
-      const cats = selected.style
-        .map((s) => STYLE_TO_CATEGORY[s])
-        .filter(Boolean)
-      if (cats.length) {
-        result = result.filter((d) => cats.includes(d.categoryId))
-      }
-    }
-
-    if (selected.region?.length) {
-      result = result.filter((d) => d.location.includes('대한민국'))
-    }
-
-    return result
-  }, [all, categoryId, selected])
-
-  const sorted = useMemo(() => {
-    const arr = [...filtered]
-    if (sort === 'popular') {
-      return arr.sort((a, b) => b.rating - a.rating)
-    }
-    if (sort === 'bookmarks') {
-      return arr.sort(
-        (a, b) => (hash(b.id + 'bm') % 1000) - (hash(a.id + 'bm') % 1000)
-      )
-    }
-    if (sort === 'reviews') {
-      return arr.sort(
-        (a, b) => (hash(b.id + 'rv') % 5000) - (hash(a.id + 'rv') % 5000)
-      )
-    }
-    return arr
-  }, [filtered, sort])
-
-  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)
-  const paginatedItems = useMemo(
-    () =>
-      sorted.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-      ),
-    [sorted, currentPage]
-  )
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
 
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString())
@@ -333,7 +342,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
           <FilterCard
             sections={travelFilterSections}
             initialSelected={selected}
-            resultCount={sorted.length}
+            resultCount={totalCount}
             onApply={applyFilters}
             onReset={clearAllFilters}
             onChange={handleFilterChange}
@@ -362,7 +371,7 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
           >
             <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
               {hasFilter ? '필터 적용됨 · ' : ''}
-              {sorted.length}개의 여행지
+              {totalCount}개의 여행지
             </p>
             <div className={css({ display: 'flex', gap: '6px' })}>
               {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
@@ -477,7 +486,13 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
       {/* Destinations Grid */}
       <section ref={gridRef} className={css({ py: 10, px: 6 })}>
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
-          {sorted.length > 0 ? (
+          {isLoading ? (
+            <div className={css({ textAlign: 'center', py: 20 })}>
+              <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
+                불러오는 중...
+              </p>
+            </div>
+          ) : places.length > 0 ? (
             <>
               <div
                 className={css({
@@ -491,31 +506,31 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
                   gap: 6,
                 })}
               >
-                {paginatedItems.map((destination, index) => (
+                {places.map((place) => (
                   <div
-                    key={destination.id}
+                    key={place.id}
                     onClick={(e) => {
                       if (!(e.target as HTMLElement).closest('button')) {
                         e.preventDefault()
-                        router.push(ROUTES.DETAIL(destination.id))
+                        router.push(ROUTES.DETAIL(String(place.id)))
                       }
                     }}
                     className={css({ cursor: 'pointer' })}
                   >
                     <PlaceCard
-                      placeId={(currentPage - 1) * ITEMS_PER_PAGE + index}
-                      placeName={destination.name}
-                      description={destination.description}
-                      tags={destination.tags}
-                      rating={destination.rating}
-                      imageUrl={destination.image}
+                      placeId={place.id}
+                      placeName={place.place_name}
+                      description={place.description}
+                      tags={place.tags.map((t) => t.tag_name)}
+                      rating={place.rating_avg}
+                      imageUrl={place.image_url}
                       variant="bookmark"
                       isLiked={false}
-                      onLikeToggle={() => {
+                      onLikeToggle={(_placeId) => {
                         if (!isAuthenticated) {
                           setIsLoginModalOpen(true)
                         }
-                        // TODO: 찜하기 API 호출
+                        // TODO: 찜하기 API 호출 (_placeId 사용)
                       }}
                     />
                   </div>
