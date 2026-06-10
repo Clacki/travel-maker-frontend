@@ -21,9 +21,17 @@ export const createPlaceReview = async (
   placeId: number,
   body: CreateReviewRequest
 ): Promise<CreateReviewResponse> => {
+  const formData = new FormData()
+  formData.append('rating', String(body.rating))
+  formData.append('content', body.content.trim())
+
+  if (body.image) {
+    formData.append('image', body.image)
+  }
+
   const response = await api.post<CreateReviewResponse>(
     placeReviewsPath(placeId),
-    body
+    formData
   )
 
   return response.data
