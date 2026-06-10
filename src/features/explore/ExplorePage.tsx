@@ -11,10 +11,9 @@ import {
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
-import { getPlaces, getPlacesFilter } from './api/placesApi'
+import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
 import type { Place, GetPlacesFilterParams } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -101,6 +100,7 @@ function ExploreContent() {
 
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
+  const keyword = searchParams.get('keyword') ?? ''
   const selected = useMemo(() => parseParams(searchParams), [searchParams])
   const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
@@ -108,6 +108,7 @@ function ExploreContent() {
   const [places, setPlaces] = useState<Place[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [fetchedKey, setFetchedKey] = useState<string | null>(null)
+  const [searchInput, setSearchInput] = useState(keyword)
   const gridRef = useRef<HTMLElement>(null)
 
   const currentPage = Math.max(
@@ -134,27 +135,39 @@ function ExploreContent() {
 
   const selectedTagIdsKey = selectedTagIds.join(',')
 
-  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}`
+  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
     let cancelled = false
-    const key = `${currentPage}-${selectedTagIdsKey}-${sort}`
+    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
     // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
       : []
     const sortParams = SORT_API_MAP[sort]
-    const needsFilter = tagIds.length > 0 || sort !== 'popular'
+    const hasTags = tagIds.length > 0
+    const hasKeyword = keyword.trim().length > 0
+    const hasSortOption = sort !== 'popular'
 
-    const request = needsFilter
-      ? getPlacesFilter({
-          ...(tagIds.length > 0 ? { tags: tagIds } : {}),
-          ...sortParams,
-          page: currentPage,
-          page_size: ITEMS_PER_PAGE,
-        })
-      : getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+    let request: ReturnType<typeof getPlaces>
+    if (hasTags || hasSortOption) {
+      request = getPlacesFilter({
+        ...(hasTags ? { tags: tagIds } : {}),
+        ...(hasKeyword ? { keyword: keyword.trim() } : {}),
+        ...sortParams,
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      })
+    } else if (hasKeyword) {
+      request = getPlacesSearch({
+        keyword: keyword.trim(),
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      })
+    } else {
+      request = getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
+    }
 
     request
       .then((data) => {
@@ -172,7 +185,7 @@ function ExploreContent() {
     return () => {
       cancelled = true
     }
-  }, [currentPage, selectedTagIdsKey, sort])
+  }, [currentPage, selectedTagIdsKey, sort, keyword])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -237,24 +250,14 @@ function ExploreContent() {
     if (searchParams.get('sort')) {
       params.set('sort', searchParams.get('sort')!)
     }
+    const trimmedInput = searchInput.trim()
+    if (trimmedInput) {
+      params.set('keyword', trimmedInput)
+    }
     for (const [key, values] of Object.entries(newSelected)) {
       if (values.length > 0) {
         params.set(key, values.join(','))
       }
-    }
-    params.set('page', '1')
-    router.push(`/explore?${params.toString()}`, { scroll: false })
-  }
-
-  function removeFilter(sectionId: string, tagId: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    const current = (params.get(sectionId) ?? '')
-      .split(',')
-      .filter((v) => v && v !== tagId)
-    if (current.length) {
-      params.set(sectionId, current.join(','))
-    } else {
-      params.delete(sectionId)
     }
     params.set('page', '1')
     router.push(`/explore?${params.toString()}`, { scroll: false })
@@ -267,6 +270,19 @@ function ExploreContent() {
     }
     if (searchParams.get('sort')) {
       params.set('sort', searchParams.get('sort')!)
+    }
+    params.set('page', '1')
+    setSearchInput('')
+    router.push(`/explore?${params.toString()}`, { scroll: false })
+  }
+
+  function submitSearch() {
+    const params = new URLSearchParams(searchParams.toString())
+    const trimmed = searchInput.trim()
+    if (trimmed) {
+      params.set('keyword', trimmed)
+    } else {
+      params.delete('keyword')
     }
     params.set('page', '1')
     router.push(`/explore?${params.toString()}`, { scroll: false })
@@ -366,11 +382,14 @@ function ExploreContent() {
             onApply={applyFilters}
             onReset={clearAllFilters}
             onChange={handleFilterChange}
+            searchValue={searchInput}
+            onSearchChange={setSearchInput}
+            onSearchSubmit={submitSearch}
           />
         </div>
       </section>
 
-      {/* Sort + Count + Filter Chips */}
+      {/* Sort + Count */}
       <section
         className={css({
           py: 5,
@@ -424,82 +443,6 @@ function ExploreContent() {
               ))}
             </div>
           </div>
-
-          {hasFilter && (
-            <div
-              className={css({
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '6px',
-                mt: 4,
-                alignItems: 'center',
-              })}
-            >
-              <span
-                className={css({
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: 'primary',
-                  mr: 1,
-                })}
-              >
-                필터
-              </span>
-              {filterChips.map((chip) => (
-                <span
-                  key={`${chip.sectionId}-${chip.tagId}`}
-                  className={css({
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    bg: 'primary/10',
-                    color: 'primary',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    px: '10px',
-                    py: '3px',
-                    borderRadius: '50px',
-                    border: '1.5px solid',
-                    borderColor: 'primary/20',
-                  })}
-                >
-                  {chip.label}
-                  <button
-                    type="button"
-                    aria-label={`${chip.label} 필터 제거`}
-                    onClick={() => removeFilter(chip.sectionId, chip.tagId)}
-                    className={css({
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      border: 'none',
-                      bg: 'transparent',
-                      color: 'inherit',
-                      p: 0,
-                      _hover: { color: 'text.primary' },
-                    })}
-                  >
-                    <X className={css({ w: '10px', h: '10px' })} />
-                  </button>
-                </span>
-              ))}
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className={css({
-                  fontSize: '11px',
-                  color: 'text.secondary',
-                  cursor: 'pointer',
-                  border: 'none',
-                  bg: 'transparent',
-                  _hover: { color: 'text.primary' },
-                  ml: 1,
-                })}
-              >
-                전체 초기화
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
