@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { isAxiosError } from 'axios'
 
-import { isAuthenticated } from '@/lib/auth'
 import { getTravelDetail } from '@/features/travel/detail/api/travelDetailApi'
 import TravelDetailPage from '@/features/travel/detail/TravelDetailPage'
 
@@ -24,6 +23,5 @@ export default async function DetailPage({ params }: DetailPageProps) {
     throw error
   }
 
-  const authenticated = await isAuthenticated()
-  return <TravelDetailPage detail={detail} isAuthenticated={authenticated} />
+  return <TravelDetailPage detail={detail} />
 }

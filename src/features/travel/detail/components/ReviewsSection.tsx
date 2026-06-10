@@ -9,7 +9,6 @@ import ReviewWriteButton from './ReviewWriteButton'
 interface ReviewsSectionProps {
   reviews: Review[]
   reviewCount: number
-  isAuthenticated: boolean
 }
 
 const sectionStyle = css({
@@ -45,13 +44,12 @@ const moreButtonWrapperStyle = css({
 export default function ReviewsSection({
   reviews,
   reviewCount,
-  isAuthenticated,
 }: ReviewsSectionProps) {
   return (
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
         <h2 className={headingStyle}>리뷰</h2>
-        <ReviewWriteButton isAuthenticated={isAuthenticated} />
+        <ReviewWriteButton />
       </div>
 
       {reviews.length === 0 ? (
@@ -62,11 +60,7 @@ export default function ReviewsSection({
       ) : (
         <div className={reviewListStyle}>
           {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              isAuthenticated={isAuthenticated}
-            />
+            <ReviewCard key={review.id} review={review} />
           ))}
         </div>
       )}

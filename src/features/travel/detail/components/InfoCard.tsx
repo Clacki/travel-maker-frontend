@@ -5,6 +5,7 @@ import { useRef, useState } from 'react'
 import TagList from './TagList'
 import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -22,7 +23,6 @@ interface InfoCardProps {
     | 'address_detail'
     | 'info'
   >
-  isAuthenticated: boolean
 }
 
 const cardStyle = css({
@@ -133,7 +133,7 @@ const descriptionStyle = css({
   py: '1',
 })
 
-export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
+export default function InfoCard({ detail }: InfoCardProps) {
   const {
     place_name,
     rating_avg,
@@ -144,13 +144,15 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
     address_detail,
     info,
   } = detail
+  const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [copied, setCopied] = useState(false)
   const [isWished, setIsWished] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const isSharing = useRef(false)
 
   const handleWishToggle = () => {
-    if (!isAuthenticated) {
+    if (!isAuthInitialized) return
+    if (!isLoggedIn) {
       setIsLoginModalOpen(true)
       return
     }
@@ -246,6 +248,8 @@ export default function InfoCard({ detail, isAuthenticated }: InfoCardProps) {
               className={wishTrackStyle}
               aria-label={isWished ? '찜 해제' : '찜 하기'}
               aria-pressed={isWished}
+              aria-busy={!isAuthInitialized}
+              disabled={!isAuthInitialized}
               onClick={handleWishToggle}
               style={{
                 backgroundColor: isWished

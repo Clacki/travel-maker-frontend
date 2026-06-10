@@ -11,7 +11,6 @@ import { css } from '@/styled-system/css'
 
 interface TravelDetailPageProps {
   detail: TravelDetail
-  isAuthenticated: boolean
 }
 
 const pageStyle = css({
@@ -33,10 +32,7 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-export default function TravelDetailPage({
-  detail,
-  isAuthenticated,
-}: TravelDetailPageProps) {
+export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
   return (
     <PageLayout>
       <div className={pageStyle}>
@@ -46,7 +42,7 @@ export default function TravelDetailPage({
           <GallerySectionContainer images={detail.images} placeId={detail.id} />
 
           <div className={rightColumnStyle}>
-            <InfoCard detail={detail} isAuthenticated={isAuthenticated} />
+            <InfoCard detail={detail} />
             <MapSection
               name={detail.place_name}
               latitude={detail.latitude}
@@ -56,11 +52,7 @@ export default function TravelDetailPage({
         </div>
 
         {/* TODO: GET /api/v1/places/{place_id}/reviews 연동 후 reviews 교체 */}
-        <ReviewsSection
-          reviews={[]}
-          reviewCount={detail.review_count}
-          isAuthenticated={isAuthenticated}
-        />
+        <ReviewsSection reviews={[]} reviewCount={detail.review_count} />
       </div>
     </PageLayout>
   )
