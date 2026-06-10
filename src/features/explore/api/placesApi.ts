@@ -3,15 +3,24 @@ import type {
   PlacesResponse,
   GetPlacesParams,
   GetPlacesFilterParams,
+  GetPlacesSearchParams,
 } from '../types/places.types'
 
 const PLACES_PATH = '/places'
 const PLACES_FILTER_PATH = '/places/filter'
+const PLACES_SEARCH_PATH = '/places/search'
 
 export const getPlaces = async (
   params: GetPlacesParams = {}
 ): Promise<PlacesResponse> => {
   const response = await api.get<PlacesResponse>(PLACES_PATH, { params })
+  return response.data
+}
+
+export const getPlacesSearch = async (
+  params: GetPlacesSearchParams = {}
+): Promise<PlacesResponse> => {
+  const response = await api.get<PlacesResponse>(PLACES_SEARCH_PATH, { params })
   return response.data
 }
 
