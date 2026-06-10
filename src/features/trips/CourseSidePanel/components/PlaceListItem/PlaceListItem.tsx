@@ -1,4 +1,8 @@
-import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react'
+'use client'
+
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { GripVertical, Trash2 } from 'lucide-react'
 
 import type { CoursePlace } from '@/features/trips/types/course.types'
 
@@ -7,11 +11,7 @@ import { css } from '@/styled-system/css'
 interface PlaceListItemProps {
   index: number
   place: CoursePlace
-  isFirst: boolean
-  isLast: boolean
   onRemove: (placeId: string) => void
-  onMoveUp: (placeId: string) => void
-  onMoveDown: (placeId: string) => void
 }
 
 const itemStyle = css({
@@ -22,6 +22,7 @@ const itemStyle = css({
   borderWidth: '1px',
   borderColor: 'border.subtle',
   borderRadius: 'sm',
+  bg: 'bg.surface',
 })
 
 const indexBadgeStyle = css({
@@ -36,6 +37,18 @@ const indexBadgeStyle = css({
   color: 'text.inverse',
   fontSize: 'xs',
   fontWeight: 'bold',
+})
+
+const dragHandleStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  color: 'text.secondary',
+  cursor: 'grab',
+  _hover: {
+    color: 'text.primary',
+  },
 })
 
 const ghostButtonStyle = css({
@@ -53,11 +66,6 @@ const ghostButtonStyle = css({
   _hover: {
     color: 'primary',
     bg: 'primary.soft',
-  },
-  _disabled: {
-    color: 'border',
-    cursor: 'not-allowed',
-    pointerEvents: 'none',
   },
   _focusVisible: {
     outline: 'none',
@@ -87,41 +95,40 @@ const actionsStyle = css({
   flexShrink: 0,
 })
 
-export function PlaceListItem({
-  index,
-  place,
-  isFirst,
-  isLast,
-  onRemove,
-  onMoveUp,
-  onMoveDown,
-}: PlaceListItemProps) {
+export function PlaceListItem({ index, place, onRemove }: PlaceListItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: place.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : undefined,
+  }
+
   return (
-    <div className={itemStyle}>
+    <div ref={setNodeRef} style={style} className={itemStyle}>
+      <button
+        type="button"
+        className={dragHandleStyle}
+        aria-label="드래그하여 순서 변경"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical size={16} />
+      </button>
       <span className={indexBadgeStyle}>{index}</span>
       <div className={infoStyle}>
         <p className={nameStyle}>{place.name}</p>
         <p className={addressStyle}>{place.address}</p>
       </div>
       <div className={actionsStyle}>
-        <button
-          type="button"
-          className={ghostButtonStyle}
-          aria-label="위로 이동"
-          disabled={isFirst}
-          onClick={() => onMoveUp(place.id)}
-        >
-          <ArrowUp size={14} />
-        </button>
-        <button
-          type="button"
-          className={ghostButtonStyle}
-          aria-label="아래로 이동"
-          disabled={isLast}
-          onClick={() => onMoveDown(place.id)}
-        >
-          <ArrowDown size={14} />
-        </button>
         <button
           type="button"
           className={ghostButtonStyle}

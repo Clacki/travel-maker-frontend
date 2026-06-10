@@ -5,7 +5,7 @@ import type {
   CoursePlace,
   DepartureTime,
 } from '@/features/trips/types/course.types'
-import { MAX_PLACES } from '@/features/trips/types/course.types'
+import { MAX_PLACES_PER_DAY } from '@/features/trips/types/course.types'
 import { mockCoursePlaces } from '@/mocks/data/trips-data'
 
 type CourseStore = {
@@ -23,10 +23,15 @@ type CourseStore = {
   setDescription: (description: string) => void
   setRegion: (region: string | null) => void
   toggleTheme: (theme: string) => void
-  addPlace: (place: CoursePlace) => void
+  addPlace: (place: Omit<CoursePlace, 'dayIndex'>) => void
   removePlace: (placeId: string) => void
-  movePlaceUp: (placeId: string) => void
-  movePlaceDown: (placeId: string) => void
+  reorderPlaces: (newPlaces: CoursePlace[]) => void
+  updatePlaceDetail: (
+    placeId: string,
+    patch: Partial<
+      Pick<CoursePlace, 'stayMinutes' | 'memo' | 'transportMode' | 'dayIndex'>
+    >
+  ) => void
   setDateRange: (range: CourseDateRange | null) => void
   setDepartureTime: (time: DepartureTime) => void
   setSelectedDay: (day: number) => void
@@ -68,10 +73,15 @@ export const useCourseStore = create<CourseStore>((set) => ({
 
   addPlace: (place) =>
     set((state) => {
-      if (state.places.length >= MAX_PLACES) {
+      const dayPlaceCount = state.places.filter(
+        (p) => p.dayIndex === state.selectedDay
+      ).length
+      if (dayPlaceCount >= MAX_PLACES_PER_DAY) {
         return state
       }
-      return { places: [...state.places, place] }
+      return {
+        places: [...state.places, { ...place, dayIndex: state.selectedDay }],
+      }
     }),
 
   removePlace: (placeId) =>
@@ -79,31 +89,14 @@ export const useCourseStore = create<CourseStore>((set) => ({
       places: state.places.filter((p) => p.id !== placeId),
     })),
 
-  movePlaceUp: (placeId) =>
-    set((state) => {
-      const index = state.places.findIndex((p) => p.id === placeId)
-      if (index <= 0) {
-        return state
-      }
-      const newPlaces = [...state.places]
-      const temp = newPlaces[index - 1]
-      newPlaces[index - 1] = newPlaces[index]
-      newPlaces[index] = temp
-      return { places: newPlaces }
-    }),
+  reorderPlaces: (newPlaces) => set({ places: newPlaces }),
 
-  movePlaceDown: (placeId) =>
-    set((state) => {
-      const index = state.places.findIndex((p) => p.id === placeId)
-      if (index < 0 || index >= state.places.length - 1) {
-        return state
-      }
-      const newPlaces = [...state.places]
-      const temp = newPlaces[index + 1]
-      newPlaces[index + 1] = newPlaces[index]
-      newPlaces[index] = temp
-      return { places: newPlaces }
-    }),
+  updatePlaceDetail: (placeId, patch) =>
+    set((state) => ({
+      places: state.places.map((p) =>
+        p.id === placeId ? { ...p, ...patch } : p
+      ),
+    })),
 
   setDateRange: (range) => set({ dateRange: range }),
 

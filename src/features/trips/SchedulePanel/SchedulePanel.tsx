@@ -7,44 +7,38 @@ import type { CourseDateRange } from '@/features/trips/types/course.types'
 
 import { DateRangePicker } from './components/DateRangePicker'
 import { DayTabGroup } from './components/DayTabGroup'
+import { TimelineSection } from './components/TimelineSection'
 import { TimePicker } from './components/TimePicker'
 
 import { css } from '@/styled-system/css'
 
-const panelStyle = css({
+const cardStyle = css({
   bg: 'bg.surface',
-  borderRadius: 'lg',
+  borderRadius: '2xl',
   borderWidth: '1px',
   borderColor: 'border.subtle',
-  boxShadow: 'md',
-  p: '6',
-  w: 'full',
-  maxW: '765px',
+  p: '4',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4',
 })
 
-const headerTitleStyle = css({
-  fontSize: 'lg',
+const cardTitleStyle = css({
+  fontSize: 'md',
   fontWeight: 'semibold',
   color: 'text.primary',
 })
 
-const headerDescStyle = css({
+const cardDescStyle = css({
   fontSize: 'sm',
   color: 'text.secondary',
-  mt: '1',
+  mt: '0.5',
 })
 
 const gridStyle = css({
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   gap: '4',
-})
-
-const gridRowStyle = css({
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: '4',
-  mt: '4',
 })
 
 const labelStyle = css({
@@ -85,7 +79,7 @@ const unitLabelStyle = css({
   color: 'text.secondary',
 })
 
-export function SchedulePanel() {
+export function ScheduleCard() {
   const {
     dateRange,
     departureTime,
@@ -105,14 +99,12 @@ export function SchedulePanel() {
   }
 
   return (
-    <div className={panelStyle}>
-      {/* Header */}
-      <div className={css({ mb: '6' })}>
-        <h2 className={headerTitleStyle}>일정 설정</h2>
-        <p className={headerDescStyle}>여행 날짜와 출발 시간을 설정해주세요.</p>
+    <div className={cardStyle}>
+      <div>
+        <h2 className={cardTitleStyle}>일정 설정</h2>
+        <p className={cardDescStyle}>여행 날짜와 출발 시간을 설정해주세요</p>
       </div>
 
-      {/* Row 1: Date Range + Departure Time */}
       <div className={gridStyle}>
         <div>
           <p className={labelStyle}>여행 날짜</p>
@@ -124,8 +116,7 @@ export function SchedulePanel() {
         </div>
       </div>
 
-      {/* Row 2: Day Selection + Estimated Duration */}
-      <div className={gridRowStyle}>
+      <div className={gridStyle}>
         <div>
           <p className={labelStyle}>일차 선택</p>
           <DayTabGroup
@@ -171,4 +162,14 @@ export function SchedulePanel() {
   )
 }
 
-export default SchedulePanel
+export function TimelineCard() {
+  return (
+    <div className={cardStyle}>
+      <div>
+        <h2 className={cardTitleStyle}>타임라인</h2>
+        <p className={cardDescStyle}>선택한 장소의 예상 방문 시간이에요</p>
+      </div>
+      <TimelineSection />
+    </div>
+  )
+}

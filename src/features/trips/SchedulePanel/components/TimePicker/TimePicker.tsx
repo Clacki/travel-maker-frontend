@@ -6,7 +6,7 @@ import { ChevronDown, Clock } from 'lucide-react'
 
 import type { DepartureTime } from '@/features/trips/types/course.types'
 
-import { css } from '@/styled-system/css'
+import { css, cva } from '@/styled-system/css'
 
 interface TimePickerProps {
   value: DepartureTime
@@ -47,7 +47,8 @@ const triggerStyle = css({
   bg: 'bg.surface',
   fontSize: 'sm',
   cursor: 'pointer',
-  transition: 'border-color 150ms',
+  transitionProperty: 'border-color',
+  transitionDuration: '150ms',
   _hover: { borderColor: 'primary' },
   _focusVisible: { outline: 'none', boxShadow: 'focus' },
 })
@@ -70,29 +71,30 @@ const dropdownStyle = css({
   py: '1',
 })
 
-const slotStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  w: 'full',
-  px: '4',
-  py: '3',
-  fontSize: 'sm',
-  cursor: 'pointer',
-  transition: 'background-color 150ms',
-  _hover: { bg: 'bg.muted' },
-})
-
-const slotSelectedStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  w: 'full',
-  px: '4',
-  py: '3',
-  fontSize: 'sm',
-  cursor: 'pointer',
-  bg: 'primary.soft',
-  color: 'primary',
-  fontWeight: 'semibold',
+const slotStyle = cva({
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    w: 'full',
+    px: '4',
+    py: '3',
+    fontSize: 'sm',
+    cursor: 'pointer',
+  },
+  variants: {
+    selected: {
+      true: {
+        bg: 'primary.soft',
+        color: 'primary',
+        fontWeight: 'semibold',
+      },
+      false: {
+        transitionProperty: 'background-color',
+        transitionDuration: '150ms',
+        _hover: { bg: 'bg.muted' },
+      },
+    },
+  },
 })
 
 export function TimePicker({ value, onChange }: TimePickerProps) {
@@ -120,6 +122,22 @@ export function TimePicker({ value, onChange }: TimePickerProps) {
     }
   }, [open])
 
+  // 페이지 스크롤 시 닫기
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+    const handleScroll = (e: Event) => {
+      // TimePicker 내부 목록 스크롤은 무시
+      if (containerRef.current?.contains(e.target as Node)) {
+        return
+      }
+      setOpen(false)
+    }
+    window.addEventListener('scroll', handleScroll, true)
+    return () => window.removeEventListener('scroll', handleScroll, true)
+  }, [open])
+
   return (
     <div ref={containerRef} className={css({ position: 'relative' })}>
       <button
@@ -142,7 +160,8 @@ export function TimePicker({ value, onChange }: TimePickerProps) {
           className={css({
             color: 'text.secondary',
             flexShrink: 0,
-            transition: 'transform 150ms',
+            transitionProperty: 'transform',
+            transitionDuration: '150ms',
             transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
           })}
         />
@@ -157,7 +176,7 @@ export function TimePicker({ value, onChange }: TimePickerProps) {
                 key={slot.label}
                 ref={selected ? selectedRef : undefined}
                 type="button"
-                className={selected ? slotSelectedStyle : slotStyle}
+                className={slotStyle({ selected })}
                 onClick={() => {
                   onChange(slot.value)
                   setOpen(false)

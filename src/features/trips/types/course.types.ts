@@ -2,16 +2,32 @@ export type CoursePlace = {
   id: string
   name: string
   address: string
+  lat?: number
+  lng?: number
+  dayIndex: number
+  stayMinutes?: number
+  memo?: string
+  transportMode?: 'walk' | 'transit' | 'car'
 }
 
-export const REGION_OPTIONS = ['서울', '부산', '제주', '강릉', '경주'] as const
+export const REGION_OPTIONS = [
+  '제주',
+  '부산',
+  '강릉',
+  '경주',
+  '전주',
+  '여수',
+  '속초',
+] as const
 
 export const THEME_OPTIONS = [
-  '자연',
-  '감성',
-  '맛집',
-  '힐링',
-  '가족여행',
+  '산악탐험',
+  '문화체험',
+  '액티비티',
+  '해변휴양',
+  '도시탐방',
+  '미식여행',
+  '로맨틱여행',
 ] as const
 
 export type CourseDateRange = {
@@ -26,4 +42,5 @@ export type DepartureTime = {
 }
 
 export const MIN_PLACES = 2
-export const MAX_PLACES = 7
+export const MAX_PLACES_PER_DAY = 5
+export const MAX_TRIP_DAYS = 5
