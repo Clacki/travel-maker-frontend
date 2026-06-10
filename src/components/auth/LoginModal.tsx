@@ -1,7 +1,7 @@
 'use client'
 
 import { Modal } from '@/components/common/modal'
-import { getKakaoAuthorizeUrl } from '@/services/auth'
+import { redirectToKakaoLogin } from '@/services/auth'
 import { css } from '@/styled-system/css'
 
 interface LoginModalProps {
@@ -154,7 +154,7 @@ const guideItems = [
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleKakaoLogin = () => {
     try {
-      window.location.href = getKakaoAuthorizeUrl()
+      redirectToKakaoLogin()
     } catch (error) {
       console.error(error)
     }

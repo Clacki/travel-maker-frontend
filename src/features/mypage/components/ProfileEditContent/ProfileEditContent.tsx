@@ -1,10 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, User } from 'lucide-react'
 import { css } from '@/styled-system/css'
 import { Button } from '@/components/common/button'
+import { LoadingState } from '@/components/common/status'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import {
   mapProfileTagIdsToUserTags,
   PROFILE_TAG_LIMIT,
@@ -265,6 +267,8 @@ const footerStyle = css({
 
 export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const router = useRouter()
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
   const savedProfile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
@@ -278,6 +282,24 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
 
   const savedProfileTags = mapProfileTagIdsToUserTags(savedProfile.tagIds)
   const isTagLimitReached = selectedTags.length >= PROFILE_TAG_LIMIT
+
+  useEffect(() => {
+    if (!isAuthInitialized) {
+      return
+    }
+
+    if (!isLoggedIn) {
+      router.replace('/?showLogin=true')
+    }
+  }, [isAuthInitialized, isLoggedIn, router])
+
+  if (!isAuthInitialized) {
+    return <LoadingState />
+  }
+
+  if (!isLoggedIn) {
+    return null
+  }
 
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) => {

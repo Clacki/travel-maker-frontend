@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { css } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
@@ -12,7 +12,8 @@ import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
-import { EmptyState } from '@/components/common/status'
+import { EmptyState, LoadingState } from '@/components/common/status'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import {
   mockMyProfile,
   mockBookmarks,
@@ -23,6 +24,7 @@ import {
   getDefaultEditableProfile,
   useProfileStore,
 } from '@/store/profileStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 
 interface MyPageContentProps {
   userId: string
@@ -57,6 +59,8 @@ const gridStyle = css({
 
 export function MyPageContent({ userId }: MyPageContentProps) {
   const router = useRouter()
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
 
   // TODO: 실제 API 연동 시 세션에서 현재 유저 ID 확인
   const isMyProfile = true
@@ -65,6 +69,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const profile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
   )
+  const currentUserProfile = useUserProfileStore((state) => state.userProfile)
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [bookmarkPage, setBookmarkPage] = useState(1)
   const [reviewPage, setReviewPage] = useState(1)
@@ -83,14 +88,50 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     initialContent: '',
   })
 
+  useEffect(() => {
+    if (!isAuthInitialized) {
+      return
+    }
+
+    if (!isLoggedIn) {
+      router.replace('/?showLogin=true')
+    }
+  }, [isAuthInitialized, isLoggedIn, router])
+
+  if (!isAuthInitialized) {
+    return <LoadingState />
+  }
+
+  if (!isLoggedIn) {
+    return null
+  }
+
   // TODO: 실제 API 연동
   const bookmarks = mockBookmarks
   const reviews = mockReviews
 
+  const isCurrentUserPage =
+    !!currentUserProfile &&
+    (userId === currentUserProfile.id || userId === 'me')
   const user = {
     ...mockMyProfile,
-    nickname: profile.nickname,
-    bio: profile.bio,
+    id: isCurrentUserPage ? Number(currentUserProfile.id) : mockMyProfile.id,
+    nickname: isCurrentUserPage
+      ? currentUserProfile.nickname
+      : profile.nickname,
+    bio: isCurrentUserPage ? currentUserProfile.bio || '' : profile.bio,
+    email: isCurrentUserPage
+      ? currentUserProfile.email || ''
+      : mockMyProfile.email,
+    profile_img_url: isCurrentUserPage
+      ? currentUserProfile.profileImageUrl || ''
+      : mockMyProfile.profile_img_url,
+    bookmark_count: isCurrentUserPage
+      ? (currentUserProfile.bookmarkCount ?? mockMyProfile.bookmark_count)
+      : mockMyProfile.bookmark_count,
+    review_count: isCurrentUserPage
+      ? (currentUserProfile.reviewCount ?? mockMyProfile.review_count)
+      : mockMyProfile.review_count,
     tags: mapProfileTagIdsToUserTags(profile.tagIds),
   }
 

@@ -3,7 +3,13 @@ import { create } from 'zustand'
 export type UserProfile = {
   id: string
   nickname: string
+  email?: string
+  bio?: string
   profileImageUrl?: string | null
+  followerCount?: number
+  followingCount?: number
+  bookmarkCount?: number
+  reviewCount?: number
 }
 
 export type UserProfileState = {

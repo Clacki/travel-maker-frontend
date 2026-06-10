@@ -10,6 +10,7 @@ import {
   clearLegacyStoredAccessToken,
   getAuthLoggedOut,
 } from '@/features/auth/utils/tokenStorage'
+import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 
 let authInitializationPromise: Promise<void> | null = null
 
@@ -35,7 +36,7 @@ export const useInitializeAuth = () => {
       return
     }
 
-    if (pathname === '/social-callback') {
+    if (pathname === '/auth/callback' || pathname === '/social-callback') {
       setAuthInitialized(true)
       return
     }
@@ -50,9 +51,17 @@ export const useInitializeAuth = () => {
         const { access_token: accessToken } = await refreshAccessToken()
         clearAuthLoggedOut()
         setAccessToken(accessToken)
+        try {
+          await loadCurrentUserProfile()
+        } catch (error) {
+          console.error('Current user request failed after refresh.', error)
+          clearUserProfile()
+        }
       } catch {
         clearAuth()
         clearUserProfile()
+      } finally {
+        setAuthInitialized(true)
       }
     }
 
