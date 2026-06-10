@@ -11,7 +11,7 @@ import { css, cx } from '@/styled-system/css'
 interface PlaceListItemProps {
   index: number
   place: CoursePlace
-  selectedPlaceId: string | null
+  isSelected: boolean
   onRemove: (placeId: string) => void
   onSelect: (placeId: string) => void
 }
@@ -106,7 +106,7 @@ const actionsStyle = css({
 export function PlaceListItem({
   index,
   place,
-  selectedPlaceId,
+  isSelected,
   onRemove,
   onSelect,
 }: PlaceListItemProps) {
@@ -125,8 +125,6 @@ export function PlaceListItem({
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 10 : undefined,
   }
-
-  const isSelected = place.id === selectedPlaceId
 
   const handleClick = () => {
     if (!isDragging) {

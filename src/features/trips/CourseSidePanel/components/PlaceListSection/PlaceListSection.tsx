@@ -85,7 +85,7 @@ export function PlaceListSection({
                 key={place.id}
                 index={idx + 1}
                 place={place}
-                selectedPlaceId={selectedPlaceId}
+                isSelected={place.id === selectedPlaceId}
                 onRemove={onRemove}
                 onSelect={setSelectedPlaceId}
               />

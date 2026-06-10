@@ -9,7 +9,7 @@ import { createTrip } from '@/features/trips/api/tripsApi'
 import type { CreateTripPayload } from '@/features/trips/types/trips.types'
 import { ROUTES } from '@/constants/routes'
 
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 // 카카오맵 SDK 공식 타입 미제공 → 최소 필요 인터페이스 정의
 interface KakaoLatLng {
@@ -32,8 +32,6 @@ interface KakaoMapInstance {
 
 // 디자인 토큰 raw 값 (카카오맵 DOM API는 Panda CSS 토큰 미지원)
 const PRIMARY_COLOR = '#2CA6BE' // semantic token 'primary'
-const SELECTED_COLOR = '#FF6B35' // 선택된 마커 색상 (코랄 오렌지)
-const ROUTE_LINE_COLOR = '#FF6B35' // 코스 경로선 색상 (코랄 오렌지)
 
 const panelStyle = css({
   display: 'flex',
@@ -93,6 +91,24 @@ const mapContainerStyle = css({
     display: 'revert',
     maxWidth: 'revert',
   },
+})
+
+const mapContainerCursorStyle = css({ cursor: 'crosshair' })
+const mapContainerGeocodingCursorStyle = css({ cursor: 'wait' })
+
+const geocodingOverlayStyle = css({
+  position: 'absolute',
+  top: '2',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: 10,
+  bg: 'rgba(0,0,0,0.6)',
+  color: 'text.inverse',
+  fontSize: 'xs',
+  px: '3',
+  py: '1',
+  borderRadius: 'pill',
+  pointerEvents: 'none',
 })
 
 const legendRowStyle = css({
@@ -161,9 +177,13 @@ export function CourseMapPanel() {
   const overlaysRef = useRef<KakaoOverlay[]>([])
   const polylineRef = useRef<KakaoPolyline | null>(null)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [geocodeError, setGeocodeError] = useState<string | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [isMapReady, setIsMapReady] = useState(false)
   const isGeocodingRef = useRef(false)
+  const overlayContentsRef = useRef<
+    Array<{ id: string; el: HTMLDivElement; tailInner: HTMLDivElement }>
+  >([])
   useEffect(() => {
     isGeocodingRef.current = isGeocoding
   }, [isGeocoding])
@@ -217,7 +237,9 @@ export function CourseMapPanel() {
       map,
       'click',
       (mouseEvent: { latLng: KakaoLatLng }) => {
-        if (isGeocodingRef.current) return
+        if (isGeocodingRef.current) {
+          return
+        }
 
         const lat = mouseEvent.latLng.getLat()
         const lng = mouseEvent.latLng.getLng()
@@ -249,6 +271,9 @@ export function CourseMapPanel() {
                 lat,
                 lng,
               })
+            } else {
+              setGeocodeError('해당 위치의 주소를 찾을 수 없습니다.')
+              setTimeout(() => setGeocodeError(null), 3000)
             }
             setIsGeocoding(false)
           }
@@ -295,16 +320,11 @@ export function CourseMapPanel() {
 
     const path: KakaoLatLng[] = []
 
+    overlayContentsRef.current = []
+
     coordPlaces.forEach((place, idx) => {
       const position = new window.kakao.maps.LatLng(place.lat!, place.lng!)
       path.push(position)
-
-      const isSelected = place.id === selectedPlaceId
-      const markerSize = isSelected ? '32px' : '28px'
-      const markerFontSize = isSelected ? '13px' : '12px'
-      const bgColor = isSelected ? '#fff' : PRIMARY_COLOR
-      const textColor = isSelected ? PRIMARY_COLOR : '#fff'
-      const borderStyle = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
 
       const overlayContent = document.createElement('div')
       overlayContent.style.cssText = [
@@ -312,22 +332,21 @@ export function CourseMapPanel() {
         'display:inline-flex',
         'align-items:center',
         'justify-content:center',
-        `min-width:${markerSize}`,
-        `height:${markerSize}`,
+        'min-width:28px',
+        'height:28px',
         'padding:0 8px',
-        `background:${bgColor}`,
-        `color:${textColor}`,
-        `font-size:${markerFontSize}`,
+        `background:${PRIMARY_COLOR}`,
+        'color:#fff',
+        'font-size:12px',
         'font-weight:bold',
         'border-radius:12px',
-        `border:${borderStyle}`,
+        'border:none',
         'box-shadow:0 2px 6px rgba(0,0,0,0.25)',
         'cursor:default',
         'white-space:nowrap',
         'transition:all 0.2s ease',
       ].join(';')
 
-      // 말풍선 꼬리 - 바깥 삼각형 (테두리 역할)
       const tailOuter = document.createElement('div')
       tailOuter.style.cssText = [
         'position:absolute',
@@ -338,10 +357,9 @@ export function CourseMapPanel() {
         'height:0',
         'border-left:8px solid transparent',
         'border-right:8px solid transparent',
-        `border-top:10px solid ${isSelected ? PRIMARY_COLOR : PRIMARY_COLOR}`,
+        `border-top:10px solid ${PRIMARY_COLOR}`,
       ].join(';')
 
-      // 말풍선 꼬리 - 안쪽 삼각형 (배경색으로 덮어 테두리 효과)
       const tailInner = document.createElement('div')
       tailInner.style.cssText = [
         'position:absolute',
@@ -352,12 +370,18 @@ export function CourseMapPanel() {
         'height:0',
         'border-left:6px solid transparent',
         'border-right:6px solid transparent',
-        `border-top:8px solid ${bgColor}`,
+        `border-top:8px solid ${PRIMARY_COLOR}`,
       ].join(';')
 
       overlayContent.textContent = String(idx + 1)
       overlayContent.appendChild(tailOuter)
       overlayContent.appendChild(tailInner)
+
+      overlayContentsRef.current.push({
+        id: place.id,
+        el: overlayContent,
+        tailInner,
+      })
 
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
@@ -385,15 +409,38 @@ export function CourseMapPanel() {
       path.forEach((p) => bounds.extend(p))
       map.setBounds(bounds)
     }
-  }, [places, selectedDay, isMapReady, selectedPlaceId])
+  }, [places, selectedDay, isMapReady])
 
-  // 선택된 장소로 지도 이동
+  // 선택된 장소 마커 스타일 업데이트 + 지도 이동
+  // selectedPlaceId 변경 시에만 실행되어 전체 마커 재생성 방지
   useEffect(() => {
-    const map = mapInstanceRef.current
-    if (!map || !selectedPlaceId) return
+    if (!mapInstanceRef.current || !window.kakao?.maps) {
+      return
+    }
+
+    overlayContentsRef.current.forEach(({ id, el, tailInner }) => {
+      const isSelected = id === selectedPlaceId
+      const bgColor = isSelected ? '#fff' : PRIMARY_COLOR
+      const textColor = isSelected ? PRIMARY_COLOR : '#fff'
+      el.style.background = bgColor
+      el.style.color = textColor
+      el.style.border = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
+      el.style.minWidth = isSelected ? '32px' : '28px'
+      el.style.height = isSelected ? '32px' : '28px'
+      el.style.fontSize = isSelected ? '13px' : '12px'
+      tailInner.style.borderTopColor = bgColor
+    })
+
+    if (!selectedPlaceId) {
+      return
+    }
     const place = places.find((p) => p.id === selectedPlaceId)
-    if (!place?.lat || !place?.lng) return
-    map.panTo(new window.kakao.maps.LatLng(place.lat, place.lng))
+    if (!place?.lat || !place?.lng) {
+      return
+    }
+    mapInstanceRef.current.panTo(
+      new window.kakao.maps.LatLng(place.lat, place.lng)
+    )
   }, [selectedPlaceId, places])
 
   const handleCreateTrip = async () => {
@@ -469,27 +516,15 @@ export function CourseMapPanel() {
       <div className={mapAreaStyle}>
         <div
           ref={mapRef}
-          className={mapContainerStyle}
-          style={{ cursor: isGeocoding ? 'wait' : 'crosshair' }}
+          className={cx(
+            mapContainerStyle,
+            isGeocoding
+              ? mapContainerGeocodingCursorStyle
+              : mapContainerCursorStyle
+          )}
         />
         {isGeocoding && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 8,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 10,
-              background: 'rgba(0,0,0,0.6)',
-              color: '#fff',
-              fontSize: 12,
-              padding: '4px 12px',
-              borderRadius: 20,
-              pointerEvents: 'none',
-            }}
-          >
-            장소 확인 중...
-          </div>
+          <div className={geocodingOverlayStyle}>장소 확인 중...</div>
         )}
       </div>
 
@@ -519,6 +554,18 @@ export function CourseMapPanel() {
           })}
         >
           {createError}
+        </p>
+      )}
+      {geocodeError && (
+        <p
+          className={css({
+            px: '4',
+            pb: '2',
+            fontSize: 'xs',
+            color: 'warning',
+          })}
+        >
+          {geocodeError}
         </p>
       )}
 
