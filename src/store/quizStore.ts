@@ -1,21 +1,34 @@
 import { create } from 'zustand'
 
+import {
+  calculateResultVector,
+  getTypeKey,
+  type TypeKey,
+} from '@/features/result/quizCalculator'
 import type { QuizAnswer } from '@/features/test/quiz.types'
 
 type QuizStore = {
   currentIndex: number
   answers: QuizAnswer[]
   selectedChoice: 'A' | 'B' | null
+  /** 6축 정규화 점수 (0.0~1.0). 퀴즈 완료 후 계산되어 저장됨 */
+  resultVector: number[] | null
+  /** 활동성×사교성×공간지향 기반 타입 키 (예: 'ftf'). 퀴즈 완료 후 저장됨 */
+  typeKey: TypeKey | null
   selectChoice: (choice: 'A' | 'B') => void
   goNext: (questionId: number, totalQuestions: number) => void
   goPrev: () => void
   resetQuiz: () => void
+  /** 퀴즈 완료 시 answers로 result_vector와 type_key를 계산해 저장한다 */
+  setCalculatedResult: (answers: QuizAnswer[]) => void
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
   currentIndex: 0,
   answers: [],
   selectedChoice: null,
+  resultVector: null,
+  typeKey: null,
 
   selectChoice: (choice) => set({ selectedChoice: choice }),
 
@@ -66,5 +79,13 @@ export const useQuizStore = create<QuizStore>((set) => ({
       currentIndex: 0,
       answers: [],
       selectedChoice: null,
+      resultVector: null,
+      typeKey: null,
     }),
+
+  setCalculatedResult: (answers) => {
+    const vector = calculateResultVector(answers)
+    const key = getTypeKey(vector)
+    set({ resultVector: vector, typeKey: key })
+  },
 }))
