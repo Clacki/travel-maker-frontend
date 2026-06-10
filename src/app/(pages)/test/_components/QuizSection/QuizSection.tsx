@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { preload } from 'react-dom'
 
-import { css } from '@/styled-system/css'
-
 import { ROUTES } from '@/constants/routes'
 import { quizQuestions, TOTAL_QUESTIONS } from '@/features/test/data/quizData'
-import { postQuizSubmit } from '@/features/test/api/quizApi'
+import { postQuizSubmit } from '@/features/result/quizSubmitApi'
+import type { QuizAnswer } from '@/features/test/quiz.types'
 import { useQuizStore } from '@/store/quizStore'
+
+import { css } from '@/styled-system/css'
 
 import { ProgressBar } from '../ProgressBar/ProgressBar'
 import { QuizCard } from '../QuizCard/QuizCard'
@@ -57,7 +58,6 @@ const cardsRow = css({
 
 export function QuizSection() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const {
     currentIndex,
     selectedChoice,
@@ -66,10 +66,9 @@ export function QuizSection() {
     goPrev,
     resetQuiz,
     setCalculatedResult,
-    setDestinations,
-    setRelatedTypes,
-    setTravelTypeId,
+    setApiResult,
   } = useQuizStore()
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     resetQuiz()
@@ -87,33 +86,25 @@ export function QuizSection() {
   }, [currentIndex, isLast])
 
   async function handleNext() {
-    if (selectedChoice === null) {
-      return
-    }
+    if (selectedChoice === null) return
     if (isLast) {
-      goNext(question.id, TOTAL_QUESTIONS)
-      // Zustand set()은 동기적으로 상태를 업데이트하므로 getState()로 즉시 최신 answers에 접근 가능
-      const finalAnswers = useQuizStore.getState().answers
+      // goNext 호출 전에 finalAnswers를 직접 구성
+      const currentAnswers = useQuizStore.getState().answers
+      const finalAnswers: QuizAnswer[] = [
+        ...currentAnswers,
+        { questionId: question.id, selected: selectedChoice as 'A' | 'B' },
+      ]
       setCalculatedResult(finalAnswers)
 
-      // API 호출: destinations 저장. 실패 시에도 결과 페이지로 이동
-      setIsSubmitting(true)
+      setIsLoading(true)
       try {
-        const answersArray = [...finalAnswers]
-          .sort((a, b) => a.questionId - b.questionId)
-          .map((a) => a.selected)
-        const res = await postQuizSubmit(answersArray)
-        setDestinations(res.destinations)
-        setTravelTypeId(res.travel_type_id)
-        setRelatedTypes(
-          res.compatible_type ?? null,
-          res.incompatible_type ?? null
-        )
+        const response = await postQuizSubmit(finalAnswers)
+        setApiResult(response)
       } catch (error) {
-        // 네트워크 오류 등 — destinations 없이 결과 페이지로 이동
-        console.error('[QuizSection] quiz submit API 실패:', error)
+        console.error('퀴즈 제출 API 실패, 로컬 결과로 진행:', error)
       } finally {
-        setIsSubmitting(false)
+        setIsLoading(false)
+        goNext(question.id, TOTAL_QUESTIONS)
         router.push(ROUTES.TEST_RESULT)
       }
       return
@@ -153,7 +144,7 @@ export function QuizSection() {
 
       <QuizNavigation
         currentIndex={currentIndex}
-        canGoNext={selectedChoice !== null && !isSubmitting}
+        canGoNext={selectedChoice !== null && !isLoading}
         isLast={isLast}
         onPrev={goPrev}
         onNext={handleNext}
