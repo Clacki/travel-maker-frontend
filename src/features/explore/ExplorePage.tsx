@@ -15,7 +15,7 @@ import { X } from 'lucide-react'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
 import { getPlaces, getPlacesFilter } from './api/placesApi'
-import type { Place } from './types/places.types'
+import type { Place, GetPlacesFilterParams } from './types/places.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -31,6 +31,15 @@ const SORT_LABELS: Record<SortKey, string> = {
   popular: '인기순',
   bookmarks: '북마크순',
   reviews: '리뷰순',
+}
+
+const SORT_API_MAP: Record<
+  SortKey,
+  Pick<GetPlacesFilterParams, 'sort' | 'order'>
+> = {
+  popular: {},
+  bookmarks: { sort: 'bookmark', order: 'desc' },
+  reviews: { sort: 'review', order: 'desc' },
 }
 
 const DEFAULT_BG =
@@ -108,15 +117,20 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
 
-  const currentKey = `${currentPage}-${categoryId ?? ''}`
+  const currentKey = `${currentPage}-${categoryId ?? ''}-${sort}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
-    const key = `${currentPage}-${categoryId ?? ''}`
+    let cancelled = false
+    const key = `${currentPage}-${categoryId ?? ''}-${sort}`
     const tagId = categoryId ? CATEGORY_TO_TAG_ID[categoryId] : undefined
-    const request = tagId
+    const sortParams = SORT_API_MAP[sort]
+    const needsFilter = tagId !== undefined || sort !== 'popular'
+
+    const request = needsFilter
       ? getPlacesFilter({
-          tags: tagId,
+          ...(tagId !== undefined ? { tags: tagId } : {}),
+          ...sortParams,
           page: currentPage,
           page_size: ITEMS_PER_PAGE,
         })
@@ -124,15 +138,21 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
 
     request
       .then((data) => {
+        if (cancelled) return
         setPlaces(data.results)
         setTotalCount(data.count)
         setFetchedKey(key)
       })
       .catch(() => {
+        if (cancelled) return
         setPlaces([])
         setFetchedKey(key)
       })
-  }, [currentPage, categoryId])
+
+    return () => {
+      cancelled = true
+    }
+  }, [currentPage, categoryId, sort])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -506,11 +526,11 @@ function ExploreContent({ isAuthenticated }: ExploreContentProps) {
                       imageUrl={place.image_url}
                       variant="bookmark"
                       isLiked={false}
-                      onLikeToggle={() => {
+                      onLikeToggle={(_placeId) => {
                         if (!isAuthenticated) {
                           setIsLoginModalOpen(true)
                         }
-                        // TODO: 찜하기 API 호출
+                        // TODO: 찜하기 API 호출 (_placeId 사용)
                       }}
                     />
                   </div>
