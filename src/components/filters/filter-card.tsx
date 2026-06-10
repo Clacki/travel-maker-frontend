@@ -1,10 +1,9 @@
 'use client'
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Search } from 'lucide-react'
 import { FilterTag } from '@/components/common/tag'
 import { Button } from '@/components/common/button'
-import { SelectedBar } from '@/components/filters/selected-bar'
 import { css, cva } from '@/styled-system/css'
 
 type TagData = {
@@ -30,6 +29,9 @@ interface FilterCardProps {
   resultCount?: number
   initialSelected?: Record<string, string[]>
   onChange?: (selected: Record<string, string[]>) => void
+  searchValue?: string
+  onSearchChange?: (value: string) => void
+  onSearchSubmit?: () => void
 }
 
 const badgeTextMap: Record<string, string> = {
@@ -187,6 +189,9 @@ export function FilterCard({
   resultCount,
   initialSelected,
   onChange,
+  searchValue = '',
+  onSearchChange,
+  onSearchSubmit,
 }: FilterCardProps) {
   const [selected, setSelected] = useState<Record<string, string[]>>(
     initialSelected ?? {}
@@ -211,8 +216,18 @@ export function FilterCard({
           return { ...prev, [sectionId]: [tagId] }
         }
 
-        if (current.includes(tagId)) {
-          const filtered = current.filter((id) => id !== tagId)
+        // '전체' 태그: 클릭 시 나머지 해제, 나머지 태그 클릭 시 '전체' 해제
+        if (tagId === 'all') {
+          if (current.includes('all')) {
+            const next = { ...prev }
+            delete next[sectionId]
+            return next
+          }
+          return { ...prev, [sectionId]: ['all'] }
+        }
+        const withoutAll = current.filter((id) => id !== 'all')
+        if (withoutAll.includes(tagId)) {
+          const filtered = withoutAll.filter((id) => id !== tagId)
           if (filtered.length === 0) {
             const next = { ...prev }
             delete next[sectionId]
@@ -220,7 +235,7 @@ export function FilterCard({
           }
           return { ...prev, [sectionId]: filtered }
         }
-        return { ...prev, [sectionId]: [...current, tagId] }
+        return { ...prev, [sectionId]: [...withoutAll, tagId] }
       })
     },
     []
@@ -274,7 +289,109 @@ export function FilterCard({
 
   return (
     <div className={cardWrapperStyle}>
-      <SelectedBar selectedItems={selectedItems} onRemove={handleRemoveChip} />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          onSearchSubmit?.()
+        }}
+        className={css({
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '6px',
+          px: '4',
+          py: '3',
+          bg: 'primary.soft',
+          borderTopLeftRadius: 'lg',
+          borderTopRightRadius: 'lg',
+          minH: '12',
+        })}
+      >
+        <Search
+          size={14}
+          className={css({ color: 'primary', flexShrink: 0 })}
+        />
+        {selectedItems.map((item) => (
+          <span
+            key={item.id}
+            className={css({
+              bg: 'bg.surface',
+              borderWidth: '1px',
+              borderColor: 'primary',
+              color: 'primary',
+              fontSize: 'xs',
+              fontWeight: 'semibold',
+              px: '3',
+              py: '1',
+              borderRadius: 'pill',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1',
+              flexShrink: 0,
+            })}
+          >
+            {item.label}
+            <button
+              type="button"
+              aria-label={`${item.label} 선택 해제`}
+              onClick={() => handleRemoveChip(item.id)}
+              className={css({
+                cursor: 'pointer',
+                color: 'text.secondary',
+                fontSize: 'sm',
+                lineHeight: 1,
+                border: 'none',
+                bg: 'transparent',
+                p: '0',
+                _hover: { color: 'text.primary' },
+              })}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+        <input
+          autoFocus
+          value={searchValue}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          placeholder={
+            selectedItems.length > 0
+              ? '검색어를 추가해보세요'
+              : '태그를 선택하거나 검색어를 입력해 여행지를 찾아보세요 ✈️'
+          }
+          className={css({
+            flex: 1,
+            border: 'none',
+            outline: 'none',
+            bg: 'transparent',
+            fontSize: 'sm',
+            color: 'text.primary',
+            minW: '80px',
+            _placeholder: { color: 'primary/60' },
+          })}
+        />
+        {searchValue.trim().length > 0 && (
+          <button
+            type="submit"
+            aria-label="검색"
+            className={css({
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              bg: 'primary',
+              color: 'text.inverse',
+              cursor: 'pointer',
+              p: '5px',
+              borderRadius: '6px',
+              flexShrink: 0,
+              _hover: { opacity: 0.85 },
+            })}
+          >
+            <Search size={13} />
+          </button>
+        )}
+      </form>
 
       <div className={css({ position: 'relative' })}>
         <div className={tabBarStyle({ isExpanded: !!activeSection })}>
