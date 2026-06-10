@@ -292,6 +292,7 @@ export function FilterCard({
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          setActiveSection(null)
           onSearchSubmit?.()
         }}
         className={css({
