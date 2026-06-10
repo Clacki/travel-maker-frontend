@@ -27,8 +27,10 @@ import {
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import {
   getMyReviews,
+  updateReview,
   type MyReviewItem,
   type MyReviewsResponse,
+  type UpdateReviewRequest,
 } from '../../api/myReviewsApi'
 
 interface MyPageContentProps {
@@ -44,6 +46,7 @@ type MyReviewCardItem = {
   placeName: string
   rating: number
   content: string
+  imageUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -76,6 +79,7 @@ function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
     rating: review.rating,
     content: review.content,
     // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 PlaceCard imageUrl로 매핑한다.
+    imageUrl: null,
     createdAt: review.created_at,
     updatedAt: review.updated_at,
   }
@@ -132,6 +136,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const [reviewPrevious, setReviewPrevious] = useState<string | null>(null)
   const [isReviewLoading, setIsReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState<string | null>(null)
+  const [isReviewSubmitting, setIsReviewSubmitting] = useState(false)
+  const [reviewSubmitError, setReviewSubmitError] = useState<string | null>(
+    null
+  )
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean
@@ -277,6 +285,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       return
     }
 
+    setReviewSubmitError(null)
     setReviewModal({
       isOpen: true,
       mode: 'edit',
@@ -284,12 +293,13 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       initialRating: review.rating,
       initialContent: review.content,
       // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 수정 모달 초기 이미지로 전달한다.
-      initialImageSrc: null,
+      initialImageSrc: review.imageUrl,
       initialCreatedAt: review.createdAt,
     })
   }
 
   const handleReviewDelete = (reviewId: number) => {
+    setReviewSubmitError(null)
     setReviewModal({
       isOpen: true,
       mode: 'delete',
@@ -301,11 +311,61 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     })
   }
 
-  const handleReviewSubmit = (rating: number, content: string) => {
-    console.log('review submit', reviewModal.reviewId, rating, content)
-    // TODO: 리뷰 수정 API 호출
+  const handleReviewClose = () => {
+    if (isReviewSubmitting) {
+      return
+    }
+
+    setReviewSubmitError(null)
     setReviewModal((prev) => ({ ...prev, isOpen: false }))
-    void fetchMyReviews(reviewPage)
+  }
+
+  const handleReviewSubmit = async (
+    rating: number,
+    content: string,
+    imageUrl?: string
+  ) => {
+    const reviewId = reviewModal.reviewId
+    const trimmedContent = content.trim()
+
+    if (rating < 1 || rating > 5) {
+      setReviewSubmitError('평점을 선택해주세요.')
+      return
+    }
+
+    if (!trimmedContent) {
+      setReviewSubmitError('리뷰 내용을 입력해주세요.')
+      return
+    }
+
+    if (!reviewId) {
+      setReviewSubmitError('수정할 리뷰 정보를 찾지 못했습니다.')
+      return
+    }
+
+    const body: UpdateReviewRequest = {
+      rating,
+      content: trimmedContent,
+    }
+
+    if (imageUrl && !imageUrl.startsWith('blob:')) {
+      body.image_url = imageUrl
+    }
+
+    setIsReviewSubmitting(true)
+    setReviewSubmitError(null)
+
+    try {
+      await updateReview(reviewId, body)
+      setReviewModal((prev) => ({ ...prev, isOpen: false }))
+      await fetchMyReviews(reviewPage)
+    } catch {
+      setReviewSubmitError(
+        '리뷰 수정에 실패했습니다. 잠시 후 다시 시도해주세요.'
+      )
+    } finally {
+      setIsReviewSubmitting(false)
+    }
   }
 
   const handleReviewDeleteConfirm = () => {
@@ -394,6 +454,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
                     reviewId={review.reviewId}
                     placeName={review.placeName}
                     description={review.content}
+                    imageUrl={review.imageUrl ?? undefined}
                     rating={review.rating}
                     onEditClick={handleReviewEdit}
                     onDeleteClick={handleReviewDelete}
@@ -432,12 +493,14 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       <ReviewModal
         key={`${reviewModal.mode}-${reviewModal.reviewId}`}
         isOpen={reviewModal.isOpen}
-        onClose={() => setReviewModal((prev) => ({ ...prev, isOpen: false }))}
+        onClose={handleReviewClose}
         mode={reviewModal.mode}
         initialRating={reviewModal.initialRating}
         initialContent={reviewModal.initialContent}
         initialImageSrc={reviewModal.initialImageSrc}
         initialCreatedAt={reviewModal.initialCreatedAt}
+        isSubmitting={isReviewSubmitting}
+        errorMessage={reviewSubmitError}
         onSubmit={handleReviewSubmit}
         onDelete={handleReviewDeleteConfirm}
       />

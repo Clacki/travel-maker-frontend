@@ -365,6 +365,7 @@ export function ReviewModal({
   const [previewSrc, setPreviewSrc] = useState<string | null>(
     mode === 'edit' ? initialImageSrc : null
   )
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     return () => {
@@ -387,13 +388,24 @@ export function ReviewModal({
   const handleSubmit = () => {
     const trimmedContent = content.trim()
 
-    if (rating < 1 || rating > 5 || trimmedContent === '' || isSubmitting) {
+    if (isSubmitting) {
+      return
+    }
+
+    if (rating < 1 || rating > 5) {
+      setValidationError('평점을 선택해주세요.')
+      return
+    }
+
+    if (trimmedContent === '') {
+      setValidationError('리뷰 내용을 입력해주세요.')
       return
     }
 
     const image =
       previewSrc && !previewSrc.startsWith('blob:') ? previewSrc : undefined
 
+    setValidationError(null)
     onSubmit?.(rating, trimmedContent, image)
   }
 
@@ -483,7 +495,7 @@ export function ReviewModal({
             shape="rounded"
             fullWidth
             onClick={handleSubmit}
-            disabled={isSubmitting || rating === 0 || content.trim() === ''}
+            disabled={isSubmitting}
           >
             {isSubmitting ? submittingText : submitText}
           </Button>
@@ -498,7 +510,10 @@ export function ReviewModal({
           <StarRating
             labelId={ratingLabelId}
             value={rating}
-            onChange={setRating}
+            onChange={(nextRating) => {
+              setRating(nextRating)
+              setValidationError(null)
+            }}
           />
         </section>
 
@@ -553,7 +568,10 @@ export function ReviewModal({
             className={textareaStyle}
             id={textareaId}
             maxLength={MAX_CONTENT_LENGTH}
-            onChange={(event) => setContent(event.target.value)}
+            onChange={(event) => {
+              setContent(event.target.value)
+              setValidationError(null)
+            }}
             placeholder="방문했던 장소의 분위기와 경험을 자세히 적어주세요."
             value={content}
           />
@@ -563,9 +581,9 @@ export function ReviewModal({
               {content.length}/{MAX_CONTENT_LENGTH}자
             </span>
           </div>
-          {errorMessage && (
+          {(errorMessage || validationError) && (
             <p className={errorMessageStyle} role="alert">
-              {errorMessage}
+              {errorMessage ?? validationError}
             </p>
           )}
         </section>
