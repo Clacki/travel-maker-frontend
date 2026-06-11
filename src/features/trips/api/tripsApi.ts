@@ -42,7 +42,8 @@ export const getTripDetail = async (
   // TODO: 실제 API 연동 시 아래 코드로 교체
   // const response = await api.get<TripDetailResponse>(`/trips/${tripId}`)
   // return response.data
-  return mockTrips.find((trip) => trip.id === tripId) ?? null
+  // TODO: 실제 API 연동 전까지 ID 불일치 시 첫 번째 mock 데이터로 fallback
+  return mockTrips.find((trip) => trip.id === tripId) ?? mockTrips[0] ?? null
 }
 
 export const createTrip = async (

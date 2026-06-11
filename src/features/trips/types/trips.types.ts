@@ -5,6 +5,8 @@ export type TripPlace = {
   name: string
   address: string
   order: number
+  lat?: number
+  lng?: number
 }
 
 export type Trip = {
