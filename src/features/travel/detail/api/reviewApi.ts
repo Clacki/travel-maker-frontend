@@ -32,6 +32,10 @@ export type CreateReviewResponse = {
   created_at?: string
 }
 
+export const deletePlaceReview = async (reviewId: number): Promise<void> => {
+  await api.delete(`/reviews/${reviewId}`)
+}
+
 export const createPlaceReview = async (
   placeId: number,
   body: CreateReviewRequest

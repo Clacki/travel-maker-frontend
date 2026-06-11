@@ -57,6 +57,10 @@ export default function ReviewsSection({
       .catch(() => {})
   }, [placeId])
 
+  const handleDeleted = (reviewId: number) => {
+    setReviews((prev) => prev.filter((r) => r.id !== reviewId))
+  }
+
   return (
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
@@ -72,7 +76,11 @@ export default function ReviewsSection({
       ) : (
         <div className={reviewListStyle}>
           {reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard
+              key={review.id}
+              review={review}
+              onDeleted={handleDeleted}
+            />
           ))}
         </div>
       )}
