@@ -67,3 +67,7 @@ export async function updateReview(
 
   return response.data
 }
+
+export async function deleteReview(reviewId: number) {
+  await api.delete<void>(`/reviews/${reviewId}`)
+}

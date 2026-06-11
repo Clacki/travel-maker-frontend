@@ -19,9 +19,11 @@ import {
   useProfileStore,
 } from '@/store/profileStore'
 import { css } from '@/styled-system/css'
+import { isAxiosError } from 'axios'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  deleteReview,
   getMyReviews,
   updateReview,
   type MyReviewItem,
@@ -85,6 +87,30 @@ function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
   }
 }
 
+function getDeleteReviewErrorMessage(error: unknown) {
+  if (isAxiosError(error)) {
+    const status = error.response?.status
+
+    if (status === 401) {
+      return '로그인이 만료되었습니다. 다시 로그인해주세요.'
+    }
+
+    if (status === 403) {
+      return '리뷰를 삭제할 권한이 없습니다.'
+    }
+
+    if (status === 404) {
+      return '이미 삭제되었거나 찾을 수 없는 리뷰입니다.'
+    }
+
+    if (status && status >= 500) {
+      return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
+  }
+
+  return '리뷰 삭제에 실패했습니다. 다시 시도해주세요.'
+}
+
 const containerStyle = css({
   display: 'flex',
   flexDirection: 'column',
@@ -138,6 +164,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [isReviewSubmitting, setIsReviewSubmitting] = useState(false)
   const [reviewSubmitError, setReviewSubmitError] = useState<string | null>(
+    null
+  )
+  const [isReviewDeleting, setIsReviewDeleting] = useState(false)
+  const [reviewDeleteError, setReviewDeleteError] = useState<string | null>(
     null
   )
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
@@ -300,6 +330,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
   const handleReviewDelete = (reviewId: number) => {
     setReviewSubmitError(null)
+    setReviewDeleteError(null)
     setReviewModal({
       isOpen: true,
       mode: 'delete',
@@ -312,11 +343,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   }
 
   const handleReviewClose = () => {
-    if (isReviewSubmitting) {
+    if (isReviewSubmitting || isReviewDeleting) {
       return
     }
 
     setReviewSubmitError(null)
+    setReviewDeleteError(null)
     setReviewModal((prev) => ({ ...prev, isOpen: false }))
   }
 
@@ -368,10 +400,31 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     }
   }
 
-  const handleReviewDeleteConfirm = () => {
-    console.log('review delete', reviewModal.reviewId)
-    // TODO: 리뷰 삭제 API 호출
-    void fetchMyReviews(reviewPage)
+  const handleReviewDeleteConfirm = async () => {
+    if (isReviewDeleting || reviewModal.reviewId === null) {
+      return
+    }
+
+    setIsReviewDeleting(true)
+    setReviewDeleteError(null)
+
+    try {
+      await deleteReview(reviewModal.reviewId)
+      setReviewModal((prev) => ({ ...prev, isOpen: false }))
+
+      const nextPage =
+        reviews.length === 1 && reviewPage > 1 ? reviewPage - 1 : reviewPage
+
+      if (nextPage !== reviewPage) {
+        setReviewPage(nextPage)
+      } else {
+        await fetchMyReviews(nextPage)
+      }
+    } catch (error) {
+      setReviewDeleteError(getDeleteReviewErrorMessage(error))
+    } finally {
+      setIsReviewDeleting(false)
+    }
   }
 
   const handleTabChange = (tab: TabType) => {
@@ -499,8 +552,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         initialContent={reviewModal.initialContent}
         initialImageSrc={reviewModal.initialImageSrc}
         initialCreatedAt={reviewModal.initialCreatedAt}
-        isSubmitting={isReviewSubmitting}
-        errorMessage={reviewSubmitError}
+        isSubmitting={
+          reviewModal.mode === 'delete' ? isReviewDeleting : isReviewSubmitting
+        }
+        errorMessage={
+          reviewModal.mode === 'delete' ? reviewDeleteError : reviewSubmitError
+        }
         onSubmit={handleReviewSubmit}
         onDelete={handleReviewDeleteConfirm}
       />
