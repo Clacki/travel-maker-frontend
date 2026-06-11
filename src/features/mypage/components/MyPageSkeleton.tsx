@@ -1,11 +1,13 @@
 import { css } from '@/styled-system/css'
 
-const sk = (w: string, h: string, radius = 'md') =>
+type RadiusToken = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'pill'
+
+const sk = (w: string, h: string, radius: RadiusToken = 'md') =>
   css({
     w,
     h,
     bg: 'bg.subtle',
-    borderRadius: radius as never,
+    borderRadius: radius,
     animation: 'pulse',
     flexShrink: 0,
   })
@@ -127,7 +129,11 @@ function PlaceCardSkeleton() {
   )
 }
 
-export function CardGridSkeleton({ count = 8 }: { count?: number }) {
+interface CardGridSkeletonProps {
+  count?: number
+}
+
+export function CardGridSkeleton({ count = 8 }: CardGridSkeletonProps) {
   return (
     <div className={gridStyle}>
       {Array.from({ length: count }).map((_, i) => (
