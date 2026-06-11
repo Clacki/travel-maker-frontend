@@ -1,5 +1,6 @@
 export type CoursePlace = {
   id: string
+  backendId?: number
   name: string
   address: string
   lat?: number
