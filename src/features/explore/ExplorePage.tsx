@@ -14,7 +14,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
 import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
+import { getTags } from './api/tagsApi'
 import type { Place, GetPlacesFilterParams } from './types/places.types'
+import type { Tag } from './types/tags.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -55,14 +57,61 @@ const STYLE_TO_CATEGORY: Record<string, string> = {
   romantic: 'romantic',
 }
 
-const CATEGORY_TO_TAG_ID: Record<string, number> = {
-  beach: 1,
-  mountain: 2,
-  city: 3,
-  culture: 4,
-  food: 5,
-  adventure: 6,
-  romantic: 7,
+const CATEGORY_TO_TAG_NAME: Record<string, string> = {
+  beach: '해변',
+  mountain: '산악',
+  city: '도시',
+  culture: '문화',
+  food: '미식',
+  adventure: '액티비티',
+  romantic: '로맨틱',
+}
+
+const FILTER_TAG_TO_TAG_NAME: Record<string, string> = {
+  'beach-coast': '해수욕·해안',
+  'water-sports': '수상레저',
+  camping: '캠핑·글램핑',
+  'mountain-valley': '산·숲·계곡',
+  'nature-eco': '자연생태',
+  trekking: '자연공원·트레킹',
+  landmark: '랜드마크',
+  'park-street': '공원·거리',
+  shopping: '쇼핑',
+  history: '역사·유적',
+  museum: '박물관·전시',
+  traditional: '전통체험',
+  restaurant: '음식점',
+  cafe: '카페·디저트',
+  market: '시장·먹거리',
+  'land-sports': '육상스포츠',
+  extreme: '항공·익스트림',
+  'theme-park': '테마파크·시설',
+  spa: '스파·웰니스',
+  resort: '숙박·리조트',
+  solo: '혼자',
+  couple: '커플',
+  family: '가족',
+  friends: '친구',
+  seoul: '서울',
+  gyeonggi: '경기',
+  incheon: '인천',
+  gangwon: '강원',
+  chungbuk: '충북',
+  chungnam: '충남',
+  daejeon: '대전',
+  sejong: '세종',
+  jeonbuk: '전북',
+  jeonnam: '전남',
+  gwangju: '광주',
+  gyeongbuk: '경북',
+  gyeongnam: '경남',
+  daegu: '대구',
+  ulsan: '울산',
+  busan: '부산',
+  jeju: '제주',
+  parking: '주차',
+  pet: '반려동물',
+  free: '무료',
 }
 
 function parseParams(
@@ -104,6 +153,7 @@ function ExploreContent() {
   const selected = useMemo(() => parseParams(searchParams), [searchParams])
   const filterChips = useMemo(() => getFilterChips(selected), [selected])
 
+  const [tags, setTags] = useState<Tag[] | null>(null)
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
   const [places, setPlaces] = useState<Place[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -111,36 +161,58 @@ function ExploreContent() {
   const [searchInput, setSearchInput] = useState(keyword)
   const gridRef = useRef<HTMLElement>(null)
 
+  useEffect(() => {
+    getTags()
+      .then(setTags)
+      .catch(() => setTags([]))
+  }, [])
+
   const currentPage = Math.max(
     1,
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
 
   const selectedTagIds = useMemo(() => {
-    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
-    const fromStyle = styleValues
-      .map((s) => {
-        const cat = STYLE_TO_CATEGORY[s] ?? s
-        return CATEGORY_TO_TAG_ID[cat]
-      })
-      .filter((id): id is number => id !== undefined)
+    const tagNameToId = new Map((tags ?? []).map((t) => [t.tag_name, t.id]))
+    const ids: number[] = []
 
-    if (fromStyle.length === 0 && categoryId) {
-      const fallbackId = CATEGORY_TO_TAG_ID[categoryId]
-      if (fallbackId !== undefined) return [fallbackId]
+    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
+    for (const s of styleValues) {
+      const cat = STYLE_TO_CATEGORY[s] ?? s
+      const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[cat] ?? '')
+      if (id !== undefined) ids.push(id)
     }
 
-    return fromStyle
-  }, [selected, categoryId])
+    for (const section of ['theme', 'companion', 'region', 'facility']) {
+      for (const v of selected[section] ?? []) {
+        const id = tagNameToId.get(FILTER_TAG_TO_TAG_NAME[v] ?? '')
+        if (id !== undefined) ids.push(id)
+      }
+    }
+
+    if (ids.length === 0 && categoryId) {
+      const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[categoryId] ?? '')
+      if (id !== undefined) return [id]
+    }
+
+    return ids
+  }, [selected, categoryId, tags])
 
   const selectedTagIdsKey = selectedTagIds.join(',')
 
-  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
+  const hasActiveFilter =
+    ['style', 'theme', 'companion', 'region', 'facility'].some((section) => {
+      const raw = searchParams.get(section) ?? ''
+      return raw.split(',').some((v) => v && v !== 'all')
+    }) || !!categoryId
+  const pendingTag = hasActiveFilter && tags === null ? 'pending' : ''
+  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
     let cancelled = false
-    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}`
+    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
+    if (pendingTag) return
     // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
@@ -185,7 +257,7 @@ function ExploreContent() {
     return () => {
       cancelled = true
     }
-  }, [currentPage, selectedTagIdsKey, sort, keyword])
+  }, [currentPage, selectedTagIdsKey, sort, keyword, pendingTag])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
