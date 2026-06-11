@@ -31,7 +31,6 @@ interface FilterCardProps {
   onChange?: (selected: Record<string, string[]>) => void
   searchValue?: string
   onSearchChange?: (value: string) => void
-  onSearchSubmit?: () => void
 }
 
 const badgeTextMap: Record<string, string> = {
@@ -191,7 +190,6 @@ export function FilterCard({
   onChange,
   searchValue = '',
   onSearchChange,
-  onSearchSubmit,
 }: FilterCardProps) {
   const [selected, setSelected] = useState<Record<string, string[]>>(
     initialSelected ?? {}
@@ -293,7 +291,7 @@ export function FilterCard({
         onSubmit={(e) => {
           e.preventDefault()
           setActiveSection(null)
-          onSearchSubmit?.()
+          onApply?.(selected)
         }}
         className={css({
           display: 'flex',
