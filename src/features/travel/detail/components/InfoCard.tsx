@@ -1,11 +1,13 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import axios from 'axios'
 
 import TagList from './TagList'
 import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -14,6 +16,7 @@ import { css } from '@/styled-system/css'
 interface InfoCardProps {
   detail: Pick<
     TravelDetail,
+    | 'id'
     | 'place_name'
     | 'rating_avg'
     | 'review_count'
@@ -22,6 +25,7 @@ interface InfoCardProps {
     | 'address_primary'
     | 'address_detail'
     | 'info'
+    | 'is_liked'
   >
 }
 
@@ -135,6 +139,7 @@ const descriptionStyle = css({
 
 export default function InfoCard({ detail }: InfoCardProps) {
   const {
+    id,
     place_name,
     rating_avg,
     review_count,
@@ -143,21 +148,44 @@ export default function InfoCard({ detail }: InfoCardProps) {
     address_primary,
     address_detail,
     info,
+    is_liked,
   } = detail
   const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [copied, setCopied] = useState(false)
-  const [isWished, setIsWished] = useState(false)
+  const [isWished, setIsWished] = useState(is_liked ?? false)
+  const [isWishPending, setIsWishPending] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const isSharing = useRef(false)
 
-  const handleWishToggle = () => {
-    if (!isAuthInitialized) return
+  const handleWishToggle = async () => {
+    if (!isAuthInitialized || isWishPending) {
+      return
+    }
     if (!isLoggedIn) {
       setIsLoginModalOpen(true)
       return
     }
-    setIsWished((prev) => !prev)
-    // TODO: 찜하기 API 호출
+
+    const isAdding = !isWished
+    setIsWished(isAdding)
+    setIsWishPending(true)
+
+    try {
+      if (isAdding) {
+        await postBookmark(id)
+      } else {
+        await deleteBookmark(id)
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setIsWishPending(false)
+        return
+      }
+      setIsWished(!isAdding)
+      alert('처리에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsWishPending(false)
+    }
   }
 
   const handleShare = async () => {
@@ -248,8 +276,8 @@ export default function InfoCard({ detail }: InfoCardProps) {
               className={wishTrackStyle}
               aria-label={isWished ? '찜 해제' : '찜 하기'}
               aria-pressed={isWished}
-              aria-busy={!isAuthInitialized}
-              disabled={!isAuthInitialized}
+              aria-busy={!isAuthInitialized || isWishPending}
+              disabled={!isAuthInitialized || isWishPending}
               onClick={handleWishToggle}
               style={{
                 backgroundColor: isWished
