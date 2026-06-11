@@ -410,8 +410,11 @@ export function ReviewModal({
   }
 
   const handleDelete = () => {
+    if (isSubmitting) {
+      return
+    }
+
     onDelete?.()
-    onClose()
   }
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -450,6 +453,7 @@ export function ReviewModal({
           <div className={deleteFooterStyle}>
             <Button
               className={deleteButtonStyle}
+              disabled={isSubmitting}
               fullWidth
               onClick={handleDelete}
               shape="pill"
@@ -457,7 +461,13 @@ export function ReviewModal({
             >
               삭제하기
             </Button>
-            <Button variant="neutral" shape="pill" fullWidth onClick={onClose}>
+            <Button
+              disabled={isSubmitting}
+              variant="neutral"
+              shape="pill"
+              fullWidth
+              onClick={onClose}
+            >
               취소
             </Button>
           </div>
@@ -468,6 +478,11 @@ export function ReviewModal({
           <br />
           삭제한 리뷰는 복구할 수 없습니다.
         </p>
+        {errorMessage && (
+          <p className={errorMessageStyle} role="alert">
+            {errorMessage}
+          </p>
+        )}
       </Modal>
     )
   }
