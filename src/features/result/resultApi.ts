@@ -1,4 +1,4 @@
-import { mockResultData } from '@/mocks/data/result-data'
+import { mockResultData } from './data/resultDataMock'
 
 import type { TestResultResponse } from './result.types'
 

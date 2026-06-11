@@ -1,7 +1,7 @@
 import type {
-  UserProfile,
   BookmarkItem,
   ReviewItem,
+  UserProfile,
 } from '@/types/mypage.types'
 
 export const mockMyProfile: UserProfile = {

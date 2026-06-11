@@ -12,7 +12,7 @@ import {
   buildCompassAxes,
   buildDescription,
 } from '@/features/result/quizCalculator'
-import { mockResultData } from '@/mocks/data/result-data'
+import { mockResultData } from '@/features/result/data/resultDataMock'
 import { useQuizStore } from '@/store/quizStore'
 
 import { CompassSection } from './CompassSection'

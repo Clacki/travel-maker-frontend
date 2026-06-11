@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import { mockMyProfile } from '@/mocks/data/mypage-data'
 import {
   getDefaultEditableProfile,
   useProfileStore,
 } from '@/store/profileStore'
 
+import { mockMyProfile } from '../data/profileMock'
 import { mapProfileTagIdsToUserTags } from '../lib/profile-tags'
 import type { MyPageUser } from '../types/mypage'
 
