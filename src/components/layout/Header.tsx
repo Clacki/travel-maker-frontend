@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Button, IconButton } from '@/components/common/button'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
@@ -9,6 +7,8 @@ import { ProfileDropdown } from '@/components/layout/ProfileDropdown'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { css, cx } from '@/styled-system/css'
+import Link from 'next/link'
+import { useState } from 'react'
 
 const navigationItems = [
   { href: ROUTES.TEST, label: 'Travel Style' },
@@ -129,7 +129,7 @@ export function Header({ className }: HeaderProps) {
                   size="sm"
                   shape="pill"
                 >
-                  로그인
+                  Login
                 </Button>
                 <IconButton
                   aria-busy="true"
@@ -152,7 +152,7 @@ export function Header({ className }: HeaderProps) {
                   size="sm"
                   shape="pill"
                 >
-                  로그인
+                  Login
                 </Button>
                 <IconButton
                   aria-label="로그인"

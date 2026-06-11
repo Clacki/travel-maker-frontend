@@ -152,11 +152,109 @@ feature 전용 API 함수는 `src/features/{domain}/api`에 둔다.
 
 현재 `src/mocks/data`와 `features/*/data`가 함께 존재한다. 당장 하나로 통일하기보다, 새 데이터 추가 시 사용 범위를 먼저 확인한다.
 
+### 7.1 feature 전용 mock/data
+
+특정 feature 또는 특정 화면에서만 사용하는 mock data는 해당 feature 내부 `data` 폴더를 우선한다.
+
+예시:
+
+```txt
+src/features/mypage/data/
+src/features/explore/data/
+src/features/trips/detail/data/
+```
+
+판단 기준:
+
+- 마이페이지에서만 쓰는 mock은 `src/features/mypage/data`에 둔다.
+- 탐색 페이지에서만 쓰는 mock은 `src/features/explore/data`에 둔다.
+- 여행 코스 상세에서만 쓰는 mock은 `src/features/trips/detail/data`에 둔다.
+- 특정 컴포넌트 안에 임시로 둔 mock이 커지면 feature `data`로 분리한다.
+- 공유 여부가 불확실하면 우선 feature `data`에 둔다. 실제 사용처가 늘어난 뒤 전역 mock으로 이동을 검토한다.
+
+### 7.2 전역 공유 mock/data
+
+여러 feature에서 실제로 공유하는 mock data만 `src/mocks`에 둔다.
+
+예시:
+
+```txt
+src/mocks/places.ts
+src/mocks/reviews.ts
+src/mocks/users.ts
+```
+
+판단 기준:
+
+- 여러 feature에서 쓰는 장소 데이터
+- 여러 feature에서 쓰는 유저 데이터
+- 여러 feature에서 쓰는 리뷰 데이터
+- 앱 전체 mock 기준이 되는 데이터
+
+단순히 "나중에 재사용될 것 같다"는 이유만으로 전역 mock으로 올리지 않는다. 실제 사용처가 2곳 이상일 때 `src/mocks` 이동을 검토한다.
+
+### 7.3 MSW handler와 정적 mock data
+
+API mocking을 위한 handler와 화면 개발용 정적 mock data는 역할을 구분한다.
+
+```txt
+src/mocks/handlers/            # API mocking handler
+src/features/{feature}/data/   # feature 화면 개발용 mock/static data
+src/mocks/                     # 여러 feature 공유 mock
+```
+
+- MSW handler는 요청 URL, HTTP method, 응답 상태, 지연, error case처럼 API mocking 동작을 담당한다.
+- feature `data`는 화면 개발, 컴포넌트 확인, API 연결 전 임시 데이터처럼 feature 내부 UI를 만들기 위한 정적 데이터를 둔다.
+- `src/mocks`는 여러 feature가 같은 기준으로 참조해야 하는 공유 mock data를 둔다.
+- handler가 feature 전용 mock을 응답으로 사용한다면, 해당 feature `data`를 import할 수 있다. 다만 여러 handler에서 반복 사용되면 `src/mocks` 이동을 검토한다.
+
+### 7.4 컴포넌트 내부 mock 허용 기준
+
+아주 작은 임시 데이터는 컴포넌트 내부에 직접 둘 수 있다.
+
+허용 기준:
+
+- 5~10줄 이하의 작은 임시 데이터
+- 해당 컴포넌트에서만 쓰고 곧 API로 대체될 데이터
+- 시안 확인용으로 짧게 쓰는 데이터
+
+분리 권장 기준:
+
+- mock 배열이 길어지는 경우
+- 타입이 필요한 경우
+- 여러 컴포넌트에서 쓰는 경우
+- `Content.tsx`, `Page.tsx`가 길어지는 원인이 되는 경우
+- API 연결 전까지 유지될 가능성이 있는 경우
+
+### 7.5 타입과 mock의 관계
+
+mock data는 가능하면 feature 타입 또는 API response 타입을 참조한다.
+
+```ts
+import type { TripDetail } from '../types/tripDetail'
+
+export const tripDetailMock: TripDetail = {
+  // ...
+}
+```
+
 규칙:
 
 - API 타입이 바뀌면 mock 데이터도 함께 수정한다.
 - mock이 실제 API response 형태와 멀어지면 adapter 테스트와 typecheck 실패 가능성이 커진다.
 - 여러 feature에서 공유하지 않는 mock을 `src/mocks`에 먼저 올리지 않는다.
+- API response 타입과 UI view model 타입이 다르면 mock이 어느 쪽 기준인지 파일명 또는 타입으로 명확히 표시한다.
+- API 응답 기준 mock은 `*ResponseMock`, 화면 표시 기준 mock은 `*ViewMock`처럼 역할이 드러나는 이름을 사용한다.
+
+### 7.6 점진적 정리 기준
+
+기존 mock data를 한 번에 모두 옮기지 않는다. 현재 구조를 유지하면서 기능 수정이 들어가는 영역부터 점진적으로 정리한다.
+
+- 기능 수정이 들어가는 feature부터 정리한다.
+- 큰 `Content.tsx` 또는 `Page.tsx` 안에 있는 mock부터 feature `data`로 분리한다.
+- 공유 여부가 불확실하면 우선 feature `data`에 둔다.
+- 실제 2곳 이상에서 재사용될 때 `src/mocks`로 이동을 검토한다.
+- mock 구조 변경은 UI 대규모 변경 PR과 가능하면 분리한다.
 
 팀 합의 필요:
 
