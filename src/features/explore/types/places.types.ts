@@ -3,6 +3,7 @@ export type PlaceTag = {
   tag_name: string
 }
 
+//is_liked는 장소 찜목록여부를 확인한는 임시코드
 export type Place = {
   id: number
   place_name: string
@@ -11,6 +12,8 @@ export type Place = {
   bookmark_count: number
   rating_avg: number
   tags: PlaceTag[]
+  is_liked: boolean
+  main_image: string
 }
 
 export type PlacesResponse = {
