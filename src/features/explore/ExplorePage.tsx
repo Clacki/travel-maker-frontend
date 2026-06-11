@@ -348,18 +348,6 @@ function ExploreContent() {
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
-  function submitSearch() {
-    const params = new URLSearchParams(searchParams.toString())
-    const trimmed = searchInput.trim()
-    if (trimmed) {
-      params.set('keyword', trimmed)
-    } else {
-      params.delete('keyword')
-    }
-    params.set('page', '1')
-    router.push(`/explore?${params.toString()}`, { scroll: false })
-  }
-
   const hasFilter = filterChips.length > 0
 
   return (
@@ -456,7 +444,6 @@ function ExploreContent() {
             onChange={handleFilterChange}
             searchValue={searchInput}
             onSearchChange={setSearchInput}
-            onSearchSubmit={submitSearch}
           />
         </div>
       </section>
