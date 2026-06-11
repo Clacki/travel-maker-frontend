@@ -218,7 +218,9 @@ function ExploreContent() {
     }
 
     const targetPlace = places.find((p) => p.id === placeId)
-    if (!targetPlace) return
+    if (!targetPlace) {
+      return
+    }
 
     const isAdding = !targetPlace.is_bookmarked
     const originalPlaces = [...places]

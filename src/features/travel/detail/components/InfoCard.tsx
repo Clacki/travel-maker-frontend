@@ -158,7 +158,9 @@ export default function InfoCard({ detail }: InfoCardProps) {
   const isSharing = useRef(false)
 
   const handleWishToggle = async () => {
-    if (!isAuthInitialized || isWishPending) return
+    if (!isAuthInitialized || isWishPending) {
+      return
+    }
     if (!isLoggedIn) {
       setIsLoginModalOpen(true)
       return
