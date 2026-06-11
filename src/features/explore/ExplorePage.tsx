@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import axios from 'axios'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -15,6 +16,7 @@ import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
 import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
 import { getTags } from './api/tagsApi'
+import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
 import type { Place, GetPlacesFilterParams } from './types/places.types'
 import type { Tag } from './types/tags.types'
 import { FilterCard } from '@/components/filters/filter-card'
@@ -209,11 +211,44 @@ function ExploreContent() {
   const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
   const isLoading = fetchedKey !== currentKey
 
+  const handleLikeToggle = async (placeId: number) => {
+    if (!isAuthInitialized || !isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return
+    }
+
+    const targetPlace = places.find((p) => p.id === placeId)
+    if (!targetPlace) return
+
+    const isAdding = !targetPlace.is_liked
+    const originalPlaces = [...places]
+    setPlaces((prev) =>
+      prev.map((p) => (p.id === placeId ? { ...p, is_liked: isAdding } : p))
+    )
+
+    try {
+      if (isAdding) {
+        await postBookmark(placeId)
+      } else {
+        await deleteBookmark(placeId)
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        return
+      }
+
+      setPlaces(originalPlaces)
+      alert('처리에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   useEffect(() => {
+    if (!isAuthInitialized) return
+
     let cancelled = false
     const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
     if (pendingTag) return
-    // 배열을 deps에 넣으면 매 렌더마다 새 참조 → 무한 루프, string으로 deps 우회 후 여기서 복원
+
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
       : []
@@ -223,6 +258,7 @@ function ExploreContent() {
     const hasSortOption = sort !== 'popular'
 
     let request: ReturnType<typeof getPlaces>
+
     if (hasTags || hasSortOption) {
       request = getPlacesFilter({
         ...(hasTags ? { tags: tagIds } : {}),
@@ -257,7 +293,7 @@ function ExploreContent() {
     return () => {
       cancelled = true
     }
-  }, [currentPage, selectedTagIdsKey, sort, keyword, pendingTag])
+  }, [currentPage, selectedTagIdsKey, sort, keyword, pendingTag, isAuthInitialized])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -540,22 +576,16 @@ function ExploreContent() {
                     className={css({ cursor: 'pointer' })}
                   >
                     <PlaceCard
+                      key={place.id}
                       placeId={place.id}
                       placeName={place.place_name}
                       description={place.description}
                       tags={place.tags.map((t) => t.tag_name)}
-                      rating={place.rating_avg}
-                      imageUrl={place.image_url}
+                      rating={Number(place.rating_avg)}
+                      imageUrl={place.main_image}
                       variant="bookmark"
-                      isLiked={false}
-                      onLikeToggle={(_placeId) => {
-                        if (!isAuthInitialized) return
-                        if (!isLoggedIn) {
-                          setIsLoginModalOpen(true)
-                          return
-                        }
-                        // TODO: 찜하기 API 호출 (_placeId 사용)
-                      }}
+                      isLiked={place.is_liked}
+                      onLikeToggle={handleLikeToggle}
                     />
                   </div>
                 ))}

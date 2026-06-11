@@ -226,11 +226,11 @@ export function ProfileCard({
 
         <div className={statsRowStyle}>
           <div className={statItemStyle}>
-            <span className={statValueStyle}>{user.bookmark_count}</span>
+            <span className={statValueStyle}>{user.follower_count}</span>
             <span className={statLabelStyle}>팔로워</span>
           </div>
           <div className={statItemStyle}>
-            <span className={statValueStyle}>{user.review_count}</span>
+            <span className={statValueStyle}>{user.following_count}</span>
             <span className={statLabelStyle}>팔로잉</span>
           </div>
         </div>
