@@ -3,11 +3,14 @@ import { isAxiosError } from 'axios'
 
 import {
   deleteReview,
-  getMyReviews,
   updateReview,
+  type UpdateReviewRequest,
+} from '@/features/reviews/api/reviewsApi'
+
+import {
+  getMyReviews,
   type MyReviewItem,
   type MyReviewsResponse,
-  type UpdateReviewRequest,
 } from '../api/myReviewsApi'
 import type { MyReviewCardItem, ReviewModalState } from '../types/mypage'
 
