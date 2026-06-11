@@ -3,16 +3,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+import { isAxiosError } from 'axios'
+
 import { useCourseStore } from '@/store/tripsStore'
 import { Button } from '@/components/common/button/Button'
-import { createTrip, updateTrip } from '@/features/trips/api/tripsApi'
-import type {
-  CreateTripPayload,
-  UpdateTripPayload,
-} from '@/features/trips/types/trips.types'
+import { updateTrip } from '@/features/trips/api/tripsApi'
+import {
+  postRoute,
+  type CreateRouteRequest,
+} from '@/features/trips/api/routesApi'
+import { getTags, type Tag } from '@/features/trips/api/placesApi'
+import type { CreateTripPayload } from '@/features/trips/types/trips.types'
 import { ROUTES } from '@/constants/routes'
 
-import { css, cx } from '@/styled-system/css'
+import { css } from '@/styled-system/css'
 
 interface CourseMapPanelProps {
   mode?: 'create' | 'edit'
@@ -101,24 +105,6 @@ const mapContainerStyle = css({
   },
 })
 
-const mapContainerCursorStyle = css({ cursor: 'crosshair' })
-const mapContainerGeocodingCursorStyle = css({ cursor: 'wait' })
-
-const geocodingOverlayStyle = css({
-  position: 'absolute',
-  top: '2',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 10,
-  bg: 'rgba(0,0,0,0.6)',
-  color: 'text.inverse',
-  fontSize: 'xs',
-  px: '3',
-  py: '1',
-  borderRadius: 'pill',
-  pointerEvents: 'none',
-})
-
 const legendRowStyle = css({
   display: 'flex',
   alignItems: 'center',
@@ -190,19 +176,18 @@ export function CourseMapPanel({
   const [createError, setCreateError] = useState<string | null>(null)
   const [geocodeError, setGeocodeError] = useState<string | null>(null)
   const [isGeocoding, setIsGeocoding] = useState(false)
-  const [isMapReady, setIsMapReady] = useState(false)
   const isGeocodingRef = useRef(false)
+  const [regionTags, setRegionTags] = useState<Tag[]>([])
+  const [themeTags, setThemeTags] = useState<Tag[]>([])
   const overlayContentsRef = useRef<
     Array<{ id: string; el: HTMLDivElement; tailInner: HTMLDivElement }>
   >([])
-  useEffect(() => {
-    isGeocodingRef.current = isGeocoding
-  }, [isGeocoding])
 
   const {
     title,
     description,
     selectedRegion,
+    selectedThemes,
     selectedDay,
     selectedPlaceId,
     dateRange,
@@ -214,6 +199,10 @@ export function CourseMapPanel({
     addPlace,
   } = useCourseStore()
 
+  useEffect(() => {
+    isGeocodingRef.current = isGeocoding
+  }, [isGeocoding])
+
   // 생성 페이지 이탈 시에만 코스 데이터 초기화 (수정 페이지는 초기화 불필요)
   useEffect(() => {
     return () => {
@@ -222,6 +211,16 @@ export function CourseMapPanel({
       }
     }
   }, [mode, resetCourse])
+
+  // 지역/테마 태그 마운트 시 1회 조회
+  useEffect(() => {
+    Promise.all([getTags('지역'), getTags('테마')])
+      .then(([r, t]) => {
+        setRegionTags(r)
+        setThemeTags(t)
+      })
+      .catch(() => {})
+  }, [])
 
   // ref로 최신 addPlace를 참조하여 initMap의 useCallback deps를 [] 유지
   const addPlaceRef = useRef(addPlace)
@@ -242,7 +241,6 @@ export function CourseMapPanel({
       level: 13,
     })
     mapInstanceRef.current = map
-    setIsMapReady(true)
 
     // 지도 클릭 → Geocoder로 주소 변환 → 코스에 장소 추가
     const geocoder = new window.kakao.maps.services.Geocoder()
@@ -423,7 +421,7 @@ export function CourseMapPanel({
       path.forEach((p) => bounds.extend(p))
       map.setBounds(bounds)
     }
-  }, [places, selectedDay, isMapReady])
+  }, [places, selectedDay])
 
   // 선택된 장소 마커 스타일 업데이트 + 지도 이동
   // selectedPlaceId 변경 시에만 실행되어 전체 마커 재생성 방지
@@ -478,12 +476,60 @@ export function CourseMapPanel({
     }
 
     setCreateError(null)
+
     try {
-      await createTrip(buildPayload(selectedRegion, dateRange.from))
+      const regionTag = regionTags.find((t) => t.tag_name === selectedRegion)
+      if (!regionTag) {
+        setCreateError('지역 태그를 찾을 수 없습니다.')
+        return
+      }
+
+      const themeTagIds = selectedThemes
+        .map((t) => themeTags.find((tag) => tag.tag_name === t)?.id)
+        .filter((id): id is number => id !== undefined)
+
+      // days 배열 — place_ids는 backendId가 있는 장소만 포함, 빈 배열인 day는 제외
+      const dayMap = new Map<number, number[]>()
+      places.forEach((p) => {
+        if (!dayMap.has(p.dayIndex)) {
+          dayMap.set(p.dayIndex, [])
+        }
+        if (p.backendId !== undefined) {
+          dayMap.get(p.dayIndex)!.push(p.backendId)
+        }
+      })
+      const days = Array.from(dayMap.entries())
+        .map(([day_index, place_ids]) => ({ day_index, place_ids }))
+        .filter((d) => d.place_ids.length > 0)
+
+      const payload: CreateRouteRequest = {
+        title,
+        description: description || undefined,
+        region_tag_id: regionTag.id,
+        theme_tag_ids: themeTagIds.length > 0 ? themeTagIds : undefined,
+        start_date: dateRange.from.toISOString().split('T')[0],
+        end_date: (dateRange?.to ?? dateRange.from).toISOString().split('T')[0],
+        days,
+      }
+
+      await postRoute(payload)
       resetCourse()
       router.push(ROUTES.TRIPS)
     } catch (error) {
-      console.error('코스 등록 실패:', error)
+      if (isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          router.push(ROUTES.LOGIN)
+          return
+        }
+        if (error.response?.status === 403) {
+          setCreateError('경로를 생성할 권한이 없습니다.')
+          return
+        }
+        if (error.response?.status === 400) {
+          setCreateError('입력 정보를 확인해주세요.')
+          return
+        }
+      }
       setCreateError('코스 등록에 실패했습니다. 다시 시도해주세요.')
     }
   }
@@ -497,8 +543,7 @@ export function CourseMapPanel({
     try {
       await updateTrip(tripId, buildPayload(selectedRegion, dateRange.from))
       router.push(ROUTES.TRIP_DETAIL(tripId))
-    } catch (error) {
-      console.error('코스 수정 실패:', error)
+    } catch {
       setCreateError('코스 수정에 실패했습니다. 다시 시도해주세요.')
     }
   }
@@ -527,7 +572,7 @@ export function CourseMapPanel({
         <div className={mapHeaderLeftStyle}>
           <p className={mapTitleStyle}>{headerTitle}</p>
           <p className={mapSubtitleStyle}>
-            지도를 클릭해 코스에 장소를 추가할 수 있어요
+            마커를 클릭해 코스에 장소를 추가할 수 있어요
           </p>
           {durationText && (
             <p
@@ -545,18 +590,7 @@ export function CourseMapPanel({
 
       {/* 지도 영역 */}
       <div className={mapAreaStyle}>
-        <div
-          ref={mapRef}
-          className={cx(
-            mapContainerStyle,
-            isGeocoding
-              ? mapContainerGeocodingCursorStyle
-              : mapContainerCursorStyle
-          )}
-        />
-        {isGeocoding && (
-          <div className={geocodingOverlayStyle}>장소 확인 중...</div>
-        )}
+        <div ref={mapRef} className={mapContainerStyle} />
       </div>
 
       {/* 범례 */}
@@ -587,19 +621,6 @@ export function CourseMapPanel({
           {createError}
         </p>
       )}
-      {geocodeError && (
-        <p
-          className={css({
-            px: '4',
-            pb: '2',
-            fontSize: 'xs',
-            color: 'warning',
-          })}
-        >
-          {geocodeError}
-        </p>
-      )}
-
       {/* 하단 버튼 */}
       <div className={bottomBarStyle}>
         <Button variant="neutral" size="md" shape="rounded" fullWidth>

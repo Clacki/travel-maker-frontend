@@ -102,6 +102,7 @@ export function TripCourseEditPage({ trip }: TripCourseEditPageProps) {
     // 현재는 TripPlace 타입에 dayIndex가 없어 모든 장소를 1일차로 처리
     const places: CoursePlace[] = trip.places.map((p) => ({
       id: p.id,
+      backendId: 0, // TODO: 백엔드 API에서 place int ID를 포함한 응답이 오면 매핑
       name: p.name,
       address: p.address,
       dayIndex: 1,
