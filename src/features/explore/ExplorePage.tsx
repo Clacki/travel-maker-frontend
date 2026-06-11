@@ -116,6 +116,69 @@ const FILTER_TAG_TO_TAG_NAME: Record<string, string> = {
   free: '무료',
 }
 
+const placeCardSkeletonStyle = css({
+  borderRadius: 'lg',
+  overflow: 'hidden',
+  bg: 'bg.surface',
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  borderColor: 'border.subtle',
+})
+
+const skeletonImageStyle = css({
+  w: 'full',
+  aspectRatio: '16/10',
+  bg: 'bg.subtle',
+  animation: 'pulse',
+})
+
+const skeletonBodyStyle = css({
+  p: '3',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+})
+
+const skeletonLineStyle = (w: string, h = '4') =>
+  css({
+    h,
+    w,
+    bg: 'bg.subtle',
+    borderRadius: 'md',
+    animation: 'pulse',
+  })
+
+const skeletonTagRowStyle = css({
+  display: 'flex',
+  gap: '1',
+})
+
+const skeletonTagStyle = css({
+  h: '5',
+  w: '14',
+  bg: 'bg.subtle',
+  borderRadius: 'pill',
+  animation: 'pulse',
+})
+
+function PlaceCardSkeleton() {
+  return (
+    <div className={placeCardSkeletonStyle}>
+      <div className={skeletonImageStyle} />
+      <div className={skeletonBodyStyle}>
+        <div className={skeletonLineStyle('70%', '5')} />
+        <div className={skeletonTagRowStyle}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className={skeletonTagStyle} />
+          ))}
+        </div>
+        <div className={skeletonLineStyle('90%')} />
+        <div className={skeletonLineStyle('60%')} />
+      </div>
+    </div>
+  )
+}
+
 function parseParams(
   searchParams: ReturnType<typeof useSearchParams>
 ): Record<string, string[]> {
@@ -569,75 +632,7 @@ function ExploreContent() {
               })}
             >
               {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <div
-                  key={i}
-                  className={css({
-                    borderRadius: 'lg',
-                    overflow: 'hidden',
-                    bg: 'bg.surface',
-                    border: '1px solid',
-                    borderColor: 'border.subtle',
-                  })}
-                >
-                  <div
-                    className={css({
-                      w: 'full',
-                      aspectRatio: '16/10',
-                      bg: 'bg.subtle',
-                      animation: 'pulse',
-                    })}
-                  />
-                  <div
-                    className={css({
-                      p: '3',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '2',
-                    })}
-                  >
-                    <div
-                      className={css({
-                        h: '5',
-                        w: '70%',
-                        bg: 'bg.subtle',
-                        borderRadius: 'md',
-                        animation: 'pulse',
-                      })}
-                    />
-                    <div className={css({ display: 'flex', gap: '1' })}>
-                      {Array.from({ length: 3 }).map((_, j) => (
-                        <div
-                          key={j}
-                          className={css({
-                            h: '5',
-                            w: '14',
-                            bg: 'bg.subtle',
-                            borderRadius: 'pill',
-                            animation: 'pulse',
-                          })}
-                        />
-                      ))}
-                    </div>
-                    <div
-                      className={css({
-                        h: '4',
-                        w: '90%',
-                        bg: 'bg.subtle',
-                        borderRadius: 'md',
-                        animation: 'pulse',
-                      })}
-                    />
-                    <div
-                      className={css({
-                        h: '4',
-                        w: '60%',
-                        bg: 'bg.subtle',
-                        borderRadius: 'md',
-                        animation: 'pulse',
-                      })}
-                    />
-                  </div>
-                </div>
+                <PlaceCardSkeleton key={i} />
               ))}
             </div>
           ) : places.length > 0 ? (
