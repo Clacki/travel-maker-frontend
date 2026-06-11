@@ -7,6 +7,8 @@ import { css } from '@/styled-system/css'
 import { Button } from '@/components/common/button'
 import { LoadingState } from '@/components/common/status'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import { checkNickname } from '@/features/mypage/api/profileApi'
 import {
   mapProfileTagIdsToUserTags,
   PROFILE_TAG_LIMIT,
@@ -269,16 +271,19 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const router = useRouter()
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const userProfile = useUserProfileStore((state) => state.userProfile)
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
   const savedProfile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
   )
   const saveProfile = useProfileStore((state) => state.saveProfile)
 
-  // TODO: 실제 API 연동
-  const [nickname, setNickname] = useState(savedProfile.nickname)
+  const [nickname, setNickname] = useState('')
   const [bio, setBio] = useState(savedProfile.bio)
   const [selectedTags, setSelectedTags] = useState(savedProfile.tagIds)
+  const [nicknameStatus, setNicknameStatus] = useState<
+    'idle' | 'checking' | 'available' | 'unavailable' | 'error'
+  >('idle')
 
   const savedProfileTags = mapProfileTagIdsToUserTags(savedProfile.tagIds)
   const isTagLimitReached = selectedTags.length >= PROFILE_TAG_LIMIT
@@ -315,9 +320,22 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     })
   }
 
-  const handleCheckDuplicate = () => {
-    console.log('check duplicate', nickname)
-    // TODO: 닉네임 중복 확인 API 호출
+  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNickname(e.target.value)
+    setNicknameStatus('idle')
+  }
+
+  const handleCheckDuplicate = async () => {
+    const trimmed = nickname.trim()
+    if (!trimmed) return
+
+    setNicknameStatus('checking')
+    try {
+      const { available } = await checkNickname(trimmed)
+      setNicknameStatus(available ? 'available' : 'unavailable')
+    } catch {
+      setNicknameStatus('error')
+    }
   }
 
   const handleSave = () => {
@@ -327,7 +345,6 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
       tagIds: selectedTags,
     }
 
-    console.log('save', nextProfile)
     // TODO: 프로필 수정 API 호출
     saveProfile(userId, nextProfile)
     router.push(`/profile/${userId}`)
@@ -352,7 +369,9 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
             <Pencil size={14} aria-hidden="true" />
           </button>
         </div>
-        <span className={typeNameStyle}>{savedProfile.nickname}</span>
+        <span className={typeNameStyle}>
+          {userProfile?.nickname ?? savedProfile.nickname}
+        </span>
         {savedProfile.bio && (
           <p className={bioPreviewStyle}>{savedProfile.bio}</p>
         )}
@@ -378,18 +397,36 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
                 type="text"
                 className={inputStyle}
                 value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                maxLength={10}
+                onChange={handleNicknameChange}
+                maxLength={20}
                 placeholder="닉네임을 입력하세요"
               />
               <Button
                 variant="outline"
                 shape="rounded"
-                onClick={handleCheckDuplicate}
+                onClick={() => void handleCheckDuplicate()}
+                disabled={nicknameStatus === 'checking' || !nickname.trim()}
               >
-                중복 확인
+                {nicknameStatus === 'checking' ? '확인 중...' : '중복 확인'}
               </Button>
             </div>
+            {nicknameStatus === 'available' && (
+              <p
+                className={css({ mt: '1', fontSize: 'xs', color: 'green.500' })}
+              >
+                사용 가능한 닉네임입니다.
+              </p>
+            )}
+            {nicknameStatus === 'unavailable' && (
+              <p className={css({ mt: '1', fontSize: 'xs', color: 'red.500' })}>
+                이미 사용 중인 닉네임입니다.
+              </p>
+            )}
+            {nicknameStatus === 'error' && (
+              <p className={css({ mt: '1', fontSize: 'xs', color: 'red.500' })}>
+                확인 중 오류가 발생했습니다. 다시 시도해주세요.
+              </p>
+            )}
           </div>
 
           <div>
