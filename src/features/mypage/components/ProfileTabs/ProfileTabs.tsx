@@ -1,14 +1,15 @@
 'use client'
 
-import { Heart, FileText, BarChart3 } from 'lucide-react'
+import { Heart, FileText, BarChart3, Map } from 'lucide-react'
 import { css } from '@/styled-system/css'
 
-export type TabType = 'bookmark' | 'review' | 'test'
+export type TabType = 'bookmark' | 'review' | 'trip' | 'test'
 
 interface ProfileTabsProps {
   isMyProfile: boolean
   bookmarkCount: number
   reviewCount: number
+  tripCount?: number
   activeTab: TabType
   onTabChange: (tab: TabType) => void
 }
@@ -63,6 +64,7 @@ export function ProfileTabs({
   isMyProfile,
   bookmarkCount,
   reviewCount,
+  tripCount = 0,
   activeTab,
   onTabChange,
 }: ProfileTabsProps) {
@@ -79,6 +81,12 @@ export function ProfileTabs({
           label: '리뷰',
           count: reviewCount,
           icon: <FileText size={16} />,
+        },
+        {
+          id: 'trip' as TabType,
+          label: '내 여행코스',
+          count: tripCount,
+          icon: <Map size={16} />,
         },
         {
           id: 'test' as TabType,
