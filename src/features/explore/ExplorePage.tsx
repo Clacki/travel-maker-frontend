@@ -220,10 +220,12 @@ function ExploreContent() {
     const targetPlace = places.find((p) => p.id === placeId)
     if (!targetPlace) return
 
-    const isAdding = !targetPlace.is_liked
+    const isAdding = !targetPlace.is_bookmarked
     const originalPlaces = [...places]
     setPlaces((prev) =>
-      prev.map((p) => (p.id === placeId ? { ...p, is_liked: isAdding } : p))
+      prev.map((p) =>
+        p.id === placeId ? { ...p, is_bookmarked: isAdding } : p
+      )
     )
 
     try {
@@ -293,7 +295,14 @@ function ExploreContent() {
     return () => {
       cancelled = true
     }
-  }, [currentPage, selectedTagIdsKey, sort, keyword, pendingTag, isAuthInitialized])
+  }, [
+    currentPage,
+    selectedTagIdsKey,
+    sort,
+    keyword,
+    pendingTag,
+    isAuthInitialized,
+  ])
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -582,9 +591,9 @@ function ExploreContent() {
                       description={place.description}
                       tags={place.tags.map((t) => t.tag_name)}
                       rating={Number(place.rating_avg)}
-                      imageUrl={place.main_image}
+                      imageUrl={place.image_url ?? undefined}
                       variant="bookmark"
-                      isLiked={place.is_liked}
+                      isLiked={place.is_bookmarked}
                       onLikeToggle={handleLikeToggle}
                     />
                   </div>
