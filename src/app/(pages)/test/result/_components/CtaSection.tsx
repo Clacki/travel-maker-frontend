@@ -1,11 +1,19 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 
 import { css, cx } from '@/styled-system/css'
 
+import { LoginModal } from '@/components/auth/LoginModal'
 import { buttonRecipe } from '@/components/common/button/Button'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { ROUTES } from '@/constants/routes'
+
+import { AvatarButton } from './AvatarButton'
 
 interface CtaSectionProps {
-  isAuthenticated: boolean
+  travelTypeId: number
 }
 
 /* 섹션 배경은 페이지색 유지 */
@@ -67,34 +75,79 @@ const ctaLinkStyle = buttonRecipe({
   shape: 'pill',
 })
 
-export function CtaSection({ isAuthenticated }: CtaSectionProps) {
-  if (isAuthenticated) {
-    return null
+const buttonGroupStyle = css({
+  display: 'flex',
+  gap: '3',
+  flexWrap: 'wrap',
+})
+
+export function CtaSection({ travelTypeId }: CtaSectionProps) {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+
+  if (isLoggedIn) {
+    return (
+      <section className={sectionStyle}>
+        <div className={innerStyle}>
+          <div className={cardStyle}>
+            <span className={labelStyle}>NEXT STEP</span>
+            <h2 className={headingStyle}>
+              이 여행 스타일로 다음 여행을 시작해볼까요?
+            </h2>
+            <p className={descriptionStyle}>
+              추천 여행지를 둘러보고, 나에게 맞는 여행 코스를 저장해보세요.
+              취향에 맞는 새로운 도시들이 매주 업데이트돼요.
+            </p>
+            <div className={buttonGroupStyle}>
+              <Link
+                href={ROUTES.EXPLORE}
+                className={cx(ctaLinkStyle, css({ color: 'primary' }))}
+              >
+                여행지 탐색하기 →
+              </Link>
+              <AvatarButton travelTypeId={travelTypeId} />
+            </div>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
-    <section className={sectionStyle}>
-      <div className={innerStyle}>
-        <div className={cardStyle}>
-          <span className={labelStyle}>NEXT STEP</span>
-          <h2 className={headingStyle}>
-            이 여행 스타일로 다음 여행을 시작해볼까요?
-          </h2>
-          <p className={descriptionStyle}>
-            추천 여행지를 둘러보고, 나에게 맞는 여행 코스를 찾아보세요.
-            로그인하면 새로운 도시들에 더 쉽게 떠날 수 있어요.
-          </p>
-          <Link
-            href="/login"
-            className={cx(
-              ctaLinkStyle,
-              css({ alignSelf: 'flex-start', color: 'primary' })
-            )}
-          >
-            로그인하기 →
-          </Link>
+    <>
+      <section className={sectionStyle}>
+        <div className={innerStyle}>
+          <div className={cardStyle}>
+            <span className={labelStyle}>NEXT STEP</span>
+            <h2 className={headingStyle}>
+              이 여행 스타일로 다음 여행을 시작해볼까요?
+            </h2>
+            <p className={descriptionStyle}>
+              추천 여행지를 둘러보고, 나에게 맞는 여행 코스를 찾아보세요.
+              로그인하면 새로운 도시들에 더 쉽게 떠날 수 있어요.
+            </p>
+            <button
+              type="button"
+              className={cx(
+                ctaLinkStyle,
+                css({
+                  alignSelf: 'flex-start',
+                  color: 'primary',
+                  cursor: 'pointer',
+                })
+              )}
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              로그인하기 →
+            </button>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </>
   )
 }

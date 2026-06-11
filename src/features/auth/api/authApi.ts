@@ -38,3 +38,7 @@ export const getCurrentUser = async () => {
 export const logout = async () => {
   await api.post(LOGOUT_PATH)
 }
+
+export const patchUserAvatar = async (travelTypeId: number) => {
+  await api.patch('/api/v1/users/avatar', { travel_type_id: travelTypeId })
+}
