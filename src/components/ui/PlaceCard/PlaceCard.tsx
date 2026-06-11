@@ -18,14 +18,16 @@ export interface PlaceCardBaseProps {
 export interface BookmarkPlaceCardProps extends PlaceCardBaseProps {
   variant: 'bookmark'
   isLiked: boolean
+  canManage?: boolean
   onLikeToggle: (placeId: number) => void
 }
 
 export interface ReviewPlaceCardProps extends PlaceCardBaseProps {
   variant: 'review'
   reviewId?: number
-  onEditClick: (id: number) => void
-  onDeleteClick: (id: number) => void
+  canManage?: boolean
+  onEditClick?: (id: number) => void
+  onDeleteClick?: (id: number) => void
 }
 
 export type PlaceCardProps = BookmarkPlaceCardProps | ReviewPlaceCardProps
@@ -181,7 +183,7 @@ export function PlaceCard(props: PlaceCardProps) {
           </div>
         )}
 
-        {variant === 'bookmark' && (
+        {variant === 'bookmark' && props.canManage !== false && (
           <LikeButton
             isLiked={props.isLiked}
             onLikeToggle={props.onLikeToggle}
@@ -190,14 +192,17 @@ export function PlaceCard(props: PlaceCardProps) {
         )}
       </div>
 
-      {variant === 'review' && (
-        <EditButton
-          placeId={placeId}
-          actionId={props.reviewId}
-          onEditClick={props.onEditClick}
-          onDeleteClick={props.onDeleteClick}
-        />
-      )}
+      {variant === 'review' &&
+        props.canManage !== false &&
+        props.onEditClick &&
+        props.onDeleteClick && (
+          <EditButton
+            placeId={placeId}
+            actionId={props.reviewId}
+            onEditClick={props.onEditClick}
+            onDeleteClick={props.onDeleteClick}
+          />
+        )}
 
       <Link
         href={ROUTES.DETAIL(String(placeId))}
