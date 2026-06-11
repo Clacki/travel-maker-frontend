@@ -5,6 +5,8 @@ export type UserProfile = {
   email: string
   profile_img_url: string
   tags: { id: number; name: string }[]
+  follower_count: number
+  following_count: number
   bookmark_count: number
   review_count: number
   created_at: string
@@ -17,13 +19,6 @@ export type BookmarkItem = {
   image_url: string
   rating: number
   created_at: string
-}
-
-export type BookmarkListResponse = {
-  count: number
-  next: string | null
-  previous: string | null
-  results: BookmarkItem[]
 }
 
 export type ReviewItem = {
