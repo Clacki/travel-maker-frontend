@@ -58,3 +58,6 @@ docs/work-log/
 # Local mock data (개인 개발용 — 커밋 제외)
 src/mocks/local/
 
+# Playwright MCP (Claude Code 자동화 도구 산출물)
+.playwright-mcp/
+
