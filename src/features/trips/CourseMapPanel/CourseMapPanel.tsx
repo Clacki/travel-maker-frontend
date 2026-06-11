@@ -543,8 +543,7 @@ export function CourseMapPanel({
     try {
       await updateTrip(tripId, buildPayload(selectedRegion, dateRange.from))
       router.push(ROUTES.TRIP_DETAIL(tripId))
-    } catch (error) {
-      console.error('코스 수정 실패:', error)
+    } catch {
       setCreateError('코스 수정에 실패했습니다. 다시 시도해주세요.')
     }
   }
