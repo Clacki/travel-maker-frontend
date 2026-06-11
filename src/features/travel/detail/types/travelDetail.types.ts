@@ -64,5 +64,5 @@ export type TravelDetail = {
   images: string[]
   tags: Tag[]
   info: PlaceInfo | null
-  is_liked?: boolean
+  is_bookmarked?: boolean
 }
