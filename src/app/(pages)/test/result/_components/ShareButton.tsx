@@ -11,7 +11,6 @@ interface ShareButtonProps {
 }
 
 const shareButtonStyle = css({
-  alignSelf: 'flex-start',
   cursor: 'pointer',
 })
 

@@ -12,8 +12,8 @@ export interface ResultCardProps {
   title: string
   description: string
   keywords: string[]
-  /** 매칭도 (0~100 숫자, "64" → "64%" 로 표시) */
-  matchScore: number
+  /** 매칭도 (0~100 숫자, "64" → "64%" 로 표시). API에서 제공되지 않으면 미표시 */
+  matchScore?: number
   /** 타입 순위 (8종 중 n번째, "1" → "8종 중 1" 로 표시) */
   typeRank: number
 }
@@ -178,10 +178,12 @@ export function ResultCard({
 
       {/* Stats */}
       <div className={statSectionStyle}>
-        <div className={statItemStyle}>
-          <span className={statValueStyle}>{`${matchScore}%`}</span>
-          <span className={statLabelStyle}>매칭도</span>
-        </div>
+        {matchScore !== undefined && (
+          <div className={statItemStyle}>
+            <span className={statValueStyle}>{`${matchScore}%`}</span>
+            <span className={statLabelStyle}>매칭도</span>
+          </div>
+        )}
         <div className={statItemStyle}>
           <span className={statValueStyle}>12문항</span>
           <span className={statLabelStyle}>테스트</span>

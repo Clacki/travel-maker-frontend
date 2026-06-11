@@ -3,11 +3,16 @@ import Link from 'next/link'
 import { css } from '@/styled-system/css'
 
 import { ResultCard } from '@/app/(pages)/test/_components/ResultCard/ResultCard'
+import { ROUTES } from '@/constants/routes'
 
+import type { TypeKey } from '@/features/result/quizCalculator'
 import type { TestResultResponse } from '@/features/result/result.types'
+
+import { ShareButton } from './ShareButton'
 
 interface HeroSectionProps {
   result: TestResultResponse
+  typeKey: TypeKey
 }
 
 /* 풀 width 배경 래퍼 */
@@ -91,7 +96,6 @@ const retryLinkStyle = css({
   justifyContent: 'center',
   minHeight: '44px',
   px: '6',
-  mt: '2',
   borderRadius: 'pill',
   bg: 'bg.surface',
   color: 'text.primary',
@@ -108,7 +112,6 @@ const retryLinkStyle = css({
     outline: 'none',
     boxShadow: 'focus',
   },
-  alignSelf: 'flex-start',
   w: 'fit-content',
 })
 
@@ -197,7 +200,16 @@ const polaroidCaptionStyle = css({
   fontStyle: 'italic',
 })
 
-export function HeroSection({ result }: HeroSectionProps) {
+const buttonRowStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  flexWrap: 'wrap',
+  mt: '2',
+  alignSelf: 'flex-start',
+})
+
+export function HeroSection({ result, typeKey }: HeroSectionProps) {
   return (
     <section className={sectionStyle}>
       <div className={innerStyle}>
@@ -218,9 +230,12 @@ export function HeroSection({ result }: HeroSectionProps) {
 
           <p className={descriptionStyle}>{result.description}</p>
 
-          <Link href="/test" className={retryLinkStyle}>
-            테스트 다시하기
-          </Link>
+          <div className={buttonRowStyle}>
+            <Link href={ROUTES.TEST} className={retryLinkStyle}>
+              테스트 다시하기
+            </Link>
+            <ShareButton typeKey={typeKey} />
+          </div>
         </div>
 
         {/* 우측 카드 스택 영역 */}

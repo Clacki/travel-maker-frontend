@@ -15,7 +15,6 @@ import {
   buildDescription,
 } from '@/features/result/quizCalculator'
 import type { TypeKey } from '@/features/result/quizCalculator'
-import { mockResultData } from '@/features/result/data/resultDataMock'
 import { useQuizStore } from '@/store/quizStore'
 
 import { CompassSection } from './CompassSection'
@@ -23,7 +22,6 @@ import { CtaSection } from './CtaSection'
 import { DestinationsSection } from './DestinationsSection'
 import { HeroSection } from './HeroSection'
 import { OtherTypesSection } from './OtherTypesSection'
-import { ShareButton } from './ShareButton'
 
 interface ResultClientLayerProps {
   sharedTypeKey?: string
@@ -35,7 +33,12 @@ function isValidTypeKey(key: string): key is TypeKey {
 }
 
 export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
-  const { resultVector, typeKey: storeTypeKey } = useQuizStore()
+  const {
+    resultVector,
+    typeKey: storeTypeKey,
+    destinations,
+    travelTypeId: storeTravelTypeId,
+  } = useQuizStore()
   const router = useRouter()
 
   // sharedTypeKey가 있으면 store 없이도 렌더링 가능
@@ -64,51 +67,88 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
   const compassAxes = buildCompassAxes(effectiveVector)
   const typeIndex = TYPE_KEY_ORDER[effectiveTypeKey]
   const typeLabel = `TYPE · ${String(typeIndex).padStart(2, '0')} / 08`
+  // API 응답의 travel_type_id를 우선 사용.
+  // fallback인 typeIndex(1~8)는 TYPE_KEY_ORDER 순서와 백엔드 DB ID가 일치한다고 가정.
+  const effectiveTravelTypeId = storeTravelTypeId ?? typeIndex
+
+  // 퀴즈를 완료했으나 API 실패로 destinations를 받지 못한 경우
+  const isDestinationsFailed = storeTypeKey !== null && destinations === null
+
+  // API destinations → RecommendedDestination 매핑
+  // image_url이 null이면 undefined로 전달 → TravelCard 내부에서 기본 이미지로 폴백
+  const recommendedDestinations = (destinations ?? []).map((d) => ({
+    id: String(d.place_id),
+    imageSrc: d.image_url ?? undefined,
+    title: d.place_name,
+    description: d.description ?? '',
+    hashtags: d.tags,
+  }))
+
+  // TRAVEL_TYPE_MAP을 TYPE_KEY_ORDER 순서로 정렬해 allTypes 구성
+  const allTypes = (Object.entries(TYPE_KEY_ORDER) as [TypeKey, number][])
+    .sort(([, a], [, b]) => a - b)
+    .map(([key]) => {
+      const t = TRAVEL_TYPE_MAP[key]
+      return {
+        typeCode: t.typeCode,
+        imageSrc: t.imageSrc,
+        title: t.name,
+        subtitle: t.nameEn,
+        description: t.tags.join(' · '),
+        isMyType: t.typeCode === typeData.typeCode,
+      }
+    })
 
   const result = {
-    ...mockResultData,
     typeCode: typeData.typeCode,
     typeName: typeData.name,
     typeNameEn: typeData.nameEn,
     typeLabel,
     description,
+    thumbnailSrc: typeData.imageSrc,
     keywords: typeData.tags,
+    typeRank: typeIndex,
     compassData: {
-      ...mockResultData.compassData,
       centerImageSrc: typeData.imageSrc,
       centerLabel: typeData.name,
       axes: compassAxes,
       reading: description,
       traits: typeData.traits,
     },
-    allTypes: mockResultData.allTypes.map((t) => ({
-      ...t,
-      isMyType: t.typeCode === typeData.typeCode,
-    })),
+    allTypes,
+    recommendedDestinations,
   }
 
   return (
     <>
-      <HeroSection result={result} />
-      <div
-        className={css({
-          maxW: '6xl',
-          mx: 'auto',
-          px: '6',
-          py: '4',
-          display: 'flex',
-          justifyContent: 'center',
-        })}
-      >
-        <ShareButton typeKey={effectiveTypeKey} />
-      </div>
+      <HeroSection result={result} typeKey={effectiveTypeKey} />
       <CompassSection compassData={result.compassData} />
-      <DestinationsSection
-        destinations={result.recommendedDestinations}
-        typeName={result.typeName}
-      />
+      {recommendedDestinations.length > 0 ? (
+        <DestinationsSection
+          destinations={recommendedDestinations}
+          typeName={result.typeName}
+        />
+      ) : isDestinationsFailed ? (
+        <div
+          className={css({
+            w: 'full',
+            py: '12',
+            display: 'flex',
+            justifyContent: 'center',
+          })}
+        >
+          <p
+            className={css({
+              fontSize: 'sm',
+              color: 'text.secondary',
+            })}
+          >
+            추천 여행지를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.
+          </p>
+        </div>
+      ) : null}
       <OtherTypesSection allTypes={result.allTypes} />
-      <CtaSection travelTypeId={typeIndex} />
+      <CtaSection travelTypeId={effectiveTravelTypeId} />
     </>
   )
 }
