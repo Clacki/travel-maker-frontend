@@ -5,13 +5,12 @@ import InfoCard from './components/InfoCard'
 import MapSection from './components/MapSection'
 import ReviewsSection from './components/ReviewsSection'
 
-import type { Review, TravelDetail } from './types/travelDetail.types'
+import type { TravelDetail } from './types/travelDetail.types'
 
 import { css } from '@/styled-system/css'
 
 interface TravelDetailPageProps {
   detail: TravelDetail
-  reviews: Review[]
 }
 
 const pageStyle = css({
@@ -33,10 +32,7 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-export default function TravelDetailPage({
-  detail,
-  reviews,
-}: TravelDetailPageProps) {
+export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
   return (
     <PageLayout>
       <div className={pageStyle}>
@@ -55,11 +51,7 @@ export default function TravelDetailPage({
           </div>
         </div>
 
-        <ReviewsSection
-          placeId={detail.id}
-          reviews={reviews}
-          reviewCount={detail.review_count}
-        />
+        <ReviewsSection placeId={detail.id} reviewCount={detail.review_count} />
       </div>
     </PageLayout>
   )

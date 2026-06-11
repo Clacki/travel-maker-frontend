@@ -1,13 +1,16 @@
-import type { Review } from '../types/travelDetail.types'
+'use client'
+
+import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/common/button'
 import { EmptyState } from '@/components/common/status/EmptyState'
 import { css } from '@/styled-system/css'
+import { getPlaceReviews } from '../api/reviewApi'
+import type { Review } from '../types/travelDetail.types'
 import ReviewCard from './ReviewCard'
 import ReviewWriteButton from './ReviewWriteButton'
 
 interface ReviewsSectionProps {
-  reviews: Review[]
   reviewCount: number
   placeId: number
 }
@@ -43,10 +46,17 @@ const moreButtonWrapperStyle = css({
 })
 
 export default function ReviewsSection({
-  reviews,
   reviewCount,
   placeId,
 }: ReviewsSectionProps) {
+  const [reviews, setReviews] = useState<Review[]>([])
+
+  useEffect(() => {
+    getPlaceReviews(placeId)
+      .then(setReviews)
+      .catch(() => {})
+  }, [placeId])
+
   return (
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
