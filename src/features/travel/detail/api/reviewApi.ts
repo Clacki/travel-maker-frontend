@@ -13,6 +13,7 @@ export const getPlaceReviews = async (placeId: number): Promise<Review[]> => {
     rating: item.rating,
     content: item.content,
     createdAt: item.created_at,
+    isOwner: item.is_owner,
   }))
 }
 

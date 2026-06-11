@@ -12,6 +12,7 @@ export type PlaceReviewItem = {
   image_url: string | null
   created_at: string
   updated_at: string
+  is_owner: boolean
 }
 
 export type PlaceReviewsResponse = {
