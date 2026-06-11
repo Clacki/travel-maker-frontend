@@ -13,7 +13,8 @@ import { PlaceCard } from '@/components/ui/PlaceCard'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import { mockBookmarks, mockMyProfile } from '@/mocks/data/mypage-data'
+import { getBookmarks, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
+import { mockMyProfile } from '@/mocks/data/mypage-data'
 import {
   getDefaultEditableProfile,
   useProfileStore,
@@ -34,6 +35,20 @@ import { mapProfileTagIdsToUserTags } from '../../lib/profile-tags'
 import { ProfileCard } from '../ProfileCard'
 import type { TabType } from '../ProfileTabs'
 import { ProfileTabs } from '../ProfileTabs'
+
+// 북마크 API 응답 구조에 맞춘 인터페이스 정의
+interface BookmarkPlace {
+  id: number
+  place_name: string
+  rating_avg: string
+  main_image: string | null
+}
+
+interface BookmarkResponseItem {
+  id: number
+  place: BookmarkPlace
+  created_at: string
+}
 
 interface MyPageContentProps {
   userId: string
@@ -80,7 +95,6 @@ function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
     placeName: review.place_name,
     rating: review.rating,
     content: review.content,
-    // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 PlaceCard imageUrl로 매핑한다.
     imageUrl: null,
     createdAt: review.created_at,
     updatedAt: review.updated_at,
@@ -140,19 +154,25 @@ const gridStyle = css({
   mt: '4',
 })
 
+const loadingStyle = css({
+  textAlign: 'center',
+  py: '8',
+  color: 'text.secondary',
+})
+
 export function MyPageContent({ userId }: MyPageContentProps) {
   const router = useRouter()
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const currentUserProfile = useUserProfileStore((state) => state.userProfile)
 
-  // TODO: 실제 API 연동 후 세션의 현재 유저 ID와 비교하도록 교체
   const isMyProfile = true
 
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
   const profile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
   )
-  const currentUserProfile = useUserProfileStore((state) => state.userProfile)
+
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [bookmarkPage, setBookmarkPage] = useState(1)
   const [reviewPage, setReviewPage] = useState(1)
@@ -171,6 +191,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     null
   )
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+  const [bookmarks, setBookmarks] = useState<BookmarkResponseItem[]>([])
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(true)
   const [reviewModal, setReviewModal] = useState<{
     isOpen: boolean
     mode: ReviewModalMode
@@ -233,6 +255,29 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   }, [isAuthInitialized, isLoggedIn, router])
 
   useEffect(() => {
+    let cancelled = false
+
+    getBookmarks()
+      .then((data) => {
+        if (!cancelled) {
+          // bookmarkApi.ts의 리턴 타입이 BookmarkResponseItem[]와 호환된다고 가정
+          setBookmarks(data as unknown as BookmarkResponseItem[])
+          setIsBookmarkLoading(false)
+        }
+      })
+      .catch((error) => {
+        console.error('북마크 목록 조회 실패', error)
+        if (!cancelled) {
+          setIsBookmarkLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
     if (activeTab !== 'review') {
       return
     }
@@ -252,29 +297,33 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     return null
   }
 
-  const bookmarks = mockBookmarks
-
   const isCurrentUserPage =
     !!currentUserProfile &&
-    (userId === currentUserProfile.id || userId === 'me')
+    (userId === currentUserProfile?.id || userId === 'me')
   const user = {
     ...mockMyProfile,
-    id: isCurrentUserPage ? Number(currentUserProfile.id) : mockMyProfile.id,
+    id: isCurrentUserPage ? Number(currentUserProfile?.id) : mockMyProfile.id,
     nickname: isCurrentUserPage
-      ? currentUserProfile.nickname
+      ? (currentUserProfile?.nickname ?? profile.nickname)
       : profile.nickname,
-    bio: isCurrentUserPage ? currentUserProfile.bio || '' : profile.bio,
+    bio: isCurrentUserPage ? (currentUserProfile?.bio ?? '') : profile.bio,
     email: isCurrentUserPage
-      ? currentUserProfile.email || ''
+      ? (currentUserProfile?.email ?? '')
       : mockMyProfile.email,
     profile_img_url: isCurrentUserPage
-      ? currentUserProfile.profileImageUrl || ''
+      ? (currentUserProfile?.profileImageUrl ?? '')
       : mockMyProfile.profile_img_url,
+    follower_count: isCurrentUserPage
+      ? (currentUserProfile?.followerCount ?? 0)
+      : 0,
+    following_count: isCurrentUserPage
+      ? (currentUserProfile?.followingCount ?? 0)
+      : 0,
     bookmark_count: isCurrentUserPage
-      ? (currentUserProfile.bookmarkCount ?? mockMyProfile.bookmark_count)
+      ? (currentUserProfile?.bookmarkCount ?? mockMyProfile.bookmark_count)
       : mockMyProfile.bookmark_count,
     review_count: isCurrentUserPage
-      ? (currentUserProfile.reviewCount ?? mockMyProfile.review_count)
+      ? (currentUserProfile?.reviewCount ?? mockMyProfile.review_count)
       : mockMyProfile.review_count,
     tags: mapProfileTagIdsToUserTags(profile.tagIds),
   }
@@ -300,12 +349,15 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
   const handleWithdraw = (reason: string) => {
     console.log('withdraw', reason)
-    // TODO: 탈퇴 API 호출
   }
 
-  const handleLikeToggle = (placeId: number) => {
-    console.log('toggle bookmark', placeId)
-    // TODO: 북마크 해제 API 호출
+  const handleLikeToggle = async (placeId: number) => {
+    try {
+      await deleteBookmark(placeId)
+      setBookmarks((prev) => prev.filter((b) => b.place.id !== placeId))
+    } catch (error) {
+      console.error('북마크 해제 실패', error)
+    }
   }
 
   const handleReviewEdit = (reviewId: number) => {
@@ -322,7 +374,6 @@ export function MyPageContent({ userId }: MyPageContentProps) {
       reviewId: review.reviewId,
       initialRating: review.rating,
       initialContent: review.content,
-      // TODO: 백엔드 리뷰 목록 응답에 이미지 URL이 추가되면 수정 모달 초기 이미지로 전달한다.
       initialImageSrc: review.imageUrl,
       initialCreatedAt: review.createdAt,
     })
@@ -452,19 +503,21 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         />
 
         {activeTab === 'bookmark' &&
-          (bookmarks.length > 0 ? (
+          (isBookmarkLoading ? (
+            <p className={loadingStyle}>로딩 중...</p>
+          ) : bookmarks.length > 0 ? (
             <>
               <div className={gridStyle}>
                 {paginatedBookmarks.map((bookmark) => (
                   <PlaceCard
-                    key={bookmark.place_id}
+                    key={bookmark.place.id}
                     variant="bookmark"
-                    placeId={bookmark.place_id}
-                    placeName={bookmark.place_name}
-                    imageUrl={bookmark.image_url || undefined}
-                    rating={bookmark.rating}
+                    placeId={bookmark.place.id}
+                    placeName={bookmark.place.place_name}
+                    imageUrl={bookmark.place.main_image || undefined}
+                    rating={Number(bookmark.place.rating_avg)}
                     isLiked={true}
-                    onLikeToggle={handleLikeToggle}
+                    onLikeToggle={() => handleLikeToggle(bookmark.place.id)}
                   />
                 ))}
               </div>
@@ -504,13 +557,11 @@ export function MyPageContent({ userId }: MyPageContentProps) {
                     key={review.reviewId}
                     variant="review"
                     placeId={review.placeId}
-                    reviewId={review.reviewId}
                     placeName={review.placeName}
                     description={review.content}
-                    imageUrl={review.imageUrl ?? undefined}
                     rating={review.rating}
-                    onEditClick={handleReviewEdit}
-                    onDeleteClick={handleReviewDelete}
+                    onEditClick={() => handleReviewEdit(review.reviewId)}
+                    onDeleteClick={() => handleReviewDelete(review.reviewId)}
                   />
                 ))}
               </div>
@@ -530,7 +581,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         {activeTab === 'test' && (
           <EmptyState
             title="아직 성향 테스트를 하지 않았어요"
-            description="나의 여행 성향을 찾아보세요."
+            description="나의 여행 성향을 알아보세요."
             actionLabel="테스트 하러 가기"
             onAction={() => router.push('/test')}
           />
