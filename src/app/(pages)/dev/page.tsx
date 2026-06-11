@@ -154,7 +154,7 @@ export default function DevPage() {
         >
           <ExampleGroup title="Default">
             <TypeCard
-              icon={<TypeCardIcon />}
+              imageSrc="/images/types/cat.png"
               title="INFP"
               subtitle="여행 감성파"
               description="느낌 따라 떠나는 자유로운 여행자"
@@ -163,7 +163,7 @@ export default function DevPage() {
 
           <ExampleGroup title="MY TYPE 배지 (isMyType)">
             <TypeCard
-              icon={<TypeCardIcon />}
+              imageSrc="/images/types/cat.png"
               title="INFP"
               subtitle="여행 감성파"
               description="느낌 따라 떠나는 자유로운 여행자"
@@ -415,23 +415,6 @@ function PreviewFrame({ children }: PreviewFrameProps) {
     >
       {children}
     </div>
-  )
-}
-
-function TypeCardIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      fill="none"
-      viewBox="0 0 24 24"
-      width="24"
-      height="24"
-    >
-      <path
-        d="M12 2a7 7 0 1 1 0 14A7 7 0 0 1 12 2Zm0 2a5 5 0 1 0 0 10A5 5 0 0 0 12 4Zm0 8a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm0-6a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1Z"
-        fill="currentColor"
-      />
-    </svg>
   )
 }
 

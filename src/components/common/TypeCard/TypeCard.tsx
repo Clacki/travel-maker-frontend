@@ -2,7 +2,7 @@
 'use client'
 
 import Image from 'next/image'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes } from 'react'
 import { css, cva, cx } from '@/styled-system/css'
 
 const cardStyle = cva({
@@ -97,8 +97,7 @@ export interface TypeCardProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'children'
 > {
-  icon: ReactNode
-  imageSrc?: string
+  imageSrc: string
   title: string
   subtitle: string
   description: string
@@ -107,7 +106,6 @@ export interface TypeCardProps extends Omit<
 }
 
 export function TypeCard({
-  icon,
   imageSrc,
   title,
   subtitle,
@@ -127,18 +125,14 @@ export function TypeCard({
       {isMyType && <span className={badgeStyle}>MY TYPE</span>}
 
       <div className={iconWrapperStyle({ myType: isMyType })}>
-        {imageSrc ? (
-          <Image
-            src={imageSrc}
-            alt={title}
-            width={36}
-            height={36}
-            unoptimized
-            className={css({ objectFit: 'contain' })}
-          />
-        ) : (
-          icon
-        )}
+        <Image
+          src={imageSrc}
+          alt={title}
+          width={36}
+          height={36}
+          unoptimized
+          className={css({ objectFit: 'contain' })}
+        />
       </div>
 
       <div

@@ -75,7 +75,7 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
     keywords: typeData.tags,
     compassData: {
       ...mockResultData.compassData,
-      centerEmoji: typeData.emoji,
+      centerImageSrc: typeData.imageSrc,
       centerLabel: typeData.name,
       axes: compassAxes,
       reading: description,

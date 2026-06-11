@@ -6,8 +6,10 @@ export type CompassAxis = {
   value: number
 }
 
+import type { LucideIcon } from 'lucide-react'
+
 export type CompassTrait = {
-  icon: string
+  icon: LucideIcon
   title: string
   description: string
 }
@@ -16,8 +18,8 @@ export type CompassData = {
   axes: CompassAxis[]
   reading: string
   traits: CompassTrait[]
-  /** 그래프 중앙 이모지 */
-  centerEmoji: string
+  /** 그래프 중앙 타입 이미지 경로 */
+  centerImageSrc: string
   /** 그래프 중앙 하단 필 라벨 */
   centerLabel: string
 }
@@ -33,8 +35,7 @@ export type RecommendedDestination = {
 
 export type TravelType = {
   typeCode: string
-  icon: string
-  imageSrc?: string
+  imageSrc: string
   title: string
   subtitle: string
   description: string

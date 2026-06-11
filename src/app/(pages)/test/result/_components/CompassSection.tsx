@@ -71,7 +71,8 @@ const traitCardStyle = css({
 })
 
 const traitIconStyle = css({
-  fontSize: '2xl',
+  color: 'primary',
+  flexShrink: '0',
 })
 
 const traitTitleStyle = css({
@@ -125,7 +126,7 @@ export function CompassSection({ compassData }: CompassSectionProps) {
           <div className={chartAreaStyle}>
             <RadarChart
               axes={compassData.axes}
-              centerEmoji={compassData.centerEmoji}
+              centerImageSrc={compassData.centerImageSrc}
               centerLabel={compassData.centerLabel}
             />
           </div>
@@ -133,13 +134,16 @@ export function CompassSection({ compassData }: CompassSectionProps) {
           <div className={rightAreaStyle}>
             {/* Traits 카드 2x2 */}
             <div className={traitsGridStyle}>
-              {compassData.traits.map((trait) => (
-                <article key={trait.title} className={traitCardStyle}>
-                  <span className={traitIconStyle}>{trait.icon}</span>
-                  <h3 className={traitTitleStyle}>{trait.title}</h3>
-                  <p className={traitDescriptionStyle}>{trait.description}</p>
-                </article>
-              ))}
+              {compassData.traits.map((trait) => {
+                const Icon = trait.icon
+                return (
+                  <article key={trait.title} className={traitCardStyle}>
+                    <Icon size={22} className={traitIconStyle} />
+                    <h3 className={traitTitleStyle}>{trait.title}</h3>
+                    <p className={traitDescriptionStyle}>{trait.description}</p>
+                  </article>
+                )
+              })}
             </div>
 
             {/* Compass reading */}

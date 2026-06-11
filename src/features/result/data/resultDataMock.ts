@@ -1,3 +1,5 @@
+import { Footprints, Map, Moon, Sparkles } from 'lucide-react'
+
 import type { TestResultResponse } from '@/features/result/result.types'
 
 export const mockResultData: TestResultResponse = {
@@ -37,7 +39,6 @@ export const mockResultData: TestResultResponse = {
   allTypes: [
     {
       typeCode: 'lone-wolf',
-      icon: '🐺',
       imageSrc: '/images/types/wolf.png',
       title: '새벽을 달리는 늑대',
       subtitle: 'LONE WOLF',
@@ -46,7 +47,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'street-fox',
-      icon: '🦊',
       imageSrc: '/images/types/fox.png',
       title: '골목을 가르는 여우',
       subtitle: 'STREET FOX',
@@ -55,7 +55,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'wild-goose',
-      icon: '🪿',
       imageSrc: '/images/types/goose.png',
       title: '파도를 헤치는 기러기',
       subtitle: 'WILD GOOSE',
@@ -64,7 +63,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'city-swallow',
-      icon: '🐦',
       imageSrc: '/images/types/swallow.png',
       title: '도시를 누비는 제비',
       subtitle: 'CITY SWALLOW',
@@ -73,7 +71,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'sunset-deer',
-      icon: '🦌',
       imageSrc: '/images/types/deer.png',
       title: '노을을 기다리는 사슴',
       subtitle: 'SUNSET DEER',
@@ -82,7 +79,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'moonlight-cat',
-      icon: '🐱',
       imageSrc: '/images/types/cat.png',
       title: '달빛 아래 걷는 고양이',
       subtitle: 'MOONLIGHT CAT',
@@ -91,7 +87,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'riverside-heron',
-      icon: '🕊️',
       imageSrc: '/images/types/heron.png',
       title: '강가에 모이는 백로',
       subtitle: 'RIVERSIDE HERON',
@@ -100,7 +95,6 @@ export const mockResultData: TestResultResponse = {
     },
     {
       typeCode: 'cafe-sparrow',
-      icon: '🐤',
       imageSrc: '/images/types/sparrow.png',
       title: '카페에 둥지 트는 참새',
       subtitle: 'CAFE SPARROW',
@@ -109,7 +103,7 @@ export const mockResultData: TestResultResponse = {
     },
   ],
   compassData: {
-    centerEmoji: '🐱',
+    centerImageSrc: '/images/types/cat.png',
     centerLabel: '달빛 아래 걷는 고양이',
     axes: [
       { subject: '활동성', badge: '자연형', value: 40 },
@@ -123,24 +117,24 @@ export const mockResultData: TestResultResponse = {
       '당신은 도시의 분위기를 사랑하는 독립적인 여행자입니다. 철저한 계획 위에 약간의 여유를 두고, 혼자만의 속도로 여행지를 탐험합니다. 사람들 사이에서도 고요한 자기만의 시간을 찾아내는 능력이 탁월합니다.',
     traits: [
       {
-        icon: '🐾',
+        icon: Footprints,
         title: '혼자만의 속도',
         description: '타인의 페이스에 맞추기보다 자신만의 리듬으로 여행합니다.',
       },
       {
-        icon: '🗺️',
+        icon: Map,
         title: '목적적인 여행',
         description:
           '여행 전 충분히 조사하고 계획을 세워 알찬 일정을 만듭니다.',
       },
       {
-        icon: '🌃',
+        icon: Moon,
         title: '도시의 분위기',
         description:
           '골목길 카페, 야경, 거리 예술 등 도시 고유의 감성을 즐깁니다.',
       },
       {
-        icon: '✨',
+        icon: Sparkles,
         title: '특별한 경험을 찾아서',
         description:
           '유명 관광지보다 숨겨진 명소나 로컬 문화를 탐험하는 것을 좋아합니다.',

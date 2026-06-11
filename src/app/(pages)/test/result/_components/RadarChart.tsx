@@ -4,7 +4,7 @@ import type { CompassAxis } from '@/features/result/result.types'
 
 interface RadarChartProps {
   axes: CompassAxis[]
-  centerEmoji: string
+  centerImageSrc: string
   centerLabel: string
 }
 
@@ -98,7 +98,7 @@ function getLabelLayout(i: number) {
 
 export function RadarChart({
   axes,
-  centerEmoji,
+  centerImageSrc,
   centerLabel,
 }: RadarChartProps) {
   const dataPoints = axes.map((axis, i) => {
@@ -128,6 +128,9 @@ export function RadarChart({
           <stop offset="0%" stopColor={C.gradOuter} />
           <stop offset="100%" stopColor={C.gradInner} />
         </radialGradient>
+        <clipPath id="centerClip">
+          <circle cx={CX} cy={circleCY} r={CTR_R - 2} />
+        </clipPath>
       </defs>
       {/* ── 동심 육각형 그리드 ── */}
       {Array.from({ length: LEVELS }, (_, lvl) => (
@@ -215,16 +218,16 @@ export function RadarChart({
       {/* ── 중앙 원 (방사형 그라데이션) ── */}
       <circle cx={CX} cy={circleCY} r={CTR_R} fill="url(#centerGrad)" />
 
-      {/* ── 중앙 이모지 ── */}
-      <text
-        x={CX}
-        y={circleCY}
-        textAnchor="middle"
-        dominantBaseline="central"
-        fontSize={32}
-      >
-        {centerEmoji}
-      </text>
+      {/* ── 중앙 타입 이미지 ── */}
+      <image
+        href={centerImageSrc}
+        x={CX - CTR_R + 4}
+        y={circleCY - CTR_R + 4}
+        width={CTR_R * 2 - 8}
+        height={CTR_R * 2 - 8}
+        preserveAspectRatio="xMidYMid meet"
+        clipPath="url(#centerClip)"
+      />
 
       {/* ── 타입명 필 라벨 ── */}
       <rect
