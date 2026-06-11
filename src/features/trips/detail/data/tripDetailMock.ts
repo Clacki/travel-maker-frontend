@@ -234,7 +234,8 @@ export const findTripDetailById = (tripId: string) => {
   const numericTripId = Number(tripId)
 
   if (!Number.isInteger(numericTripId) || numericTripId <= 0) {
-    return null
+    // TODO: 실제 API 연동 전까지 비숫자 ID(mock string ID 등)는 첫 번째 mock으로 fallback
+    return tripDetailMock
   }
 
   if (tripId === String(tripDetailMock.id)) {

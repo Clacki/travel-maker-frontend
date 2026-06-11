@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation'
 
 import { useCourseStore } from '@/store/tripsStore'
 import { Button } from '@/components/common/button/Button'
-import { createTrip } from '@/features/trips/api/tripsApi'
-import type { CreateTripPayload } from '@/features/trips/types/trips.types'
+import { createTrip, updateTrip } from '@/features/trips/api/tripsApi'
+import type {
+  CreateTripPayload,
+  UpdateTripPayload,
+} from '@/features/trips/types/trips.types'
 import { ROUTES } from '@/constants/routes'
 
 import { css, cx } from '@/styled-system/css'
+
+interface CourseMapPanelProps {
+  mode?: 'create' | 'edit'
+  tripId?: string
+}
 
 // 카카오맵 SDK 공식 타입 미제공 → 최소 필요 인터페이스 정의
 interface KakaoLatLng {
@@ -170,7 +178,10 @@ const bottomBarStyle = css({
 
 const APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
 
-export function CourseMapPanel() {
+export function CourseMapPanel({
+  mode = 'create',
+  tripId,
+}: CourseMapPanelProps) {
   const router = useRouter()
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<KakaoMapInstance | null>(null)
@@ -198,16 +209,19 @@ export function CourseMapPanel() {
     places,
     estimatedHours,
     estimatedMinutes,
+    isDirty,
     resetCourse,
     addPlace,
   } = useCourseStore()
 
-  // 페이지 이탈 시 코스 데이터 초기화
+  // 생성 페이지 이탈 시에만 코스 데이터 초기화 (수정 페이지는 초기화 불필요)
   useEffect(() => {
     return () => {
-      resetCourse()
+      if (mode === 'create') {
+        resetCourse()
+      }
     }
-  }, [resetCourse])
+  }, [mode, resetCourse])
 
   // ref로 최신 addPlace를 참조하여 initMap의 useCallback deps를 [] 유지
   const addPlaceRef = useRef(addPlace)
@@ -443,6 +457,21 @@ export function CourseMapPanel() {
     )
   }, [selectedPlaceId, places])
 
+  const buildPayload = (region: string, from: Date): CreateTripPayload => ({
+    title,
+    description,
+    region,
+    startDate: from.toISOString().split('T')[0],
+    endDate: (dateRange?.to ?? from).toISOString().split('T')[0],
+    visibility: 'public',
+    places: places.map((p, i) => ({
+      id: p.id,
+      name: p.name,
+      address: p.address,
+      order: i + 1,
+    })),
+  })
+
   const handleCreateTrip = async () => {
     if (!selectedRegion || !dateRange?.from) {
       return
@@ -450,22 +479,7 @@ export function CourseMapPanel() {
 
     setCreateError(null)
     try {
-      const payload: CreateTripPayload = {
-        title,
-        description,
-        region: selectedRegion,
-        startDate: dateRange.from.toISOString().split('T')[0],
-        endDate: (dateRange.to ?? dateRange.from).toISOString().split('T')[0],
-        visibility: 'public',
-        places: places.map((p, i) => ({
-          id: p.id,
-          name: p.name,
-          address: p.address,
-          order: i + 1,
-        })),
-      }
-
-      await createTrip(payload)
+      await createTrip(buildPayload(selectedRegion, dateRange.from))
       resetCourse()
       router.push(ROUTES.TRIPS)
     } catch (error) {
@@ -474,11 +488,28 @@ export function CourseMapPanel() {
     }
   }
 
-  const isSaveEnabled =
+  const handleUpdateTrip = async () => {
+    if (!tripId || !selectedRegion || !dateRange?.from) {
+      return
+    }
+
+    setCreateError(null)
+    try {
+      await updateTrip(tripId, buildPayload(selectedRegion, dateRange.from))
+      router.push(ROUTES.TRIP_DETAIL(tripId))
+    } catch (error) {
+      console.error('코스 수정 실패:', error)
+      setCreateError('코스 수정에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
+  const isValid =
     title.trim().length > 0 &&
     selectedRegion !== null &&
     dateRange?.from !== undefined &&
     places.length >= 2
+
+  const isSaveEnabled = mode === 'edit' ? isDirty && isValid : isValid
 
   const headerTitle = selectedRegion
     ? `${selectedRegion} · ${selectedDay}일차`
@@ -583,9 +614,9 @@ export function CourseMapPanel() {
           shape="rounded"
           fullWidth
           disabled={!isSaveEnabled}
-          onClick={handleCreateTrip}
+          onClick={mode === 'edit' ? handleUpdateTrip : handleCreateTrip}
         >
-          코스 등록하기
+          {mode === 'edit' ? '코스 저장하기' : '코스 등록하기'}
         </Button>
       </div>
     </div>

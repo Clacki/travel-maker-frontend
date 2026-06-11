@@ -6,9 +6,8 @@ import type {
   DepartureTime,
 } from '@/features/trips/types/course.types'
 import { MAX_PLACES_PER_DAY } from '@/features/trips/types/course.types'
-import { mockCoursePlaces } from '@/mocks/data/trips-data'
 
-type CourseStore = {
+type CourseStoreState = {
   title: string
   description: string
   selectedRegion: string | null
@@ -20,6 +19,10 @@ type CourseStore = {
   selectedPlaceId: string | null
   estimatedHours: number
   estimatedMinutes: number
+  isDirty: boolean
+}
+
+type CourseStore = CourseStoreState & {
   setTitle: (title: string) => void
   setDescription: (description: string) => void
   setRegion: (region: string | null) => void
@@ -39,6 +42,7 @@ type CourseStore = {
   setSelectedPlaceId: (id: string | null) => void
   setEstimatedHours: (hours: number) => void
   setEstimatedMinutes: (minutes: number) => void
+  initCourse: (data: Partial<Omit<CourseStoreState, 'isDirty'>>) => void
   resetCourse: () => void
 }
 
@@ -47,21 +51,23 @@ export const useCourseStore = create<CourseStore>((set) => ({
   description: '',
   selectedRegion: null,
   selectedThemes: [],
-  places: mockCoursePlaces, // TODO: API 연결 후 [] 로 교체
+  places: [],
   dateRange: null,
   departureTime: { period: 'am', hour: 10, minute: 0 },
   selectedDay: 1,
   selectedPlaceId: null,
   estimatedHours: 0,
   estimatedMinutes: 0,
+  isDirty: false,
 
-  setTitle: (title) => set({ title }),
+  setTitle: (title) => set({ title, isDirty: true }),
 
-  setDescription: (description) => set({ description }),
+  setDescription: (description) => set({ description, isDirty: true }),
 
   setRegion: (region) =>
     set((state) => ({
       selectedRegion: state.selectedRegion === region ? null : region,
+      isDirty: true,
     })),
 
   toggleTheme: (theme) =>
@@ -71,6 +77,7 @@ export const useCourseStore = create<CourseStore>((set) => ({
         selectedThemes: exists
           ? state.selectedThemes.filter((t) => t !== theme)
           : [...state.selectedThemes, theme],
+        isDirty: true,
       }
     }),
 
@@ -84,34 +91,40 @@ export const useCourseStore = create<CourseStore>((set) => ({
       }
       return {
         places: [...state.places, { ...place, dayIndex: state.selectedDay }],
+        isDirty: true,
       }
     }),
 
   removePlace: (placeId) =>
     set((state) => ({
       places: state.places.filter((p) => p.id !== placeId),
+      isDirty: true,
     })),
 
-  reorderPlaces: (newPlaces) => set({ places: newPlaces }),
+  reorderPlaces: (newPlaces) => set({ places: newPlaces, isDirty: true }),
 
   updatePlaceDetail: (placeId, patch) =>
     set((state) => ({
       places: state.places.map((p) =>
         p.id === placeId ? { ...p, ...patch } : p
       ),
+      isDirty: true,
     })),
 
-  setDateRange: (range) => set({ dateRange: range }),
+  setDateRange: (range) => set({ dateRange: range, isDirty: true }),
 
-  setDepartureTime: (time) => set({ departureTime: time }),
+  setDepartureTime: (time) => set({ departureTime: time, isDirty: true }),
 
   setSelectedDay: (day) => set({ selectedDay: day }),
 
   setSelectedPlaceId: (id) => set({ selectedPlaceId: id }),
 
-  setEstimatedHours: (hours) => set({ estimatedHours: hours }),
+  setEstimatedHours: (hours) => set({ estimatedHours: hours, isDirty: true }),
 
-  setEstimatedMinutes: (minutes) => set({ estimatedMinutes: minutes }),
+  setEstimatedMinutes: (minutes) =>
+    set({ estimatedMinutes: minutes, isDirty: true }),
+
+  initCourse: (data) => set({ ...data, isDirty: false }),
 
   resetCourse: () =>
     set({
@@ -126,5 +139,6 @@ export const useCourseStore = create<CourseStore>((set) => ({
       selectedPlaceId: null,
       estimatedHours: 0,
       estimatedMinutes: 0,
+      isDirty: false,
     }),
 }))
