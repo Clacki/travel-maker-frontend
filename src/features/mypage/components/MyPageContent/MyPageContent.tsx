@@ -1,30 +1,26 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { css } from '@/styled-system/css'
-import { ROUTES } from '@/constants/routes'
-import { ProfileCard } from '../ProfileCard'
-import { ProfileTabs } from '../ProfileTabs'
-import type { TabType } from '../ProfileTabs'
-import { PlaceCard } from '@/components/ui/PlaceCard'
-import { Pagination } from '@/components/ui/Pagination/Pagination'
-import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
+import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
 import {
   EmptyState,
   ErrorState,
   LoadingState,
 } from '@/components/common/status'
+import { Pagination } from '@/components/ui/Pagination/Pagination'
+import { PlaceCard } from '@/components/ui/PlaceCard'
+import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { mockMyProfile, mockBookmarks } from '@/mocks/data/mypage-data'
-import { mapProfileTagIdsToUserTags } from '../../lib/profile-tags'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import { mockBookmarks, mockMyProfile } from '@/mocks/data/mypage-data'
 import {
   getDefaultEditableProfile,
   useProfileStore,
 } from '@/store/profileStore'
-import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import { css } from '@/styled-system/css'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   getMyReviews,
   updateReview,
@@ -32,13 +28,17 @@ import {
   type MyReviewsResponse,
   type UpdateReviewRequest,
 } from '../../api/myReviewsApi'
+import { mapProfileTagIdsToUserTags } from '../../lib/profile-tags'
+import { ProfileCard } from '../ProfileCard'
+import type { TabType } from '../ProfileTabs'
+import { ProfileTabs } from '../ProfileTabs'
 
 interface MyPageContentProps {
   userId: string
 }
 
 const BOOKMARK_PAGE_SIZE = 8
-const REVIEW_PAGE_SIZE = 4
+const REVIEW_PAGE_SIZE = 8
 
 type MyReviewCardItem = {
   reviewId: number
