@@ -26,6 +26,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 const ITEMS_PER_PAGE = 12
 
@@ -139,41 +140,19 @@ const skeletonBodyStyle = css({
   gap: '2',
 })
 
-const skeletonLineStyle = (w: string, h = '4') =>
-  css({
-    h,
-    w,
-    bg: 'bg.subtle',
-    borderRadius: 'md',
-    animation: 'pulse',
-  })
-
-const skeletonTagRowStyle = css({
-  display: 'flex',
-  gap: '1',
-})
-
-const skeletonTagStyle = css({
-  h: '5',
-  w: '14',
-  bg: 'bg.subtle',
-  borderRadius: 'pill',
-  animation: 'pulse',
-})
-
 function PlaceCardSkeleton() {
   return (
     <div className={placeCardSkeletonStyle}>
       <div className={skeletonImageStyle} />
       <div className={skeletonBodyStyle}>
-        <div className={skeletonLineStyle('70%', '5')} />
-        <div className={skeletonTagRowStyle}>
+        <Skeleton width="70%" height="20px" />
+        <div className={css({ display: 'flex', gap: '1' })}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className={skeletonTagStyle} />
+            <Skeleton key={i} width="56px" height="20px" radius="pill" />
           ))}
         </div>
-        <div className={skeletonLineStyle('90%')} />
-        <div className={skeletonLineStyle('60%')} />
+        <Skeleton width="90%" height="16px" />
+        <Skeleton width="60%" height="16px" />
       </div>
     </div>
   )

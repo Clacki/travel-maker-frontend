@@ -1,4 +1,5 @@
 import { css } from '@/styled-system/css'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 const heroSkeletonStyle = css({
   position: 'relative',
@@ -77,41 +78,19 @@ const cardBodyStyle = css({
   gap: '2',
 })
 
-const lineStyle = (w: string, h = '4') =>
-  css({
-    h,
-    w,
-    bg: 'bg.subtle',
-    borderRadius: 'md',
-    animation: 'pulse',
-  })
-
-const tagRowStyle = css({
-  display: 'flex',
-  gap: '1',
-})
-
-const tagSkeletonStyle = css({
-  h: '5',
-  w: '14',
-  bg: 'bg.subtle',
-  borderRadius: 'pill',
-  animation: 'pulse',
-})
-
 function PlaceCardSkeleton() {
   return (
     <div className={cardSkeletonStyle}>
       <div className={cardImageStyle} />
       <div className={cardBodyStyle}>
-        <div className={lineStyle('70%', '5')} />
-        <div className={tagRowStyle}>
+        <Skeleton width="70%" height="20px" />
+        <div className={css({ display: 'flex', gap: '1' })}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className={tagSkeletonStyle} />
+            <Skeleton key={i} width="56px" height="20px" radius="pill" />
           ))}
         </div>
-        <div className={lineStyle('90%')} />
-        <div className={lineStyle('60%')} />
+        <Skeleton width="90%" height="16px" />
+        <Skeleton width="60%" height="16px" />
       </div>
     </div>
   )
@@ -128,19 +107,10 @@ export default function ExploreLoading() {
 
       <div className={sortBarSkeletonStyle}>
         <div className={sortInnerStyle}>
-          <div className={lineStyle('10%')} />
+          <Skeleton width="10%" height="16px" />
           <div className={css({ display: 'flex', gap: '2' })}>
             {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className={css({
-                  h: '9',
-                  w: '20',
-                  bg: 'bg.subtle',
-                  borderRadius: 'sm',
-                  animation: 'pulse',
-                })}
-              />
+              <Skeleton key={i} width="80px" height="36px" radius="sm" />
             ))}
           </div>
         </div>

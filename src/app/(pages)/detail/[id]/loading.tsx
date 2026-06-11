@@ -1,5 +1,6 @@
 import { PageLayout } from '@/components/layout/PageLayout'
 import { css } from '@/styled-system/css'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 const pageStyle = css({
   display: 'flex',
@@ -20,20 +21,6 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-const skeletonBase = css({
-  bg: 'bg.subtle',
-  borderRadius: 'md',
-  animation: 'pulse',
-})
-
-const breadcrumbSkeletonStyle = css({
-  h: '4',
-  w: '40',
-  bg: 'bg.subtle',
-  borderRadius: 'md',
-  animation: 'pulse',
-})
-
 const mainImageSkeletonStyle = css({
   w: 'full',
   aspectRatio: '16/10',
@@ -45,14 +32,6 @@ const mainImageSkeletonStyle = css({
 const thumbnailRowStyle = css({
   display: 'flex',
   gap: '2',
-})
-
-const thumbnailSkeletonStyle = css({
-  flex: '0 0 80px',
-  h: '80px',
-  borderRadius: 'sm',
-  bg: 'bg.subtle',
-  animation: 'pulse',
 })
 
 const infoCardSkeletonStyle = css({
@@ -73,20 +52,11 @@ const mapSkeletonStyle = css({
   animation: 'pulse',
 })
 
-const lineSkeletonStyle = (w: string, h = '4') =>
-  css({
-    h,
-    w,
-    bg: 'bg.subtle',
-    borderRadius: 'md',
-    animation: 'pulse',
-  })
-
 export default function DetailLoading() {
   return (
     <PageLayout>
       <div className={pageStyle}>
-        <div className={breadcrumbSkeletonStyle} />
+        <Skeleton width="160px" height="16px" />
 
         <div className={contentGridStyle}>
           <div
@@ -100,15 +70,15 @@ export default function DetailLoading() {
             <div className={mainImageSkeletonStyle} />
             <div className={thumbnailRowStyle}>
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className={thumbnailSkeletonStyle} />
+                <Skeleton key={i} width="80px" height="80px" radius="sm" />
               ))}
             </div>
           </div>
 
           <div className={rightColumnStyle}>
             <div className={infoCardSkeletonStyle}>
-              <div className={lineSkeletonStyle('60%', '7')} />
-              <div className={lineSkeletonStyle('30%')} />
+              <Skeleton width="60%" height="28px" />
+              <Skeleton width="30%" height="16px" />
               <div
                 className={css({
                   display: 'flex',
@@ -118,20 +88,11 @@ export default function DetailLoading() {
                 })}
               >
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={css({
-                      h: '6',
-                      w: '16',
-                      bg: 'bg.subtle',
-                      borderRadius: 'full',
-                      animation: 'pulse',
-                    })}
-                  />
+                  <Skeleton key={i} width="64px" height="24px" radius="pill" />
                 ))}
               </div>
-              <div className={lineSkeletonStyle('100%')} />
-              <div className={lineSkeletonStyle('80%')} />
+              <Skeleton width="100%" height="16px" />
+              <Skeleton width="80%" height="16px" />
               <div
                 className={css({
                   display: 'grid',
@@ -141,15 +102,7 @@ export default function DetailLoading() {
                 })}
               >
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={css({
-                      h: '12',
-                      bg: 'bg.subtle',
-                      borderRadius: 'md',
-                      animation: 'pulse',
-                    })}
-                  />
+                  <Skeleton key={i} height="48px" />
                 ))}
               </div>
             </div>
