@@ -5,13 +5,15 @@ import { useState } from 'react'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { deletePlaceReview } from '../api/reviewApi'
 
 import type { Review } from '../types/travelDetail.types'
 
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 interface ReviewCardProps {
   review: Review
+  onDeleted?: (reviewId: number) => void
 }
 
 const cardStyle = css({
@@ -23,6 +25,10 @@ const cardStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '3',
+})
+
+const ownerCardStyle = css({
+  borderColor: 'primary',
 })
 
 const headerStyle = css({
@@ -71,23 +77,50 @@ const contentStyle = css({
   lineHeight: 'relaxed',
 })
 
-const editButtonStyle = css({
+const actionGroupStyle = css({
+  display: 'flex',
   ml: 'auto',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'pill',
+  overflow: 'hidden',
+})
+
+const editButtonStyle = css({
   px: '3',
   py: '1',
   fontSize: 'xs',
   fontWeight: 'medium',
   color: 'text.secondary',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  borderRadius: 'pill',
+  borderRightWidth: '1px',
+  borderRightColor: 'border.subtle',
   bg: 'transparent',
   cursor: 'pointer',
-  transitionProperty: 'color, border-color',
+  transitionProperty: 'color, background-color',
   transitionDuration: '150ms',
   _hover: {
     color: 'primary',
-    borderColor: 'primary',
+    bg: 'primary.soft',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+})
+
+const deleteButtonStyle = css({
+  px: '3',
+  py: '1',
+  fontSize: 'xs',
+  fontWeight: 'medium',
+  color: 'text.secondary',
+  bg: 'transparent',
+  cursor: 'pointer',
+  transitionProperty: 'color, background-color',
+  transitionDuration: '150ms',
+  _hover: {
+    color: 'warning',
+    bg: 'primary.soft',
   },
   _focusVisible: {
     outline: 'none',
@@ -108,10 +141,11 @@ function getInitials(name: string): string {
   return name.slice(0, 1).toUpperCase()
 }
 
-export default function ReviewCard({ review }: ReviewCardProps) {
+export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   const { author, createdAt, isOwner } = review
   const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
@@ -125,6 +159,15 @@ export default function ReviewCard({ review }: ReviewCardProps) {
     setIsEditOpen(true)
   }
 
+  const handleDeleteClick = () => {
+    if (!isAuthInitialized) return
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return
+    }
+    setIsDeleteOpen(true)
+  }
+
   const handleEditSubmit = (newRating: number, newContent: string) => {
     setDisplayRating(newRating)
     setDisplayContent(newContent)
@@ -132,9 +175,15 @@ export default function ReviewCard({ review }: ReviewCardProps) {
     setIsEditOpen(false)
   }
 
+  const handleDelete = async () => {
+    await deletePlaceReview(review.id)
+    setIsDeleteOpen(false)
+    onDeleted?.(review.id)
+  }
+
   return (
     <>
-      <article className={cardStyle}>
+      <article className={cx(cardStyle, isOwner && ownerCardStyle)}>
         <div className={headerStyle}>
           {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
           {author.avatarUrl ? (
@@ -166,15 +215,26 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             </div>
           </div>
           {isOwner && (
-            <button
-              type="button"
-              className={editButtonStyle}
-              onClick={handleEditClick}
-              disabled={!isAuthInitialized}
-              aria-busy={!isAuthInitialized}
-            >
-              수정
-            </button>
+            <div className={actionGroupStyle}>
+              <button
+                type="button"
+                className={editButtonStyle}
+                onClick={handleEditClick}
+                disabled={!isAuthInitialized}
+                aria-busy={!isAuthInitialized}
+              >
+                수정
+              </button>
+              <button
+                type="button"
+                className={deleteButtonStyle}
+                onClick={handleDeleteClick}
+                disabled={!isAuthInitialized}
+                aria-busy={!isAuthInitialized}
+              >
+                삭제
+              </button>
+            </div>
           )}
         </div>
         <p className={contentStyle}>{displayContent}</p>
@@ -188,6 +248,14 @@ export default function ReviewCard({ review }: ReviewCardProps) {
           initialRating={displayRating}
           initialContent={displayContent}
           onSubmit={handleEditSubmit}
+        />
+      )}
+      {isOwner && isDeleteOpen && (
+        <ReviewModal
+          isOpen={isDeleteOpen}
+          onClose={() => setIsDeleteOpen(false)}
+          mode="delete"
+          onDelete={handleDelete}
         />
       )}
       <LoginModal

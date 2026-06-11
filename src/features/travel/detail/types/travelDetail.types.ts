@@ -3,6 +3,24 @@ export type Tag = {
   tag_name: string
 }
 
+export type PlaceReviewItem = {
+  review_id: number
+  user_id: number
+  user_nickname: string
+  rating: number
+  content: string
+  image_url: string | null
+  created_at: string
+  updated_at: string
+  is_owner: boolean
+}
+
+export type PlaceReviewsResponse = {
+  count: number
+  avg_rating: number
+  results: PlaceReviewItem[]
+}
+
 export type ReviewAuthor = {
   name: string
   avatarUrl?: string
