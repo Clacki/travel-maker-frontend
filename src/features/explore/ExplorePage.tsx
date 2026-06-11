@@ -556,10 +556,89 @@ function ExploreContent() {
       <section ref={gridRef} className={css({ py: 10, px: 6 })}>
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           {isLoading ? (
-            <div className={css({ textAlign: 'center', py: 20 })}>
-              <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
-                불러오는 중...
-              </p>
+            <div
+              className={css({
+                display: 'grid',
+                gridTemplateColumns: {
+                  base: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  lg: 'repeat(3, 1fr)',
+                  xl: 'repeat(4, 1fr)',
+                },
+                gap: 6,
+              })}
+            >
+              {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                <div
+                  key={i}
+                  className={css({
+                    borderRadius: 'lg',
+                    overflow: 'hidden',
+                    bg: 'bg.surface',
+                    border: '1px solid',
+                    borderColor: 'border.subtle',
+                  })}
+                >
+                  <div
+                    className={css({
+                      w: 'full',
+                      aspectRatio: '16/10',
+                      bg: 'bg.subtle',
+                      animation: 'pulse',
+                    })}
+                  />
+                  <div
+                    className={css({
+                      p: '3',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2',
+                    })}
+                  >
+                    <div
+                      className={css({
+                        h: '5',
+                        w: '70%',
+                        bg: 'bg.subtle',
+                        borderRadius: 'md',
+                        animation: 'pulse',
+                      })}
+                    />
+                    <div className={css({ display: 'flex', gap: '1' })}>
+                      {Array.from({ length: 3 }).map((_, j) => (
+                        <div
+                          key={j}
+                          className={css({
+                            h: '5',
+                            w: '14',
+                            bg: 'bg.subtle',
+                            borderRadius: 'pill',
+                            animation: 'pulse',
+                          })}
+                        />
+                      ))}
+                    </div>
+                    <div
+                      className={css({
+                        h: '4',
+                        w: '90%',
+                        bg: 'bg.subtle',
+                        borderRadius: 'md',
+                        animation: 'pulse',
+                      })}
+                    />
+                    <div
+                      className={css({
+                        h: '4',
+                        w: '60%',
+                        bg: 'bg.subtle',
+                        borderRadius: 'md',
+                        animation: 'pulse',
+                      })}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : places.length > 0 ? (
             <>
