@@ -9,8 +9,11 @@ interface ProfileCardProps {
   isMyProfile: boolean
   canEdit?: boolean
   canManageAccount?: boolean
+  isFollowing?: boolean
+  isFollowLoading?: boolean
   onEditClick?: () => void
   onWithdrawClick?: () => void
+  onFollowToggle?: () => void
 }
 
 const cardStyle = css({
@@ -160,6 +163,49 @@ const editButtonStyle = css({
   },
 })
 
+const followButtonStyle = css({
+  position: 'absolute',
+  top: '6',
+  right: '6',
+  display: 'inline-flex',
+  alignItems: 'center',
+  px: '4',
+  py: '2',
+  borderRadius: 'pill',
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transitionProperty: 'background-color, border-color, color',
+  transitionDuration: '150ms',
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+  _disabled: {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+})
+
+const followingButtonStyle = css({
+  borderWidth: '1px',
+  borderColor: 'border',
+  bg: 'bg.surface',
+  color: 'text.secondary',
+  _hover: {
+    bg: 'bg.muted',
+  },
+})
+
+const notFollowingButtonStyle = css({
+  border: 'none',
+  bg: 'primary',
+  color: 'text.inverse',
+  _hover: {
+    bg: 'primary.hover',
+  },
+})
+
 const withdrawButtonStyle = css({
   position: 'absolute',
   bottom: '6',
@@ -191,8 +237,11 @@ export function ProfileCard({
   isMyProfile,
   canEdit = isMyProfile,
   canManageAccount = isMyProfile,
+  isFollowing = false,
+  isFollowLoading = false,
   onEditClick,
   onWithdrawClick,
+  onFollowToggle,
 }: ProfileCardProps) {
   return (
     <div className={cardStyle}>
@@ -264,6 +313,17 @@ export function ProfileCard({
           onClick={onWithdrawClick}
         >
           회원탈퇴
+        </button>
+      )}
+
+      {!isMyProfile && onFollowToggle && (
+        <button
+          type="button"
+          className={`${followButtonStyle} ${isFollowing ? followingButtonStyle : notFollowingButtonStyle}`}
+          onClick={onFollowToggle}
+          disabled={isFollowLoading}
+        >
+          {isFollowing ? '팔로잉' : '팔로우'}
         </button>
       )}
     </div>

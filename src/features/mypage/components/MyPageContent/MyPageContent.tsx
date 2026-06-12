@@ -10,6 +10,9 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
+import { isAxiosError } from 'axios'
+
+import { followUser, unfollowUser } from '../../api/followApi'
 import { normalizeTravelTypeResult } from '../../api/travelTypeResultApi'
 import { mockTravelTypeResultResponse } from '../../data/travelTypeResultMock'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
@@ -63,6 +66,11 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [localFollowerCount, setLocalFollowerCount] = useState<number | null>(
+    null
+  )
 
   const {
     bookmarkCount,
@@ -133,6 +141,35 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const displayedReviewCount =
     activeTab === 'review' || reviewCount > 0 ? reviewCount : user.review_count
 
+  const handleFollowToggle = async () => {
+    if (isFollowLoading) return
+    setIsFollowLoading(true)
+    try {
+      if (isFollowing) {
+        await unfollowUser(user.id)
+        setIsFollowing(false)
+        setLocalFollowerCount((prev) =>
+          Math.max(0, (prev ?? user.follower_count) - 1)
+        )
+      } else {
+        await followUser(user.id)
+        setIsFollowing(true)
+        setLocalFollowerCount((prev) => (prev ?? user.follower_count) + 1)
+      }
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const status = error.response?.status
+        if (status === 409) {
+          setIsFollowing(true)
+        } else if (status === 404) {
+          setIsFollowing(false)
+        }
+      }
+    } finally {
+      setIsFollowLoading(false)
+    }
+  }
+
   const handleEditProfile = () => {
     router.push(`/profile/${userId}/edit`)
   }
@@ -151,12 +188,18 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   return (
     <div className={containerStyle}>
       <ProfileCard
-        user={user}
+        user={{
+          ...user,
+          follower_count: localFollowerCount ?? user.follower_count,
+        }}
         isMyProfile={isOwner}
         canEdit={canEditProfile}
         canManageAccount={canManageAccount}
+        isFollowing={isFollowing}
+        isFollowLoading={isFollowLoading}
         onEditClick={handleEditProfile}
         onWithdrawClick={() => setIsWithdrawOpen(true)}
+        onFollowToggle={handleFollowToggle}
       />
 
       <div className={tabContentStyle}>
