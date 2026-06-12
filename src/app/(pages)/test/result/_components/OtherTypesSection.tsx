@@ -47,7 +47,6 @@ export function OtherTypesSection({ allTypes }: OtherTypesSectionProps) {
           {allTypes.map((t) => (
             <TypeCard
               key={t.typeCode}
-              icon={t.icon}
               imageSrc={t.imageSrc}
               title={t.title}
               subtitle={t.subtitle}

@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react'
+
 export type CompassAxis = {
   /** 카테고리명 — 꼭짓점 바깥 상단 표시 (예: '활동성') */
   subject: string
@@ -7,7 +9,7 @@ export type CompassAxis = {
 }
 
 export type CompassTrait = {
-  icon: string
+  icon: LucideIcon
   title: string
   description: string
 }
@@ -16,8 +18,8 @@ export type CompassData = {
   axes: CompassAxis[]
   reading: string
   traits: CompassTrait[]
-  /** 그래프 중앙 이모지 */
-  centerEmoji: string
+  /** 그래프 중앙 타입 이미지 경로 */
+  centerImageSrc: string
   /** 그래프 중앙 하단 필 라벨 */
   centerLabel: string
 }
@@ -25,7 +27,7 @@ export type CompassData = {
 export type RecommendedDestination = {
   id: string
   imageSrc?: string
-  region: string
+  region?: string
   title: string
   description: string
   hashtags: string[]
@@ -33,8 +35,7 @@ export type RecommendedDestination = {
 
 export type TravelType = {
   typeCode: string
-  icon: string
-  imageSrc?: string
+  imageSrc: string
   title: string
   subtitle: string
   description: string
@@ -50,7 +51,8 @@ export type TestResultResponse = {
   description: string
   thumbnailSrc: string
   keywords: string[]
-  matchScore: number
+  /** API에서 제공되지 않으므로 optional. 표시 시 조건부 렌더링 필요 */
+  matchScore?: number
   typeRank: number
   compassData: CompassData
   recommendedDestinations: RecommendedDestination[]

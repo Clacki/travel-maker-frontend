@@ -74,6 +74,7 @@ const descriptionStyle = css({
   fontSize: 'sm',
   color: 'text.secondary',
   lineHeight: 'normal',
+  lineClamp: '2',
 })
 
 const tagSectionStyle = css({

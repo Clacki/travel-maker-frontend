@@ -1,8 +1,9 @@
-import { isAuthenticated } from '@/lib/auth'
-
 import { ResultClientLayer } from './ResultClientLayer'
 
-export async function ResultPage() {
-  const authenticated = await isAuthenticated()
-  return <ResultClientLayer isAuthenticated={authenticated} />
+interface ResultPageProps {
+  sharedTypeKey?: string
+}
+
+export async function ResultPage({ sharedTypeKey }: ResultPageProps) {
+  return <ResultClientLayer sharedTypeKey={sharedTypeKey} />
 }
