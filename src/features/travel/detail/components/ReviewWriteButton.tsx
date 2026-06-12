@@ -12,6 +12,7 @@ import { createPlaceReview } from '../api/reviewApi'
 
 interface ReviewWriteButtonProps {
   placeId: number
+  onSuccess?: () => void
 }
 
 function getCreateReviewErrorMessage(error: unknown) {
@@ -38,7 +39,10 @@ function getCreateReviewErrorMessage(error: unknown) {
   return '리뷰 작성에 실패했습니다. 다시 시도해주세요.'
 }
 
-export default function ReviewWriteButton({ placeId }: ReviewWriteButtonProps) {
+export default function ReviewWriteButton({
+  placeId,
+  onSuccess,
+}: ReviewWriteButtonProps) {
   const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
@@ -106,6 +110,7 @@ export default function ReviewWriteButton({ placeId }: ReviewWriteButtonProps) {
         ...(image ? { image } : {}),
       })
       setIsModalOpen(false)
+      onSuccess?.()
       router.refresh()
     } catch (error) {
       const message = getCreateReviewErrorMessage(error)

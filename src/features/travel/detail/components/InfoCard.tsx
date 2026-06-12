@@ -160,11 +160,13 @@ export default function InfoCard({ detail }: InfoCardProps) {
   const isSharing = useRef(false)
 
   useEffect(() => {
-    if (!isAuthInitialized) return
+    if (!isAuthInitialized || !isLoggedIn) {
+      return
+    }
     getTravelDetail(String(id))
       .then((data) => setIsWished(data.is_bookmarked ?? false))
-      .catch(() => {})
-  }, [isAuthInitialized, id])
+      .catch((error) => console.error('찜 상태 동기화 실패', error))
+  }, [isAuthInitialized, isLoggedIn, id])
 
   const handleWishToggle = async () => {
     if (!isAuthInitialized || isWishPending) {
