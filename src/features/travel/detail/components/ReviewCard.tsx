@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { LoginModal } from '@/components/auth/LoginModal'
+import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { deleteReview } from '@/features/reviews/api/reviewsApi'
 
@@ -61,6 +63,18 @@ const authorNameStyle = css({
   fontSize: 'sm',
   fontWeight: 'semibold',
   color: 'text.primary',
+})
+
+const authorLinkStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  textDecoration: 'none',
+  _hover: {
+    '& span:last-child': {
+      textDecoration: 'underline',
+    },
+  },
 })
 
 const metaStyle = css({
@@ -185,35 +199,40 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
     <>
       <article className={cx(cardStyle, isOwner && ownerCardStyle)}>
         <div className={headerStyle}>
-          {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
-          {author.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={author.avatarUrl}
-              alt={`${author.name} 프로필`}
-              className={css({
-                width: '10',
-                height: '10',
-                borderRadius: 'pill',
-                objectFit: 'cover',
-              })}
-            />
-          ) : (
-            <div className={avatarStyle} aria-hidden="true">
-              {getInitials(author.name)}
+          <Link
+            href={ROUTES.PROFILE(String(author.id))}
+            className={authorLinkStyle}
+          >
+            {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
+            {author.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={author.avatarUrl}
+                alt={`${author.name} 프로필`}
+                className={css({
+                  width: '10',
+                  height: '10',
+                  borderRadius: 'pill',
+                  objectFit: 'cover',
+                })}
+              />
+            ) : (
+              <div className={avatarStyle} aria-hidden="true">
+                {getInitials(author.name)}
+              </div>
+            )}
+            <div className={authorInfoStyle}>
+              <span className={authorNameStyle}>{author.name}</span>
+              <div className={metaStyle}>
+                <span aria-label={`별점 ${displayRating}점`}>
+                  {'★'.repeat(displayRating)}
+                  {'☆'.repeat(5 - displayRating)}
+                </span>
+                <span aria-hidden="true">·</span>
+                <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+              </div>
             </div>
-          )}
-          <div className={authorInfoStyle}>
-            <span className={authorNameStyle}>{author.name}</span>
-            <div className={metaStyle}>
-              <span aria-label={`별점 ${displayRating}점`}>
-                {'★'.repeat(displayRating)}
-                {'☆'.repeat(5 - displayRating)}
-              </span>
-              <span aria-hidden="true">·</span>
-              <time dateTime={createdAt}>{formatDate(createdAt)}</time>
-            </div>
-          </div>
+          </Link>
           {isOwner && (
             <div className={actionGroupStyle}>
               <button

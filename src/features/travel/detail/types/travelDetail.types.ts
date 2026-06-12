@@ -22,6 +22,7 @@ export type PlaceReviewsResponse = {
 }
 
 export type ReviewAuthor = {
+  id: number
   name: string
   avatarUrl?: string
 }
