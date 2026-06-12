@@ -17,6 +17,11 @@ import { travelFilterSections } from '@/lib/filter-data'
 import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
 import { getTags } from './api/tagsApi'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
+import {
+  useProfileStore,
+  getDefaultEditableProfile,
+} from '@/store/profileStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import type { Place, GetPlacesFilterParams } from './types/places.types'
 import type { Tag } from './types/tags.types'
 import { FilterCard } from '@/components/filters/filter-card'
@@ -30,16 +35,17 @@ import { Skeleton } from '@/components/ui/Skeleton'
 
 const ITEMS_PER_PAGE = 12
 
-type SortKey = 'popular' | 'bookmarks' | 'reviews'
+type SortKey = 'popular' | 'bookmarks' | 'reviews' | 'recommended'
 
 const SORT_LABELS: Record<SortKey, string> = {
   popular: '인기순',
   bookmarks: '북마크순',
   reviews: '리뷰순',
+  recommended: '추천순',
 }
 
 const SORT_API_MAP: Record<
-  SortKey,
+  Exclude<SortKey, 'recommended'>,
   Pick<GetPlacesFilterParams, 'sort' | 'order'>
 > = {
   popular: { sort: 'rating', order: 'desc' },
@@ -191,6 +197,9 @@ function ExploreContent() {
   const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
   const categoryId = searchParams.get('category')
   const sort = (searchParams.get('sort') ?? 'popular') as SortKey
   const keyword = searchParams.get('keyword') ?? ''
@@ -210,6 +219,28 @@ function ExploreContent() {
       .then(setTags)
       .catch(() => setTags([]))
   }, [])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  useEffect(() => {
+    if (isAuthInitialized && !isLoggedIn && sort === 'recommended') {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('sort', 'popular')
+      params.set('page', '1')
+      router.push(`/explore?${params.toString()}`, { scroll: false })
+    }
+  }, [isAuthInitialized, isLoggedIn, sort, searchParams, router])
 
   const currentPage = Math.max(
     1,
@@ -295,10 +326,54 @@ function ExploreContent() {
     const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
     if (pendingTag) return
 
+    if (sort === 'recommended') {
+      if (tags === null) return
+
+      const userId = useUserProfileStore.getState().userProfile?.id
+      const profile = userId
+        ? useProfileStore
+            .getState()
+            .getProfile(userId, getDefaultEditableProfile())
+        : getDefaultEditableProfile()
+
+      const tagNameToId = new Map(tags.map((t) => [t.tag_name, t.id]))
+      const recommendTagIds = profile.tagIds
+        .map((tagId) => {
+          const tagName = FILTER_TAG_TO_TAG_NAME[tagId]
+          return tagName ? tagNameToId.get(tagName) : undefined
+        })
+        .filter((id): id is number => id !== undefined)
+
+      const recommendRequest = getPlacesFilter({
+        ...(recommendTagIds.length > 0
+          ? { tags: recommendTagIds }
+          : { sort: 'rating', order: 'desc' }),
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
+      })
+
+      recommendRequest
+        .then((data) => {
+          if (cancelled) return
+          setPlaces(data.results)
+          setTotalCount(data.count)
+          setFetchedKey(key)
+        })
+        .catch(() => {
+          if (cancelled) return
+          setPlaces([])
+          setFetchedKey(key)
+        })
+
+      return () => {
+        cancelled = true
+      }
+    }
+
     const tagIds = selectedTagIdsKey
       ? selectedTagIdsKey.split(',').map(Number)
       : []
-    const sortParams = SORT_API_MAP[sort]
+    const sortParams = SORT_API_MAP[sort as Exclude<SortKey, 'recommended'>]
     const hasTags = tagIds.length > 0
     const hasKeyword = keyword.trim().length > 0
     const hasSortOption = !!sortParams.sort
@@ -346,6 +421,7 @@ function ExploreContent() {
     keyword,
     pendingTag,
     isAuthInitialized,
+    tags,
   ])
 
   const handleFilterChange = useCallback(
@@ -392,6 +468,16 @@ function ExploreContent() {
     params.set('sort', key)
     params.set('page', '1')
     router.push(`/explore?${params.toString()}`, { scroll: false })
+  }
+
+  function handleSortSelect(key: SortKey) {
+    if (key === 'recommended' && (!isAuthInitialized || !isLoggedIn)) {
+      setIsLoginModalOpen(true)
+      setIsDropdownOpen(false)
+      return
+    }
+    setSort(key)
+    setIsDropdownOpen(false)
   }
 
   function applyFilters(newSelected: Record<string, string[]>) {
@@ -560,35 +646,95 @@ function ExploreContent() {
               {hasFilter ? '필터 적용됨 · ' : ''}
               {totalCount}개의 여행지
             </p>
-            <div className={css({ display: 'flex', gap: '6px' })}>
-              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSort(key)}
+            <div ref={dropdownRef} className={css({ position: 'relative' })}>
+              <button
+                type="button"
+                onClick={() => setIsDropdownOpen((prev) => !prev)}
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  px: '14px',
+                  py: '7px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: '1.5px solid',
+                  borderColor: 'primary',
+                  bg: 'primary',
+                  color: 'text.inverse',
+                  transitionProperty: 'opacity',
+                  transitionDuration: '150ms',
+                  _hover: { opacity: 0.88 },
+                })}
+              >
+                {SORT_LABELS[sort]}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  style={{
+                    transform: isDropdownOpen
+                      ? 'rotate(180deg)'
+                      : 'rotate(0deg)',
+                    transition: 'transform 150ms',
+                  }}
+                >
+                  <path
+                    d="M2 4L6 8L10 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+
+              {isDropdownOpen && (
+                <div
                   className={css({
-                    px: '14px',
-                    py: '7px',
+                    position: 'absolute',
+                    top: 'calc(100% + 4px)',
+                    right: 0,
+                    bg: 'bg.surface',
                     borderRadius: '8px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    border: '1.5px solid',
-                    transitionProperty: 'background-color, color, border-color',
-                    transitionDuration: '150ms',
-                    transitionTimingFunction: 'ease-in-out',
-                    borderColor: sort === key ? 'primary' : 'border',
-                    bg: sort === key ? 'primary' : 'bg.surface',
-                    color: sort === key ? 'text.inverse' : 'text.secondary',
-                    _hover:
-                      sort === key
-                        ? {}
-                        : { borderColor: 'primary', color: 'text.primary' },
+                    border: '1px solid',
+                    borderColor: 'border',
+                    boxShadow: 'md',
+                    overflow: 'hidden',
+                    zIndex: 10,
+                    minW: '120px',
                   })}
                 >
-                  {SORT_LABELS[key]}
-                </button>
-              ))}
+                  {(Object.keys(SORT_LABELS) as SortKey[])
+                    .filter((key) => key !== 'recommended' || isLoggedIn)
+                    .map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => handleSortSelect(key)}
+                        className={css({
+                          display: 'block',
+                          w: 'full',
+                          px: '14px',
+                          py: '9px',
+                          fontSize: '13px',
+                          fontWeight: sort === key ? 600 : 400,
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          bg: sort === key ? 'bg.subtle' : 'transparent',
+                          color: sort === key ? 'primary' : 'text.secondary',
+                          border: 'none',
+                          _hover: { bg: 'bg.subtle', color: 'text.primary' },
+                        })}
+                      >
+                        {SORT_LABELS[key]}
+                      </button>
+                    ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
