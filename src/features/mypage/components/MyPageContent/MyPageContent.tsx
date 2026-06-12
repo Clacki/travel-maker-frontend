@@ -10,6 +10,8 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
+import { isAxiosError } from 'axios'
+
 import { followUser, unfollowUser } from '../../api/followApi'
 import { normalizeTravelTypeResult } from '../../api/travelTypeResultApi'
 import { mockTravelTypeResultResponse } from '../../data/travelTypeResultMock'
@@ -155,7 +157,14 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         setLocalFollowerCount((prev) => (prev ?? user.follower_count) + 1)
       }
     } catch (error) {
-      console.error('팔로우 처리 실패', error)
+      if (isAxiosError(error)) {
+        const status = error.response?.status
+        if (status === 409) {
+          setIsFollowing(true)
+        } else if (status === 404) {
+          setIsFollowing(false)
+        }
+      }
     } finally {
       setIsFollowLoading(false)
     }
