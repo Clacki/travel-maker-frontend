@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, User } from 'lucide-react'
 import { css } from '@/styled-system/css'
@@ -8,8 +8,15 @@ import { Button } from '@/components/common/button'
 import { LoadingState } from '@/components/common/status'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import { checkNickname } from '@/features/mypage/api/profileApi'
+import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 import {
+  checkNickname,
+  getProfileImagePresignedUrl,
+  updateMyProfile,
+  uploadProfileImageToPresignedUrl,
+} from '@/features/mypage/api/profileApi'
+import {
+  mapProfileTagIdsToApiTagIds,
   mapProfileTagIdsToUserTags,
   PROFILE_TAG_LIMIT,
   profileInterestTags,
@@ -22,6 +29,9 @@ import {
 interface ProfileEditContentProps {
   userId: string
 }
+
+const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
 
 const containerStyle = css({
   maxW: '720px',
@@ -56,6 +66,16 @@ const avatarStyle = css({
   alignItems: 'center',
   justifyContent: 'center',
   color: 'text.secondary',
+})
+
+const avatarImageStyle = css({
+  width: 'full',
+  height: 'full',
+  objectFit: 'cover',
+})
+
+const hiddenFileInputStyle = css({
+  srOnly: true,
 })
 
 const avatarEditButtonStyle = css({
@@ -120,6 +140,24 @@ const typeTagStyle = css({
   color: 'primary',
   fontSize: 'xs',
   fontWeight: 'medium',
+})
+
+const statusTextStyle = css({
+  fontSize: 'xs',
+  color: 'text.secondary',
+  textAlign: 'center',
+})
+
+const errorTextStyle = css({
+  mt: '1',
+  fontSize: 'xs',
+  color: 'warning',
+})
+
+const successTextStyle = css({
+  mt: '1',
+  fontSize: 'xs',
+  color: 'success',
 })
 
 const sectionStyle = css({
@@ -269,9 +307,11 @@ const footerStyle = css({
 
 export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
   const userProfile = useUserProfileStore((state) => state.userProfile)
+  const setUserProfile = useUserProfileStore((state) => state.setUserProfile)
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
   const savedProfile = useProfileStore((state) =>
     state.getProfile(userId, fallbackProfile)
@@ -284,9 +324,36 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const [nicknameStatus, setNicknameStatus] = useState<
     'idle' | 'checking' | 'available' | 'unavailable' | 'error'
   >('idle')
+  const [profileImagePreviewUrl, setProfileImagePreviewUrl] = useState('')
+  const [uploadedProfileImageUrl, setUploadedProfileImageUrl] = useState<
+    string | null
+  >(null)
+  const [imageUploadStatus, setImageUploadStatus] = useState<
+    'idle' | 'uploading' | 'success' | 'error'
+  >('idle')
+  const [imageUploadError, setImageUploadError] = useState('')
+  const [submitStatus, setSubmitStatus] = useState<
+    'idle' | 'submitting' | 'error'
+  >('idle')
+  const [submitError, setSubmitError] = useState('')
 
   const savedProfileTags = mapProfileTagIdsToUserTags(savedProfile.tagIds)
   const isTagLimitReached = selectedTags.length >= PROFILE_TAG_LIMIT
+  const currentNickname = userProfile?.nickname ?? savedProfile.nickname
+  const currentProfileImageUrl =
+    profileImagePreviewUrl || userProfile?.profileImageUrl || ''
+  const nextNickname = nickname.trim() || currentNickname
+  const isNicknameChanged = nextNickname !== currentNickname
+  const isNicknameCheckRequired =
+    isNicknameChanged && nicknameStatus !== 'available'
+  const isSubmitDisabled =
+    imageUploadStatus === 'uploading' ||
+    imageUploadStatus === 'error' ||
+    submitStatus === 'submitting' ||
+    nicknameStatus === 'checking' ||
+    isNicknameCheckRequired ||
+    !nextNickname ||
+    selectedTags.length === 0
 
   useEffect(() => {
     if (!isAuthInitialized) {
@@ -323,6 +390,8 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNickname(e.target.value)
     setNicknameStatus('idle')
+    setSubmitStatus('idle')
+    setSubmitError('')
   }
 
   const handleCheckDuplicate = async () => {
@@ -338,16 +407,105 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     }
   }
 
-  const handleSave = () => {
+  const handleProfileImageSelect = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+
+    if (!file) {
+      return
+    }
+
+    setImageUploadError('')
+    setSubmitError('')
+    setSubmitStatus('idle')
+    setUploadedProfileImageUrl(null)
+
+    if (!ALLOWED_PROFILE_IMAGE_TYPES.includes(file.type)) {
+      setImageUploadStatus('error')
+      setImageUploadError('이미지는 JPG, PNG, WEBP 형식만 사용할 수 있어요.')
+      return
+    }
+
+    if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+      setImageUploadStatus('error')
+      setImageUploadError('이미지는 5MB 이하로 선택해 주세요.')
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(file)
+    setProfileImagePreviewUrl(objectUrl)
+    setImageUploadStatus('uploading')
+
+    try {
+      const presigned = await getProfileImagePresignedUrl({
+        file_name: file.name,
+      })
+
+      await uploadProfileImageToPresignedUrl({
+        file,
+        presignedUrl: presigned.presigned_url,
+        contentType: presigned.content_type || file.type,
+      })
+
+      setUploadedProfileImageUrl(presigned.img_url)
+      setProfileImagePreviewUrl(presigned.img_url)
+      setImageUploadStatus('success')
+    } catch {
+      setProfileImagePreviewUrl('')
+      setImageUploadStatus('error')
+      setImageUploadError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
+    } finally {
+      URL.revokeObjectURL(objectUrl)
+    }
+  }
+
+  const handleSave = async () => {
+    if (isSubmitDisabled) {
+      if (isNicknameCheckRequired) {
+        setSubmitError('닉네임 중복 확인을 완료해 주세요.')
+      }
+      return
+    }
+
     const nextProfile = {
-      nickname: nickname.trim() || savedProfile.nickname,
+      nickname: nextNickname,
       bio: bio.trim(),
       tagIds: selectedTags,
     }
 
-    // TODO: 프로필 수정 API 호출
-    saveProfile(userId, nextProfile)
-    router.push(`/profile/${userId}`)
+    setSubmitStatus('submitting')
+    setSubmitError('')
+
+    try {
+      const updatedProfile = await updateMyProfile({
+        nickname: nextProfile.nickname,
+        bio: nextProfile.bio,
+        tags: mapProfileTagIdsToApiTagIds(nextProfile.tagIds),
+        ...(uploadedProfileImageUrl
+          ? { profile_img_url: uploadedProfileImageUrl }
+          : {}),
+      })
+
+      saveProfile(userId, nextProfile)
+      setUserProfile({
+        id: userProfile?.id ?? userId,
+        nickname: updatedProfile.nickname,
+        email: userProfile?.email,
+        bio: updatedProfile.bio,
+        profileImageUrl: updatedProfile.profile_img_url,
+        followerCount: userProfile?.followerCount,
+        followingCount: userProfile?.followingCount,
+        bookmarkCount: userProfile?.bookmarkCount,
+        reviewCount: userProfile?.reviewCount,
+      })
+      void loadCurrentUserProfile()
+      router.push(`/profile/${userId}`)
+    } catch {
+      setSubmitStatus('error')
+      setSubmitError('프로필 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    }
   }
 
   const handleCancel = () => {
@@ -359,16 +517,40 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
       <div className={avatarSectionStyle}>
         <div className={avatarWrapStyle}>
           <div className={avatarStyle}>
-            <User className={avatarIconStyle} aria-hidden="true" />
+            {currentProfileImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={currentProfileImageUrl}
+                alt="프로필 이미지 미리보기"
+                className={avatarImageStyle}
+              />
+            ) : (
+              <User className={avatarIconStyle} aria-hidden="true" />
+            )}
           </div>
           <button
             type="button"
             className={avatarEditButtonStyle}
             aria-label="프로필 이미지 수정"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={imageUploadStatus === 'uploading'}
           >
             <Pencil size={14} aria-hidden="true" />
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept={ALLOWED_PROFILE_IMAGE_TYPES.join(',')}
+            className={hiddenFileInputStyle}
+            onChange={(e) => void handleProfileImageSelect(e)}
+          />
         </div>
+        {imageUploadStatus === 'uploading' && (
+          <p className={statusTextStyle}>이미지를 업로드하는 중입니다.</p>
+        )}
+        {imageUploadStatus === 'error' && (
+          <p className={errorTextStyle}>{imageUploadError}</p>
+        )}
         <span className={typeNameStyle}>
           {userProfile?.nickname ?? savedProfile.nickname}
         </span>
@@ -411,19 +593,13 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
               </Button>
             </div>
             {nicknameStatus === 'available' && (
-              <p
-                className={css({ mt: '1', fontSize: 'xs', color: 'green.500' })}
-              >
-                사용 가능한 닉네임입니다.
-              </p>
+              <p className={successTextStyle}>사용 가능한 닉네임입니다.</p>
             )}
             {nicknameStatus === 'unavailable' && (
-              <p className={css({ mt: '1', fontSize: 'xs', color: 'red.500' })}>
-                이미 사용 중인 닉네임입니다.
-              </p>
+              <p className={errorTextStyle}>이미 사용 중인 닉네임입니다.</p>
             )}
             {nicknameStatus === 'error' && (
-              <p className={css({ mt: '1', fontSize: 'xs', color: 'red.500' })}>
+              <p className={errorTextStyle}>
                 확인 중 오류가 발생했습니다. 다시 시도해주세요.
               </p>
             )}
@@ -475,10 +651,19 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         <Button variant="neutral" shape="pill" fullWidth onClick={handleCancel}>
           취소
         </Button>
-        <Button variant="primary" shape="pill" fullWidth onClick={handleSave}>
-          저장하기
+        <Button
+          variant="primary"
+          shape="pill"
+          fullWidth
+          onClick={() => void handleSave()}
+          disabled={isSubmitDisabled}
+        >
+          {submitStatus === 'submitting'
+            ? '프로필을 저장하는 중입니다.'
+            : '저장하기'}
         </Button>
       </div>
+      {submitError && <p className={errorTextStyle}>{submitError}</p>}
     </div>
   )
 }

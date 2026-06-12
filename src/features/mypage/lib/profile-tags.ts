@@ -31,3 +31,10 @@ export function mapProfileTagIdsToUserTags(
       name: tag.label,
     }))
 }
+
+export function mapProfileTagIdsToApiTagIds(tagIds: string[]) {
+  return normalizeTagIds(tagIds)
+    .map((tagId) => profileInterestTags.findIndex((tag) => tag.id === tagId))
+    .filter((tagIndex) => tagIndex >= 0)
+    .map((tagIndex) => tagIndex + 1)
+}
