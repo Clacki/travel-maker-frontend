@@ -24,7 +24,7 @@ export type FilterSectionData = {
 
 interface FilterCardProps {
   sections: FilterSectionData[]
-  onApply?: (selected: Record<string, string[]>) => void
+  onApply?: (selected: Record<string, string[]>, searchValue: string) => void
   onReset?: () => void
   resultCount?: number
   initialSelected?: Record<string, string[]>
@@ -259,8 +259,8 @@ export function FilterCard({
 
   const handleApply = useCallback(() => {
     setActiveSection(null)
-    onApply?.(selected)
-  }, [onApply, selected])
+    onApply?.(selected, searchValue ?? '')
+  }, [onApply, selected, searchValue])
 
   const selectedItems = useMemo(() => {
     const items: { id: string; label: string }[] = []
@@ -290,8 +290,12 @@ export function FilterCard({
       <form
         onSubmit={(e) => {
           e.preventDefault()
+          const domInput = e.currentTarget.querySelector(
+            'input'
+          ) as HTMLInputElement | null
+          const currentValue = domInput?.value ?? searchValue ?? ''
           setActiveSection(null)
-          onApply?.(selected)
+          onApply?.(selected, currentValue)
         }}
         className={css({
           display: 'flex',
