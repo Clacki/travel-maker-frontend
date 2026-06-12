@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Bookmark, Eye, MapPin } from 'lucide-react'
+import { ArrowRight, Eye, Heart, MapPin } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
 import type { TripCourse } from '../types/trip'
@@ -164,20 +164,24 @@ export function TripCourseCard({ course }: TripCourseCardProps) {
         <p className={descriptionStyle}>{course.description}</p>
 
         <div className={metaRowStyle}>
-          <span className={authorStyle}>{course.authorName}</span>
+          {course.authorName && (
+            <span className={authorStyle}>{course.authorName}</span>
+          )}
           <span className={statsStyle}>
             <span className={statStyle}>
               <MapPin size={13} aria-hidden="true" />
               장소 {course.placeCount}개
             </span>
             <span className={statStyle}>
-              <Bookmark size={13} aria-hidden="true" />
+              <Heart size={13} aria-hidden="true" />
               {course.saveCount}
             </span>
-            <span className={statStyle}>
-              <Eye size={13} aria-hidden="true" />
-              {course.viewCount}
-            </span>
+            {course.viewCount > 0 && (
+              <span className={statStyle}>
+                <Eye size={13} aria-hidden="true" />
+                {course.viewCount}
+              </span>
+            )}
           </span>
         </div>
 

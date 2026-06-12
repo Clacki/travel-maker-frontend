@@ -165,7 +165,9 @@ export function FeaturedTripCourse({ course }: FeaturedTripCourseProps) {
         <div className={contentStyle}>
           <div className={badgeRowStyle}>
             <span className={badgeStyle}>가장 많이 저장된 코스</span>
-            <span className={authorStyle}>by {course.authorName}</span>
+            {course.authorName && (
+              <span className={authorStyle}>by {course.authorName}</span>
+            )}
           </div>
 
           <h3 className={titleStyle}>{course.title}</h3>
@@ -186,13 +188,18 @@ export function FeaturedTripCourse({ course }: FeaturedTripCourseProps) {
               <Bookmark size={15} aria-hidden="true" />
               저장 {course.saveCount}
             </span>
-            <span className={metaItemStyle}>
-              <Eye size={15} aria-hidden="true" />
-              조회 {course.viewCount.toLocaleString('ko-KR')}
-            </span>
+            {course.viewCount > 0 && (
+              <span className={metaItemStyle}>
+                <Eye size={15} aria-hidden="true" />
+                조회 {course.viewCount.toLocaleString('ko-KR')}
+              </span>
+            )}
           </div>
 
-          <Link href={ROUTES.TRIP_DETAIL(String(course.id))} className={linkStyle}>
+          <Link
+            href={ROUTES.TRIP_DETAIL(String(course.id))}
+            className={linkStyle}
+          >
             코스 보러가기
             <ArrowRight size={16} aria-hidden="true" />
           </Link>

@@ -2,7 +2,10 @@ import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { TripsHeroBanner } from './components/TripsHeroBanner'
 import { FeaturedTripCourse } from './components/FeaturedTripCourse'
 import { TripsFilterSection } from './components/TripsFilterSection'
-import { tripCourses } from './data/tripCourses'
+import { getRoutes } from './api/routesApi'
+import { getRegionTags, getThemeTags } from './api/tagsApi'
+import { toTripCourse } from './types/trip'
+import type { RouteTag } from './types/trip'
 import { css } from '@/styled-system/css'
 
 const pageStyle = css({
@@ -16,16 +19,40 @@ const contentStyle = css({
   gap: { base: '8', md: '10' },
 })
 
-export function TripsListPage() {
-  const featuredCourse =
-    tripCourses.find((course) => course.isFeatured) ?? tripCourses[0]
+const PAGE_SIZE = 9
+
+export async function TripsListPage() {
+  const [routeResult, popularResult, regionTags, themeTags] = await Promise.all(
+    [
+      getRoutes({ page: 1, page_size: PAGE_SIZE, ordering: 'latest' }).catch(
+        () => ({ items: [], totalCount: 0 })
+      ),
+      getRoutes({ page: 1, page_size: 1, ordering: 'popular' }).catch(() => ({
+        items: [],
+        totalCount: 0,
+      })),
+      getRegionTags().catch((): RouteTag[] => []),
+      getThemeTags().catch((): RouteTag[] => []),
+    ]
+  )
+
+  const courses = routeResult.items.map(toTripCourse)
+  const featuredCourse = popularResult.items[0]
+    ? toTripCourse(popularResult.items[0])
+    : courses[0]
 
   return (
     <div className={pageStyle}>
       <LayoutContainer className={contentStyle}>
         <TripsHeroBanner />
-        <FeaturedTripCourse course={featuredCourse} />
-        <TripsFilterSection courses={tripCourses} />
+        {featuredCourse && <FeaturedTripCourse course={featuredCourse} />}
+        <TripsFilterSection
+          initialCourses={courses}
+          initialTotalCount={routeResult.totalCount}
+          regionTags={regionTags}
+          themeTags={themeTags}
+          pageSize={PAGE_SIZE}
+        />
       </LayoutContainer>
     </div>
   )
