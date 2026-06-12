@@ -3,11 +3,11 @@
 import type { ReviewModalMode } from '@/components/common/ReviewModal'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
+import { EmptyState, ErrorState } from '@/components/common/status'
 import {
-  EmptyState,
-  ErrorState,
-  LoadingState,
-} from '@/components/common/status'
+  CardGridSkeleton,
+  MyPageSkeleton,
+} from '@/features/mypage/components/MyPageSkeleton'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { PlaceCard } from '@/components/ui/PlaceCard'
 import { ROUTES } from '@/constants/routes'
@@ -232,12 +232,6 @@ const gridStyle = css({
   mt: '4',
 })
 
-const loadingStyle = css({
-  textAlign: 'center',
-  py: '8',
-  color: 'text.secondary',
-})
-
 export function MyPageContent({ userId }: MyPageContentProps) {
   const router = useRouter()
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
@@ -379,7 +373,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   }, [activeTab, fetchMyReviews, reviewPage])
 
   if (!isAuthInitialized) {
-    return <LoadingState />
+    return <MyPageSkeleton />
   }
 
   if (!isLoggedIn) {
@@ -594,7 +588,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
         {activeTab === 'bookmark' &&
           (isBookmarkLoading ? (
-            <p className={loadingStyle}>로딩 중...</p>
+            <CardGridSkeleton count={8} />
           ) : bookmarks.length > 0 ? (
             <>
               <div className={gridStyle}>
@@ -628,10 +622,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
         {activeTab === 'review' &&
           (isReviewLoading ? (
-            <LoadingState
-              title="리뷰를 불러오는 중이에요"
-              description="작성한 리뷰 목록을 확인하고 있어요."
-            />
+            <CardGridSkeleton count={8} />
           ) : reviewError ? (
             <ErrorState
               title="리뷰 목록을 불러오지 못했어요"
