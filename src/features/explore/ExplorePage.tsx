@@ -42,7 +42,7 @@ const SORT_API_MAP: Record<
   SortKey,
   Pick<GetPlacesFilterParams, 'sort' | 'order'>
 > = {
-  popular: {},
+  popular: { sort: 'rating', order: 'desc' },
   bookmarks: { sort: 'bookmark', order: 'desc' },
   reviews: { sort: 'review', order: 'desc' },
 }
@@ -301,7 +301,7 @@ function ExploreContent() {
     const sortParams = SORT_API_MAP[sort]
     const hasTags = tagIds.length > 0
     const hasKeyword = keyword.trim().length > 0
-    const hasSortOption = sort !== 'popular'
+    const hasSortOption = !!sortParams.sort
 
     let request: ReturnType<typeof getPlaces>
 
