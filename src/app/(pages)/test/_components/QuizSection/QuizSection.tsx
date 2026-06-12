@@ -7,7 +7,7 @@ import { preload } from 'react-dom'
 import { css } from '@/styled-system/css'
 
 import { ROUTES } from '@/constants/routes'
-import { quizQuestions, TOTAL_QUESTIONS } from '@/mocks/data/quiz-data'
+import { quizQuestions, TOTAL_QUESTIONS } from '@/features/test/data/quizData'
 import { useQuizStore } from '@/store/quizStore'
 
 import { ProgressBar } from '../ProgressBar/ProgressBar'

@@ -7,6 +7,8 @@ import type { UserProfile } from '@/types/mypage.types'
 interface ProfileCardProps {
   user: UserProfile
   isMyProfile: boolean
+  canEdit?: boolean
+  canManageAccount?: boolean
   onEditClick?: () => void
   onWithdrawClick?: () => void
 }
@@ -187,6 +189,8 @@ const withdrawButtonStyle = css({
 export function ProfileCard({
   user,
   isMyProfile,
+  canEdit = isMyProfile,
+  canManageAccount = isMyProfile,
   onEditClick,
   onWithdrawClick,
 }: ProfileCardProps) {
@@ -215,7 +219,7 @@ export function ProfileCard({
       <div className={infoStyle}>
         <div className={nameRowStyle}>
           <span className={nicknameStyle}>{user.nickname}</span>
-          {isMyProfile && (
+          {canEdit && (
             <Link href="/test" className={badgeStyle}>
               성향테스트 하기
             </Link>
@@ -246,14 +250,14 @@ export function ProfileCard({
         )}
       </div>
 
-      {isMyProfile && onEditClick && (
+      {canEdit && onEditClick && (
         <button type="button" className={editButtonStyle} onClick={onEditClick}>
           <Pencil size={14} />
           프로필 수정
         </button>
       )}
 
-      {isMyProfile && onWithdrawClick && (
+      {canManageAccount && onWithdrawClick && (
         <button
           type="button"
           className={withdrawButtonStyle}

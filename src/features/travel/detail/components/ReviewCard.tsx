@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { deletePlaceReview } from '../api/reviewApi'
+import { deleteReview } from '@/features/reviews/api/reviewsApi'
 
 import type { Review } from '../types/travelDetail.types'
 
@@ -176,7 +176,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   }
 
   const handleDelete = async () => {
-    await deletePlaceReview(review.id)
+    await deleteReview(review.id)
     setIsDeleteOpen(false)
     onDeleted?.(review.id)
   }

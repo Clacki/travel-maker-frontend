@@ -3,6 +3,7 @@ import type { PlaceReviewsResponse, Review } from '../types/travelDetail.types'
 
 const placeReviewsPath = (placeId: number) => `/places/${placeId}/reviews`
 
+// TODO: 리뷰 목록/작성 API가 여러 feature에서 재사용되면 reviews 도메인 이동 검토.
 export const getPlaceReviews = async (placeId: number): Promise<Review[]> => {
   const response = await api.get<PlaceReviewsResponse>(
     placeReviewsPath(placeId)
@@ -30,10 +31,6 @@ export type CreateReviewResponse = {
   content?: string
   image?: string | null
   created_at?: string
-}
-
-export const deletePlaceReview = async (reviewId: number): Promise<void> => {
-  await api.delete(`/reviews/${reviewId}`)
 }
 
 export const createPlaceReview = async (
