@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { Button } from '@/components/common/button'
 import { EmptyState } from '@/components/common/status/EmptyState'
@@ -51,11 +51,15 @@ export default function ReviewsSection({
 }: ReviewsSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([])
 
-  useEffect(() => {
+  const fetchReviews = useCallback(() => {
     getPlaceReviews(placeId)
       .then(setReviews)
       .catch(() => {})
   }, [placeId])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
 
   const handleDeleted = (reviewId: number) => {
     setReviews((prev) => prev.filter((r) => r.id !== reviewId))
@@ -65,7 +69,7 @@ export default function ReviewsSection({
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
         <h2 className={headingStyle}>리뷰</h2>
-        <ReviewWriteButton placeId={placeId} />
+        <ReviewWriteButton placeId={placeId} onSuccess={fetchReviews} />
       </div>
 
       {reviews.length === 0 ? (

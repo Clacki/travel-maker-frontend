@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 
 import TagList from './TagList'
@@ -8,6 +8,7 @@ import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
+import { getTravelDetail } from '../api/travelDetailApi'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -25,7 +26,7 @@ interface InfoCardProps {
     | 'address_primary'
     | 'address_detail'
     | 'info'
-    | 'is_liked'
+    | 'is_bookmarked'
   >
 }
 
@@ -110,7 +111,8 @@ const wishTrackStyle = css({
   borderWidth: '1px',
   cursor: 'pointer',
   flexShrink: '0',
-  transition: 'background-color 0.3s ease, border-color 0.3s ease',
+  transition:
+    'background-color 0.3s ease, border-color 0.3s ease, opacity 0.2s ease',
 })
 
 const wishThumbStyle = css({
@@ -148,14 +150,23 @@ export default function InfoCard({ detail }: InfoCardProps) {
     address_primary,
     address_detail,
     info,
-    is_liked,
+    is_bookmarked,
   } = detail
   const { isLoggedIn, isAuthInitialized } = useAuthStore()
   const [copied, setCopied] = useState(false)
-  const [isWished, setIsWished] = useState(is_liked ?? false)
+  const [isWished, setIsWished] = useState(is_bookmarked ?? false)
   const [isWishPending, setIsWishPending] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const isSharing = useRef(false)
+
+  useEffect(() => {
+    if (!isAuthInitialized || !isLoggedIn) {
+      return
+    }
+    getTravelDetail(String(id))
+      .then((data) => setIsWished(data.is_bookmarked ?? false))
+      .catch((error) => console.error('찜 상태 동기화 실패', error))
+  }, [isAuthInitialized, isLoggedIn, id])
 
   const handleWishToggle = async () => {
     if (!isAuthInitialized || isWishPending) {
@@ -286,6 +297,8 @@ export default function InfoCard({ detail }: InfoCardProps) {
                 borderColor: isWished
                   ? 'var(--colors-primary)'
                   : 'var(--colors-border-subtle)',
+                opacity: !isAuthInitialized ? 0.45 : 1,
+                cursor: !isAuthInitialized ? 'default' : 'pointer',
               }}
             >
               <span
