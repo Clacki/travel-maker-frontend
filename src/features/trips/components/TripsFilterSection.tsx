@@ -5,10 +5,10 @@ import { SlidersHorizontal } from 'lucide-react'
 import { EmptyState } from '@/components/common/status'
 import { FilterTag } from '@/components/common/tag'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
-import type { RouteTag, TripCourse, TripSortOption } from '../types/trip'
 import { toTripCourse } from '../types/trip'
 import { getRoutes } from '../api/routesApi'
 import { TripCourseCard } from './TripCourseCard'
+import type { RouteTag, TripCourse, TripSortOption } from '../types/trip'
 import { css } from '@/styled-system/css'
 
 const SORT_OPTIONS: { label: string; value: TripSortOption }[] = [
