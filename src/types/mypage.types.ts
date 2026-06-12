@@ -9,9 +9,15 @@ export type UserProfile = {
   following_count: number
   bookmark_count: number
   review_count: number
+  travel_type_name: string | null
   created_at: string
   updated_at: string
 }
+
+export type PublicUserProfile = Omit<
+  UserProfile,
+  'email' | 'bookmark_count' | 'review_count'
+>
 
 export type BookmarkItem = {
   place_id: number

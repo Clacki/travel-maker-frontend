@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
+import { ErrorState } from '@/components/common/status'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
@@ -58,6 +59,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const {
     user,
     isOwner,
+    isProfileLoading,
+    profileError,
     canEditProfile,
     canManageAccount,
     canManageReviews,
@@ -130,12 +133,25 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     }
   }, [isAuthInitialized, isLoggedIn, router])
 
-  if (!isAuthInitialized) {
+  if (!isAuthInitialized || isProfileLoading) {
     return <MyPageSkeleton />
   }
 
   if (!isLoggedIn) {
     return null
+  }
+
+  if (profileError === 'not_found') {
+    return <ErrorState title="존재하지 않는 유저예요" description="" />
+  }
+
+  if (profileError === 'error') {
+    return (
+      <ErrorState
+        title="프로필을 불러오지 못했어요"
+        description="잠시 후 다시 시도해주세요."
+      />
+    )
   }
 
   const displayedReviewCount =

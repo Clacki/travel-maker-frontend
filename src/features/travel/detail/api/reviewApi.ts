@@ -10,7 +10,7 @@ export const getPlaceReviews = async (placeId: number): Promise<Review[]> => {
   )
   return response.data.results.map((item) => ({
     id: item.review_id,
-    author: { name: item.user_nickname },
+    author: { id: item.user_id, name: item.user_nickname },
     rating: item.rating,
     content: item.content,
     createdAt: item.created_at,
