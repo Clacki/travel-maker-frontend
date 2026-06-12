@@ -1,4 +1,5 @@
 import api from '@/lib/api'
+import type { PublicUserProfile } from '@/types/mypage.types'
 import { isAxiosError } from 'axios'
 
 export async function checkNickname(
@@ -13,4 +14,11 @@ export async function checkNickname(
     }
     throw error
   }
+}
+
+export async function getPublicProfile(
+  userId: number
+): Promise<PublicUserProfile> {
+  const response = await api.get<PublicUserProfile>(`/users/${userId}`)
+  return response.data
 }
