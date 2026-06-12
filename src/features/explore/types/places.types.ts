@@ -12,6 +12,11 @@ export type Place = {
   rating_avg: number
   tags: PlaceTag[]
   is_bookmarked: boolean
+  // 추후 백엔드 API 확정 후 연결
+  address?: string
+  lat?: number
+  lng?: number
+  recommended_duration?: number // 분 단위
 }
 
 export type PlacesResponse = {

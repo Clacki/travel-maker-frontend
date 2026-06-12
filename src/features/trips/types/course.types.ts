@@ -45,4 +45,5 @@ export type DepartureTime = {
 
 export const MIN_PLACES = 2
 export const MAX_PLACES_PER_DAY = 5
-export const MAX_TRIP_DAYS = 5
+export const MAX_TRIP_DAYS = 3
+export const DEFAULT_STAY_MINUTES = 60

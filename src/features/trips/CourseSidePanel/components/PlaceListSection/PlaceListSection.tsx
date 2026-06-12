@@ -16,7 +16,10 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 
-import type { CoursePlace } from '@/features/trips/types/course.types'
+import {
+  DEFAULT_STAY_MINUTES,
+  type CoursePlace,
+} from '@/features/trips/types/course.types'
 import { useCourseStore } from '@/store/tripsStore'
 
 import { css } from '@/styled-system/css'
@@ -28,8 +31,6 @@ interface PlaceListSectionProps {
   onRemove: (placeId: string) => void
   onReorder: (newPlaces: CoursePlace[]) => void
 }
-
-const DEFAULT_STAY_MINUTES = 60
 
 const sectionStyle = css({
   display: 'flex',

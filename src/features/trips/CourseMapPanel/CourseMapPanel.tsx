@@ -196,6 +196,7 @@ export function CourseMapPanel({
   const isDirty = useCourseStore((s) => s.isDirty)
   const resetCourse = useCourseStore((s) => s.resetCourse)
   const addPlace = useCourseStore((s) => s.addPlace)
+  const focusLocation = useCourseStore((s) => s.focusLocation)
 
   useEffect(() => {
     isGeocodingRef.current = isGeocoding
@@ -219,6 +220,18 @@ export function CourseMapPanel({
       })
       .catch(() => {})
   }, [])
+
+  // 검색 패널에서 장소 선택 시 지도 이동
+  useEffect(() => {
+    if (!focusLocation || !mapInstanceRef.current || !window.kakao?.maps) {
+      return
+    }
+    const latlng = new window.kakao.maps.LatLng(
+      focusLocation.lat,
+      focusLocation.lng
+    )
+    mapInstanceRef.current.panTo(latlng)
+  }, [focusLocation])
 
   // ref로 최신 addPlace를 참조하여 initMap의 useCallback deps를 [] 유지
   const addPlaceRef = useRef(addPlace)
@@ -453,7 +466,10 @@ export function CourseMapPanel({
     )
   }, [selectedPlaceId, places])
 
-  const buildPayload = (region: string, from: Date): CreateTripPayload => ({
+  const buildUpdatePayload = (
+    region: string,
+    from: Date
+  ): CreateTripPayload => ({
     title,
     description,
     region,
@@ -539,7 +555,10 @@ export function CourseMapPanel({
 
     setCreateError(null)
     try {
-      await updateTrip(tripId, buildPayload(selectedRegion, dateRange.from))
+      await updateTrip(
+        tripId,
+        buildUpdatePayload(selectedRegion, dateRange.from)
+      )
       router.push(ROUTES.TRIP_DETAIL(tripId))
     } catch {
       setCreateError('코스 수정에 실패했습니다. 다시 시도해주세요.')

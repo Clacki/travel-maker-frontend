@@ -20,6 +20,7 @@ type CourseStoreState = {
   estimatedHours: number
   estimatedMinutes: number
   isDirty: boolean
+  focusLocation: { lat: number; lng: number } | null
 }
 
 type CourseStore = CourseStoreState & {
@@ -42,6 +43,7 @@ type CourseStore = CourseStoreState & {
   setSelectedPlaceId: (id: string | null) => void
   setEstimatedHours: (hours: number) => void
   setEstimatedMinutes: (minutes: number) => void
+  setFocusLocation: (location: { lat: number; lng: number } | null) => void
   initCourse: (data: Partial<Omit<CourseStoreState, 'isDirty'>>) => void
   resetCourse: () => void
 }
@@ -59,6 +61,7 @@ export const useCourseStore = create<CourseStore>((set) => ({
   estimatedHours: 0,
   estimatedMinutes: 0,
   isDirty: false,
+  focusLocation: null,
 
   setTitle: (title) => set({ title, isDirty: true }),
 
@@ -124,6 +127,8 @@ export const useCourseStore = create<CourseStore>((set) => ({
   setEstimatedMinutes: (minutes) =>
     set({ estimatedMinutes: minutes, isDirty: true }),
 
+  setFocusLocation: (location) => set({ focusLocation: location }),
+
   initCourse: (data) => set({ ...data, isDirty: false }),
 
   resetCourse: () =>
@@ -140,5 +145,6 @@ export const useCourseStore = create<CourseStore>((set) => ({
       estimatedHours: 0,
       estimatedMinutes: 0,
       isDirty: false,
+      focusLocation: null,
     }),
 }))

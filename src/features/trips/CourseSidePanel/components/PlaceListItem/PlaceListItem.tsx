@@ -1,14 +1,17 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Clock, GripVertical, Trash2 } from 'lucide-react'
 
-import type { CoursePlace } from '@/features/trips/types/course.types'
+import {
+  DEFAULT_STAY_MINUTES,
+  type CoursePlace,
+} from '@/features/trips/types/course.types'
 
 import { css, cx } from '@/styled-system/css'
-
-const DEFAULT_STAY_MINUTES = 60
 
 const STAY_OPTIONS = [30, 60, 90, 120, 150, 180] as const
 
@@ -230,12 +233,15 @@ export function PlaceListItem({
     isDragging,
   } = useSortable({ id: place.id })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 10 : undefined,
-  }
+  const style = useMemo(
+    () => ({
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+      zIndex: isDragging ? 10 : undefined,
+    }),
+    [transform, transition, isDragging]
+  )
 
   const handleClick = () => {
     if (!isDragging) {

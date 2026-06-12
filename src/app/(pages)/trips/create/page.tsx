@@ -9,6 +9,7 @@ import {
   TimelineCard,
 } from '@/features/trips/SchedulePanel/SchedulePanel'
 import CourseMapPanel from '@/features/trips/CourseMapPanel'
+import { PlaceSearchSection } from '@/features/trips/CourseMapPanel/components/PlaceSearchSection'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
 
 import { css } from '@/styled-system/css'
@@ -110,6 +111,7 @@ export default function TripsCreatePage() {
           <div className={leftStyle}>
             <CourseInfoCard />
             <ScheduleCard />
+            <PlaceSearchSection />
             <CoursePlaceCard />
             <TimelineCard />
           </div>
