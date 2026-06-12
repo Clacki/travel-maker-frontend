@@ -183,21 +183,19 @@ export function CourseMapPanel({
     Array<{ id: string; el: HTMLDivElement; tailInner: HTMLDivElement }>
   >([])
 
-  const {
-    title,
-    description,
-    selectedRegion,
-    selectedThemes,
-    selectedDay,
-    selectedPlaceId,
-    dateRange,
-    places,
-    estimatedHours,
-    estimatedMinutes,
-    isDirty,
-    resetCourse,
-    addPlace,
-  } = useCourseStore()
+  const title = useCourseStore((s) => s.title)
+  const description = useCourseStore((s) => s.description)
+  const selectedRegion = useCourseStore((s) => s.selectedRegion)
+  const selectedThemes = useCourseStore((s) => s.selectedThemes)
+  const selectedDay = useCourseStore((s) => s.selectedDay)
+  const selectedPlaceId = useCourseStore((s) => s.selectedPlaceId)
+  const dateRange = useCourseStore((s) => s.dateRange)
+  const places = useCourseStore((s) => s.places)
+  const estimatedHours = useCourseStore((s) => s.estimatedHours)
+  const estimatedMinutes = useCourseStore((s) => s.estimatedMinutes)
+  const isDirty = useCourseStore((s) => s.isDirty)
+  const resetCourse = useCourseStore((s) => s.resetCourse)
+  const addPlace = useCourseStore((s) => s.addPlace)
 
   useEffect(() => {
     isGeocodingRef.current = isGeocoding

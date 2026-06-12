@@ -6,6 +6,7 @@ export type CoursePlace = {
   lat?: number
   lng?: number
   dayIndex: number
+  category?: string
   stayMinutes?: number
   memo?: string
   transportMode?: 'walk' | 'transit' | 'car'

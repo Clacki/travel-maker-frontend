@@ -29,6 +29,8 @@ interface PlaceListSectionProps {
   onReorder: (newPlaces: CoursePlace[]) => void
 }
 
+const DEFAULT_STAY_MINUTES = 60
+
 const sectionStyle = css({
   display: 'flex',
   flexDirection: 'column',
@@ -48,6 +50,21 @@ export function PlaceListSection({
 }: PlaceListSectionProps) {
   const selectedPlaceId = useCourseStore((state) => state.selectedPlaceId)
   const setSelectedPlaceId = useCourseStore((state) => state.setSelectedPlaceId)
+  const departureTime = useCourseStore((state) => state.departureTime)
+  const updatePlaceDetail = useCourseStore((state) => state.updatePlaceDetail)
+
+  // 각 장소별 도착 예상시간(분) 계산
+  const arrivalTimes = places.reduce<number[]>((acc, place, idx) => {
+    if (idx === 0) {
+      const startMinutes = departureTime.hour * 60 + departureTime.minute
+      acc.push(startMinutes)
+    } else {
+      const prevArrival = acc[idx - 1]
+      const prevStay = places[idx - 1].stayMinutes ?? DEFAULT_STAY_MINUTES
+      acc.push(prevArrival + prevStay)
+    }
+    return acc
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -86,8 +103,10 @@ export function PlaceListSection({
                 index={idx + 1}
                 place={place}
                 isSelected={place.id === selectedPlaceId}
+                arrivalTimeMinutes={arrivalTimes[idx] ?? 0}
                 onRemove={onRemove}
                 onSelect={setSelectedPlaceId}
+                onUpdate={(patch) => updatePlaceDetail(place.id, patch)}
               />
             ))}
           </div>
