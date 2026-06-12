@@ -26,6 +26,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 const ITEMS_PER_PAGE = 12
 
@@ -114,6 +115,47 @@ const FILTER_TAG_TO_TAG_NAME: Record<string, string> = {
   parking: '주차',
   pet: '반려동물',
   free: '무료',
+}
+
+const placeCardSkeletonStyle = css({
+  borderRadius: 'lg',
+  overflow: 'hidden',
+  bg: 'bg.surface',
+  borderWidth: '1px',
+  borderStyle: 'solid',
+  borderColor: 'border.subtle',
+})
+
+const skeletonImageStyle = css({
+  w: 'full',
+  aspectRatio: '16/10',
+  bg: 'bg.subtle',
+  animation: 'pulse',
+})
+
+const skeletonBodyStyle = css({
+  p: '3',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+})
+
+function PlaceCardSkeleton() {
+  return (
+    <div className={placeCardSkeletonStyle}>
+      <div className={skeletonImageStyle} />
+      <div className={skeletonBodyStyle}>
+        <Skeleton width="70%" height="20px" />
+        <div className={css({ display: 'flex', gap: '1' })}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} width="56px" height="20px" radius="pill" />
+          ))}
+        </div>
+        <Skeleton width="90%" height="16px" />
+        <Skeleton width="60%" height="16px" />
+      </div>
+    </div>
+  )
 }
 
 function parseParams(
@@ -556,10 +598,21 @@ function ExploreContent() {
       <section ref={gridRef} className={css({ py: 10, px: 6 })}>
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           {isLoading ? (
-            <div className={css({ textAlign: 'center', py: 20 })}>
-              <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
-                불러오는 중...
-              </p>
+            <div
+              className={css({
+                display: 'grid',
+                gridTemplateColumns: {
+                  base: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  lg: 'repeat(3, 1fr)',
+                  xl: 'repeat(4, 1fr)',
+                },
+                gap: 6,
+              })}
+            >
+              {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
+                <PlaceCardSkeleton key={i} />
+              ))}
             </div>
           ) : places.length > 0 ? (
             <>
