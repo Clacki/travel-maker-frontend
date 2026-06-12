@@ -211,8 +211,15 @@ function ExploreContent() {
   const [places, setPlaces] = useState<Place[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [fetchedKey, setFetchedKey] = useState<string | null>(null)
+  const [prevKeyword, setPrevKeyword] = useState(keyword)
   const [searchInput, setSearchInput] = useState(keyword)
   const gridRef = useRef<HTMLElement>(null)
+
+  // URL keyword 변경 시(뒤로가기 포함) searchInput 동기화 — React 공식 getDerivedState 패턴
+  if (prevKeyword !== keyword) {
+    setPrevKeyword(keyword)
+    setSearchInput(keyword)
+  }
 
   useEffect(() => {
     getTags()
@@ -480,7 +487,10 @@ function ExploreContent() {
     setIsDropdownOpen(false)
   }
 
-  function applyFilters(newSelected: Record<string, string[]>) {
+  function applyFilters(
+    newSelected: Record<string, string[]>,
+    searchValue?: string
+  ) {
     const params = new URLSearchParams()
 
     const styleValues = newSelected.style ?? []
@@ -497,14 +507,14 @@ function ExploreContent() {
     if (searchParams.get('sort')) {
       params.set('sort', searchParams.get('sort')!)
     }
-    const trimmedInput = searchInput.trim()
-    if (trimmedInput) {
-      params.set('keyword', trimmedInput)
-    }
     for (const [key, values] of Object.entries(newSelected)) {
-      if (values.length > 0) {
+      if (values.length > 0 && key !== 'keyword' && key !== 'page') {
         params.set(key, values.join(','))
       }
+    }
+    const trimmedInput = (searchValue ?? searchInput).trim()
+    if (trimmedInput) {
+      params.set('keyword', trimmedInput)
     }
     params.set('page', '1')
     router.push(`/explore?${params.toString()}`, { scroll: false })
