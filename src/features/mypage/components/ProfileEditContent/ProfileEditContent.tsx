@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, User } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { css } from '@/styled-system/css'
 import { Button } from '@/components/common/button'
 import { LoadingState } from '@/components/common/status'
@@ -32,6 +33,24 @@ interface ProfileEditContentProps {
 
 const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
+
+type ApiErrorDetailResponse = {
+  error_detail?: Record<string, string[] | string>
+}
+
+function getNicknameErrorMessage(error: unknown) {
+  if (!isAxiosError<ApiErrorDetailResponse>(error)) {
+    return null
+  }
+
+  const nicknameError = error.response?.data?.error_detail?.nickname
+
+  if (Array.isArray(nicknameError)) {
+    return nicknameError[0] ?? null
+  }
+
+  return nicknameError ?? null
+}
 
 const containerStyle = css({
   maxW: '720px',
@@ -324,12 +343,12 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const [nicknameStatus, setNicknameStatus] = useState<
     'idle' | 'checking' | 'available' | 'unavailable' | 'error'
   >('idle')
+  const [nicknameError, setNicknameError] = useState('')
+  const [selectedProfileImageFile, setSelectedProfileImageFile] =
+    useState<File | null>(null)
   const [profileImagePreviewUrl, setProfileImagePreviewUrl] = useState('')
-  const [uploadedProfileImageUrl, setUploadedProfileImageUrl] = useState<
-    string | null
-  >(null)
   const [imageUploadStatus, setImageUploadStatus] = useState<
-    'idle' | 'uploading' | 'success' | 'error'
+    'idle' | 'selected' | 'uploading' | 'success' | 'error'
   >('idle')
   const [imageUploadError, setImageUploadError] = useState('')
   const [submitStatus, setSubmitStatus] = useState<
@@ -348,7 +367,6 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     isNicknameChanged && nicknameStatus !== 'available'
   const isSubmitDisabled =
     imageUploadStatus === 'uploading' ||
-    imageUploadStatus === 'error' ||
     submitStatus === 'submitting' ||
     nicknameStatus === 'checking' ||
     isNicknameCheckRequired ||
@@ -364,6 +382,14 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
       router.replace('/?showLogin=true')
     }
   }, [isAuthInitialized, isLoggedIn, router])
+
+  useEffect(() => {
+    return () => {
+      if (profileImagePreviewUrl) {
+        URL.revokeObjectURL(profileImagePreviewUrl)
+      }
+    }
+  }, [profileImagePreviewUrl])
 
   if (!isAuthInitialized) {
     return <LoadingState />
@@ -390,6 +416,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNickname(e.target.value)
     setNicknameStatus('idle')
+    setNicknameError('')
     setSubmitStatus('idle')
     setSubmitError('')
   }
@@ -399,11 +426,16 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     if (!trimmed) return
 
     setNicknameStatus('checking')
+    setNicknameError('')
     try {
       const { available } = await checkNickname(trimmed)
       setNicknameStatus(available ? 'available' : 'unavailable')
-    } catch {
+    } catch (error) {
       setNicknameStatus('error')
+      setNicknameError(
+        getNicknameErrorMessage(error) ??
+          '확인 중 오류가 발생했습니다. 다시 시도해주세요.'
+      )
     }
   }
 
@@ -420,7 +452,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     setImageUploadError('')
     setSubmitError('')
     setSubmitStatus('idle')
-    setUploadedProfileImageUrl(null)
+    setSelectedProfileImageFile(null)
 
     if (!ALLOWED_PROFILE_IMAGE_TYPES.includes(file.type)) {
       setImageUploadStatus('error')
@@ -435,30 +467,9 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     }
 
     const objectUrl = URL.createObjectURL(file)
+    setSelectedProfileImageFile(file)
     setProfileImagePreviewUrl(objectUrl)
-    setImageUploadStatus('uploading')
-
-    try {
-      const presigned = await getProfileImagePresignedUrl({
-        file_name: file.name,
-      })
-
-      await uploadProfileImageToPresignedUrl({
-        file,
-        presignedUrl: presigned.presigned_url,
-        contentType: presigned.content_type || file.type,
-      })
-
-      setUploadedProfileImageUrl(presigned.img_url)
-      setProfileImagePreviewUrl(presigned.img_url)
-      setImageUploadStatus('success')
-    } catch {
-      setProfileImagePreviewUrl('')
-      setImageUploadStatus('error')
-      setImageUploadError('이미지 업로드에 실패했습니다. 다시 시도해 주세요.')
-    } finally {
-      URL.revokeObjectURL(objectUrl)
-    }
+    setImageUploadStatus('selected')
   }
 
   const handleSave = async () => {
@@ -477,16 +488,63 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
 
     setSubmitStatus('submitting')
     setSubmitError('')
+    setImageUploadError('')
+    setNicknameError('')
 
     try {
+      let nextProfileImageUrl = userProfile?.profileImageUrl ?? undefined
+
+      if (selectedProfileImageFile) {
+        setImageUploadStatus('uploading')
+
+        let presigned
+
+        try {
+          presigned = await getProfileImagePresignedUrl({
+            file_name: selectedProfileImageFile.name,
+          })
+        } catch {
+          setImageUploadStatus('error')
+          setImageUploadError(
+            '프로필 이미지 업로드 URL을 발급받지 못했습니다. 다시 시도해 주세요.'
+          )
+          setSubmitStatus('error')
+          return
+        }
+
+        try {
+          await uploadProfileImageToPresignedUrl({
+            file: selectedProfileImageFile,
+            presignedUrl: presigned.presigned_url,
+            contentType:
+              presigned.content_type || selectedProfileImageFile.type,
+          })
+        } catch {
+          setImageUploadStatus('error')
+          setImageUploadError(
+            '프로필 이미지 업로드에 실패했습니다. 다시 시도해 주세요.'
+          )
+          setSubmitStatus('error')
+          return
+        }
+
+        nextProfileImageUrl = presigned.img_url
+        setImageUploadStatus('success')
+      }
+
       const updatedProfile = await updateMyProfile({
         nickname: nextProfile.nickname,
         bio: nextProfile.bio,
         tags: mapProfileTagIdsToApiTagIds(nextProfile.tagIds),
-        ...(uploadedProfileImageUrl
-          ? { profile_img_url: uploadedProfileImageUrl }
+        ...(nextProfileImageUrl
+          ? { profile_image_url: nextProfileImageUrl }
           : {}),
       })
+      const updatedProfileImageUrl =
+        updatedProfile.profile_image_url ??
+        updatedProfile.profile_img_url ??
+        nextProfileImageUrl ??
+        null
 
       saveProfile(userId, nextProfile)
       setUserProfile({
@@ -494,7 +552,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         nickname: updatedProfile.nickname,
         email: userProfile?.email,
         bio: updatedProfile.bio,
-        profileImageUrl: updatedProfile.profile_img_url,
+        profileImageUrl: updatedProfileImageUrl,
         followerCount: userProfile?.followerCount,
         followingCount: userProfile?.followingCount,
         bookmarkCount: userProfile?.bookmarkCount,
@@ -502,7 +560,16 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
       })
       void loadCurrentUserProfile()
       router.push(`/profile/${userId}`)
-    } catch {
+    } catch (error) {
+      const nicknameErrorMessage = getNicknameErrorMessage(error)
+
+      if (nicknameErrorMessage) {
+        setNicknameStatus('error')
+        setNicknameError(nicknameErrorMessage)
+        setSubmitStatus('error')
+        return
+      }
+
       setSubmitStatus('error')
       setSubmitError('프로필 수정에 실패했습니다. 잠시 후 다시 시도해 주세요.')
     }
@@ -533,7 +600,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
             className={avatarEditButtonStyle}
             aria-label="프로필 이미지 수정"
             onClick={() => fileInputRef.current?.click()}
-            disabled={imageUploadStatus === 'uploading'}
+            disabled={submitStatus === 'submitting'}
           >
             <Pencil size={14} aria-hidden="true" />
           </button>
@@ -547,6 +614,11 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         </div>
         {imageUploadStatus === 'uploading' && (
           <p className={statusTextStyle}>이미지를 업로드하는 중입니다.</p>
+        )}
+        {imageUploadStatus === 'selected' && (
+          <p className={statusTextStyle}>
+            저장하면 선택한 이미지가 반영됩니다.
+          </p>
         )}
         {imageUploadStatus === 'error' && (
           <p className={errorTextStyle}>{imageUploadError}</p>
@@ -600,7 +672,8 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
             )}
             {nicknameStatus === 'error' && (
               <p className={errorTextStyle}>
-                확인 중 오류가 발생했습니다. 다시 시도해주세요.
+                {nicknameError ||
+                  '확인 중 오류가 발생했습니다. 다시 시도해주세요.'}
               </p>
             )}
           </div>
