@@ -5,12 +5,18 @@ import type { BookmarkResponseItem } from '../types/mypage'
 
 const BOOKMARK_PAGE_SIZE = 8
 
-export function useMyBookmarks() {
+interface UseMyBookmarksOptions {
+  enabled?: boolean
+}
+
+export function useMyBookmarks({ enabled = true }: UseMyBookmarksOptions = {}) {
   const [bookmarks, setBookmarks] = useState<BookmarkResponseItem[]>([])
   const [bookmarkPage, setBookmarkPage] = useState(1)
-  const [isBookmarkLoading, setIsBookmarkLoading] = useState(true)
+  const [isBookmarkLoading, setIsBookmarkLoading] = useState(enabled)
 
   useEffect(() => {
+    if (!enabled) return
+
     let cancelled = false
 
     getBookmarks()
@@ -30,7 +36,7 @@ export function useMyBookmarks() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [enabled])
 
   const handleLikeToggle = useCallback(async (placeId: number) => {
     try {

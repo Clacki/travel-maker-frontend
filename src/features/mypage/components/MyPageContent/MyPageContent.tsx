@@ -83,7 +83,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     paginatedBookmarks,
     setBookmarkPage,
     handleLikeToggle,
-  } = useMyBookmarks()
+  } = useMyBookmarks({ enabled: canManageBookmarks && isAuthInitialized })
 
   const {
     reviews,
