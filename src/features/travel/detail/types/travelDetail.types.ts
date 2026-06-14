@@ -33,6 +33,7 @@ export type Review = {
   rating: number
   createdAt: string
   content: string
+  imageUrl: string | null
   isOwner?: boolean
 }
 

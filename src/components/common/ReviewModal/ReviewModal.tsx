@@ -9,6 +9,13 @@ import { useEffect, useId, useRef, useState } from 'react'
 
 export type ReviewModalMode = 'create' | 'edit' | 'delete'
 
+export type ReviewSubmitPayload = {
+  rating: number
+  content: string
+  imageUrl?: string
+  imageFile?: File
+}
+
 export interface ReviewModalProps {
   isOpen: boolean
   onClose: () => void
@@ -19,7 +26,7 @@ export interface ReviewModalProps {
   initialCreatedAt?: string
   isSubmitting?: boolean
   errorMessage?: string | null
-  onSubmit?: (rating: number, content: string, image?: string) => void
+  onSubmit?: (payload: ReviewSubmitPayload) => void
   onDelete?: () => void
 }
 
@@ -365,6 +372,7 @@ export function ReviewModal({
   const [previewSrc, setPreviewSrc] = useState<string | null>(
     mode === 'edit' ? initialImageSrc : null
   )
+  const [imageFile, setImageFile] = useState<File | undefined>(undefined)
   const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -402,11 +410,11 @@ export function ReviewModal({
       return
     }
 
-    const image =
+    const imageUrl =
       previewSrc && !previewSrc.startsWith('blob:') ? previewSrc : undefined
 
     setValidationError(null)
-    onSubmit?.(rating, trimmedContent, image)
+    onSubmit?.({ rating, content: trimmedContent, imageUrl, imageFile })
   }
 
   const handleDelete = () => {
@@ -430,6 +438,7 @@ export function ReviewModal({
 
     const objectUrl = URL.createObjectURL(file)
     fileObjectUrlRef.current = objectUrl
+    setImageFile(file)
     setPreviewSrc(objectUrl)
   }
 
@@ -439,6 +448,7 @@ export function ReviewModal({
       fileObjectUrlRef.current = null
     }
 
+    setImageFile(undefined)
     setPreviewSrc(null)
   }
 

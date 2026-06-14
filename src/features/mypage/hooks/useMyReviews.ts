@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { isAxiosError } from 'axios'
 
+import type { ReviewSubmitPayload } from '@/components/common/ReviewModal'
 import {
   deleteReview,
   updateReview,
+  uploadReviewImage,
   type UpdateReviewRequest,
 } from '@/features/reviews/api/reviewsApi'
 
@@ -54,7 +56,7 @@ function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
     placeName: review.place_name,
     rating: review.rating,
     content: review.content,
-    imageUrl: null,
+    imageUrl: review.image_url ?? null,
     createdAt: review.created_at,
     updatedAt: review.updated_at,
   }
@@ -236,7 +238,7 @@ export function useMyReviews({
   }, [isReviewDeleting, isReviewSubmitting])
 
   const handleReviewSubmit = useCallback(
-    async (rating: number, content: string, imageUrl?: string) => {
+    async ({ rating, content, imageUrl, imageFile }: ReviewSubmitPayload) => {
       if (!canManage) {
         return
       }
@@ -272,6 +274,19 @@ export function useMyReviews({
       setReviewSubmitError(null)
 
       try {
+        if (imageFile) {
+          try {
+            body.image_url = await uploadReviewImage(imageFile)
+          } catch (error) {
+            setReviewSubmitError(
+              isAxiosError(error)
+                ? '이미지 업로드 URL 발급에 실패했습니다.'
+                : '이미지 업로드에 실패했습니다.'
+            )
+            return
+          }
+        }
+
         await updateReview(reviewId, body)
         setReviewModal((prev) => ({ ...prev, isOpen: false }))
         await fetchMyReviews(reviewPage)
