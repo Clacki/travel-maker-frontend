@@ -83,7 +83,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     paginatedBookmarks,
     setBookmarkPage,
     handleLikeToggle,
-  } = useMyBookmarks({ enabled: canManageBookmarks && isAuthInitialized })
+  } = useMyBookmarks()
 
   const {
     reviews,
@@ -105,7 +105,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     handleReviewSubmit,
     handleReviewDeleteConfirm,
   } = useMyReviews({
-    enabled: activeTab === 'review',
+    enabled: isOwner ? activeTab === 'review' : isAuthInitialized && isLoggedIn,
     canManage: canManageReviews,
     isAuthInitialized,
     isLoggedIn,

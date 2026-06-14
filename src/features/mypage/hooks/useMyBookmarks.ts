@@ -1,21 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+
 import { deleteBookmark, getBookmarks } from '../api/bookmarkApi'
 import type { BookmarkResponseItem } from '../types/mypage'
 
 const BOOKMARK_PAGE_SIZE = 8
 
-interface UseMyBookmarksOptions {
-  enabled?: boolean
-}
+export function useMyBookmarks() {
+  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
 
-export function useMyBookmarks({ enabled = true }: UseMyBookmarksOptions = {}) {
   const [bookmarks, setBookmarks] = useState<BookmarkResponseItem[]>([])
   const [bookmarkPage, setBookmarkPage] = useState(1)
-  const [isBookmarkLoading, setIsBookmarkLoading] = useState(enabled)
+  const [bookmarksFetched, setBookmarksFetched] = useState(false)
+
+  const isBookmarkLoading = isAuthInitialized && isLoggedIn && !bookmarksFetched
 
   useEffect(() => {
-    if (!enabled) return
+    if (!isAuthInitialized || !isLoggedIn) return
 
     let cancelled = false
 
@@ -23,20 +26,20 @@ export function useMyBookmarks({ enabled = true }: UseMyBookmarksOptions = {}) {
       .then((data) => {
         if (!cancelled) {
           setBookmarks(data as unknown as BookmarkResponseItem[])
-          setIsBookmarkLoading(false)
+          setBookmarksFetched(true)
         }
       })
       .catch((error) => {
         console.error('Failed to load bookmarks', error)
         if (!cancelled) {
-          setIsBookmarkLoading(false)
+          setBookmarksFetched(true)
         }
       })
 
     return () => {
       cancelled = true
     }
-  }, [enabled])
+  }, [isAuthInitialized, isLoggedIn])
 
   const handleLikeToggle = useCallback(async (placeId: number) => {
     try {
