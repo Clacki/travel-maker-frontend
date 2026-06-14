@@ -9,6 +9,7 @@ import {
 
 import {
   getMyReviews,
+  getPublicUserReviews,
   type MyReviewItem,
   type MyReviewsResponse,
 } from '../api/myReviewsApi'
@@ -88,6 +89,7 @@ interface UseMyReviewsOptions {
   canManage: boolean
   isAuthInitialized: boolean
   isLoggedIn: boolean
+  targetUserId?: number
 }
 
 export function useMyReviews({
@@ -95,6 +97,7 @@ export function useMyReviews({
   canManage,
   isAuthInitialized,
   isLoggedIn,
+  targetUserId,
 }: UseMyReviewsOptions) {
   const [reviewPage, setReviewPage] = useState(1)
   const [reviews, setReviews] = useState<MyReviewCardItem[]>([])
@@ -121,15 +124,19 @@ export function useMyReviews({
         return
       }
 
-      // TODO: 다른 유저 마이페이지 조회 API 연결 시 owner 여부에 따라 조회 소스 분리.
       setIsReviewLoading(true)
       setReviewError(null)
 
       try {
-        const response = await getMyReviews({
-          page,
-          pageSize: REVIEW_PAGE_SIZE,
-        })
+        const response = targetUserId
+          ? await getPublicUserReviews(targetUserId, {
+              page,
+              pageSize: REVIEW_PAGE_SIZE,
+            })
+          : await getMyReviews({
+              page,
+              pageSize: REVIEW_PAGE_SIZE,
+            })
         const normalized = normalizeMyReviewsResponse(response)
 
         setReviews(normalized.results.map(mapMyReviewToCard))
@@ -146,7 +153,7 @@ export function useMyReviews({
         setIsReviewLoading(false)
       }
     },
-    [isAuthInitialized, isLoggedIn]
+    [isAuthInitialized, isLoggedIn, targetUserId]
   )
 
   useEffect(() => {

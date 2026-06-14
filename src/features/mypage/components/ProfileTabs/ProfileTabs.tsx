@@ -102,6 +102,12 @@ export function ProfileTabs({
           count: bookmarkCount,
           icon: <Heart size={16} />,
         },
+        {
+          id: 'review' as TabType,
+          label: '리뷰',
+          count: reviewCount,
+          icon: <FileText size={16} />,
+        },
       ]
 
   return (

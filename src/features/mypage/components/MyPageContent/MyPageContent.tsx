@@ -109,6 +109,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     canManage: canManageReviews,
     isAuthInitialized,
     isLoggedIn,
+    targetUserId: isOwner ? undefined : user.id,
   })
 
   const normalizedTravelTypeResult = useMemo(
