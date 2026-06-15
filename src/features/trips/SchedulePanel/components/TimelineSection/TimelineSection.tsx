@@ -8,33 +8,38 @@ import type { CoursePlace } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 
-const sectionStyle = css({
+const listStyle = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '0',
-  mt: '6',
 })
 
-const sectionTitleStyle = css({
-  fontSize: 'md',
-  fontWeight: 'semibold',
-  color: 'text.primary',
-  mb: '4',
-})
-
-const timelineItemStyle = css({
+const rowStyle = css({
   display: 'flex',
   gap: '3',
-  position: 'relative',
+  alignItems: 'flex-start',
 })
 
 const timeColumnStyle = css({
-  w: '14',
+  w: '16',
   flexShrink: 0,
-  textAlign: 'right',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  pt: '2',
+  gap: '0.5',
+})
+
+const timePeriodStyle = css({
   fontSize: 'xs',
   color: 'text.secondary',
-  pt: '1',
+  lineHeight: '1',
+})
+
+const timeValueStyle = css({
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  color: 'text.primary',
+  lineHeight: '1',
 })
 
 const dotLineStyle = css({
@@ -42,36 +47,37 @@ const dotLineStyle = css({
   flexDirection: 'column',
   alignItems: 'center',
   flexShrink: 0,
+  pt: '2',
 })
 
 const dotStyle = css({
-  w: '3',
-  h: '3',
+  w: '2.5',
+  h: '2.5',
   borderRadius: 'pill',
   bg: 'primary',
   flexShrink: 0,
-  mt: '1.5',
+  ring: '2',
+  ringColor: 'primary.soft',
 })
 
 const lineStyle = css({
   w: '0.5',
   flex: 1,
+  minH: '4',
   bg: 'border.subtle',
-  my: '1',
+  mt: '1',
 })
 
-const cardStyle = css({
+const placeCardStyle = css({
   flex: 1,
   p: '3',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  borderRadius: 'sm',
-  bg: 'bg.surface',
-  mb: '2',
+  borderRadius: 'lg',
+  bg: 'bg.muted',
+  mb: '1',
 })
 
 const placeNameStyle = css({
-  fontWeight: 'medium',
+  fontWeight: 'semibold',
   fontSize: 'sm',
   color: 'text.primary',
 })
@@ -80,25 +86,52 @@ const placeAddressStyle = css({
   fontSize: 'xs',
   color: 'text.secondary',
   mt: '0.5',
+  truncate: true,
 })
 
-const stayStyle = css({
+const tagsRowStyle = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '1',
-  fontSize: 'xs',
-  color: 'text.secondary',
-  mt: '1',
+  gap: '1.5',
+  mt: '2',
+  flexWrap: 'wrap',
 })
 
-const transportStyle = css({
+const categoryChipStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  px: '1.5',
+  py: '0.5',
+  borderRadius: 'xs',
+  bg: 'bg.surface',
+  color: 'text.secondary',
+  fontSize: 'xs',
+  lineHeight: '1',
+  whiteSpace: 'nowrap',
+})
+
+const stayChipStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  px: '1.5',
+  py: '0.5',
+  borderRadius: 'xs',
+  bg: 'primary.soft',
+  color: 'primary',
+  fontSize: 'xs',
+  lineHeight: '1',
+  whiteSpace: 'nowrap',
+})
+
+const connectorStyle = css({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
-  gap: '1',
-  fontSize: 'xs',
-  color: 'text.secondary',
+  gap: '1.5',
+  pl: '19',
   py: '1',
+  fontSize: 'xs',
+  color: 'text.secondary',
 })
 
 const emptyStyle = css({
@@ -108,24 +141,42 @@ const emptyStyle = css({
   fontSize: 'sm',
 })
 
-function formatTime(totalMinutes: number): string {
-  const hours = Math.floor(totalMinutes / 60) % 24
-  const minutes = totalMinutes % 60
-  const period = hours < 12 ? '오전' : '오후'
-  const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours
-  return `${period} ${displayHour}:${String(minutes).padStart(2, '0')}`
+function formatTimeParts(totalMinutes: number): {
+  period: string
+  time: string
+} {
+  const h = Math.floor(totalMinutes / 60) % 24
+  const m = totalMinutes % 60
+  const period = h < 12 ? '오전' : '오후'
+  const displayH = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return { period, time: `${displayH}:${String(m).padStart(2, '0')}` }
+}
+
+function formatDuration(minutes: number): string {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  if (h === 0) {
+    return `${m}분`
+  }
+  if (m === 0) {
+    return `${h}시간`
+  }
+  return `${h}시간 ${m}분`
+}
+
+function formatCategory(category: string): string {
+  const parts = category.split(' > ')
+  return parts[parts.length - 1]
 }
 
 function getTransportIcon(mode?: CoursePlace['transportMode']) {
   switch (mode) {
     case 'walk':
-      return <Footprints size={12} />
+      return <Footprints size={11} />
     case 'transit':
-      return <Bus size={12} />
-    case 'car':
-      return <Car size={12} />
+      return <Bus size={11} />
     default:
-      return <Car size={12} />
+      return <Car size={11} />
   }
 }
 
@@ -135,8 +186,6 @@ function getTransportLabel(mode?: CoursePlace['transportMode']) {
       return '도보'
     case 'transit':
       return '대중교통'
-    case 'car':
-      return '자동차'
     default:
       return '자동차'
   }
@@ -149,9 +198,14 @@ type TimelineItem = CoursePlace & {
 }
 
 export function TimelineSection() {
-  const { places, selectedDay, departureTime } = useCourseStore()
+  const places = useCourseStore((s) => s.places)
+  const selectedDay = useCourseStore((s) => s.selectedDay)
+  const departureTime = useCourseStore((s) => s.departureTime)
 
-  const dayPlaces = places.filter((p) => p.dayIndex === selectedDay)
+  const dayPlaces = useMemo(
+    () => places.filter((p) => p.dayIndex === selectedDay),
+    [places, selectedDay]
+  )
 
   const departureMinutes =
     (departureTime.period === 'pm' && departureTime.hour !== 12
@@ -164,17 +218,17 @@ export function TimelineSection() {
 
   const timelineItems = useMemo(() => {
     return dayPlaces.reduce<TimelineItem[]>((acc, place, idx) => {
-      const prevMinutes =
+      const prev = acc[acc.length - 1]
+      const prevArrival =
         acc.length === 0
           ? departureMinutes
-          : acc[acc.length - 1].arrivalTime + acc[acc.length - 1].stayMinutes
-      const stayMinutes = place.stayMinutes ?? 60
+          : prev.arrivalTime + prev.stayMinutes + (prev.travelMinutes ?? 0)
       return [
         ...acc,
         {
           ...place,
-          arrivalTime: prevMinutes,
-          stayMinutes,
+          arrivalTime: prevArrival,
+          stayMinutes: place.stayMinutes ?? 60,
           isLast: idx === dayPlaces.length - 1,
         },
       ]
@@ -182,44 +236,59 @@ export function TimelineSection() {
   }, [dayPlaces, departureMinutes])
 
   if (dayPlaces.length === 0) {
-    return (
-      <div className={sectionStyle}>
-        <h3 className={sectionTitleStyle}>{selectedDay}일차 타임라인</h3>
-        <p className={emptyStyle}>이 일차에 추가된 장소가 없어요</p>
-      </div>
-    )
+    return <p className={emptyStyle}>이 일차에 추가된 장소가 없어요</p>
   }
 
   return (
-    <div className={sectionStyle}>
-      <h3 className={sectionTitleStyle}>{selectedDay}일차 타임라인</h3>
-      {timelineItems.map((place) => (
-        <div key={place.id}>
-          <div className={timelineItemStyle}>
-            <div className={timeColumnStyle}>
-              {formatTime(place.arrivalTime)}
-            </div>
-            <div className={dotLineStyle}>
-              <div className={dotStyle} />
-              {!place.isLast && <div className={lineStyle} />}
-            </div>
-            <div className={cardStyle}>
-              <p className={placeNameStyle}>{place.name}</p>
-              <p className={placeAddressStyle}>{place.address}</p>
-              <div className={stayStyle}>
-                <Clock size={12} />
-                <span>{place.stayMinutes ?? 60}분 머무르기</span>
+    <div className={listStyle}>
+      {timelineItems.map((place) => {
+        const { period, time } = formatTimeParts(place.arrivalTime)
+        return (
+          <div key={place.id}>
+            <div className={rowStyle}>
+              {/* 시간 열 */}
+              <div className={timeColumnStyle}>
+                <span className={timePeriodStyle}>{period}</span>
+                <span className={timeValueStyle}>{time}</span>
+              </div>
+
+              {/* 점 + 선 */}
+              <div className={dotLineStyle}>
+                <div className={dotStyle} />
+                {!place.isLast && <div className={lineStyle} />}
+              </div>
+
+              {/* 장소 카드 */}
+              <div className={placeCardStyle}>
+                <p className={placeNameStyle}>{place.name}</p>
+                <p className={placeAddressStyle}>{place.address}</p>
+                <div className={tagsRowStyle}>
+                  {place.category && (
+                    <span className={categoryChipStyle}>
+                      {formatCategory(place.category)}
+                    </span>
+                  )}
+                  <span className={stayChipStyle}>
+                    <Clock size={10} />
+                    {formatDuration(place.stayMinutes)}
+                  </span>
+                </div>
               </div>
             </div>
+
+            {/* 이동 커넥터 */}
+            {!place.isLast && (
+              <div className={connectorStyle}>
+                {getTransportIcon(place.transportMode)}
+                <span>{getTransportLabel(place.transportMode)}</span>
+                {(place.travelMinutes ?? 0) > 0 && (
+                  <span>· {formatDuration(place.travelMinutes!)}</span>
+                )}
+              </div>
+            )}
           </div>
-          {!place.isLast && (
-            <div className={transportStyle}>
-              {getTransportIcon(place.transportMode)}
-              <span>{getTransportLabel(place.transportMode)}</span>
-            </div>
-          )}
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

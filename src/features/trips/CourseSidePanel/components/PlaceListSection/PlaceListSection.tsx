@@ -16,7 +16,10 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 
-import type { CoursePlace } from '@/features/trips/types/course.types'
+import {
+  DEFAULT_STAY_MINUTES,
+  type CoursePlace,
+} from '@/features/trips/types/course.types'
 import { useCourseStore } from '@/store/tripsStore'
 
 import { css } from '@/styled-system/css'
@@ -48,6 +51,23 @@ export function PlaceListSection({
 }: PlaceListSectionProps) {
   const selectedPlaceId = useCourseStore((state) => state.selectedPlaceId)
   const setSelectedPlaceId = useCourseStore((state) => state.setSelectedPlaceId)
+  const departureTime = useCourseStore((state) => state.departureTime)
+  const updatePlaceDetail = useCourseStore((state) => state.updatePlaceDetail)
+
+  // 각 장소별 도착 예상시간(분) 계산
+  const arrivalTimes = places.reduce<number[]>((acc, place, idx) => {
+    if (idx === 0) {
+      const startMinutes = departureTime.hour * 60 + departureTime.minute
+      acc.push(startMinutes)
+    } else {
+      const prevArrival = acc[idx - 1]
+      const prev = places[idx - 1]
+      const prevStay = prev.stayMinutes ?? DEFAULT_STAY_MINUTES
+      const prevTravel = prev.travelMinutes ?? 0
+      acc.push(prevArrival + prevStay + prevTravel)
+    }
+    return acc
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -86,8 +106,11 @@ export function PlaceListSection({
                 index={idx + 1}
                 place={place}
                 isSelected={place.id === selectedPlaceId}
+                isLast={idx === places.length - 1}
+                arrivalTimeMinutes={arrivalTimes[idx] ?? 0}
                 onRemove={onRemove}
                 onSelect={setSelectedPlaceId}
+                onUpdate={(patch) => updatePlaceDetail(place.id, patch)}
               />
             ))}
           </div>

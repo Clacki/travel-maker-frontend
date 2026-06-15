@@ -799,7 +799,7 @@ function ExploreContent() {
                       key={place.id}
                       placeId={place.id}
                       placeName={place.place_name}
-                      description={place.description}
+                      description={place.description ?? undefined}
                       tags={place.tags.map((t) => t.tag_name)}
                       rating={Number(place.rating_avg)}
                       imageUrl={place.image_url ?? undefined}
