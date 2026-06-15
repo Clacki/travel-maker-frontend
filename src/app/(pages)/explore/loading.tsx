@@ -1,5 +1,6 @@
 import { css } from '@/styled-system/css'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PlaceCardSkeleton } from '@/features/explore/components/PlaceCardSkeleton'
 
 const heroSkeletonStyle = css({
   position: 'relative',
@@ -55,46 +56,6 @@ const gridStyle = css({
   },
   gap: '6',
 })
-
-const cardSkeletonStyle = css({
-  borderRadius: 'lg',
-  overflow: 'hidden',
-  bg: 'bg.surface',
-  border: '1px solid',
-  borderColor: 'border.subtle',
-})
-
-const cardImageStyle = css({
-  w: 'full',
-  aspectRatio: '16/10',
-  bg: 'bg.subtle',
-  animation: 'pulse',
-})
-
-const cardBodyStyle = css({
-  p: '3',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2',
-})
-
-function PlaceCardSkeleton() {
-  return (
-    <div className={cardSkeletonStyle}>
-      <div className={cardImageStyle} />
-      <div className={cardBodyStyle}>
-        <Skeleton width="70%" height="20px" />
-        <div className={css({ display: 'flex', gap: '1' })}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} width="56px" height="20px" radius="pill" />
-          ))}
-        </div>
-        <Skeleton width="90%" height="16px" />
-        <Skeleton width="60%" height="16px" />
-      </div>
-    </div>
-  )
-}
 
 export default function ExploreLoading() {
   return (
