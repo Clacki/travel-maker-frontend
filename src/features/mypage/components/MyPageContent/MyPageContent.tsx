@@ -16,6 +16,7 @@ import { isAxiosError } from 'axios'
 import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { normalizeTravelTypeResult } from '../../api/travelTypeResultApi'
+import { mockMyTripCourses } from '../../data/myTripsMock'
 import { mockTravelTypeResultResponse } from '../../data/travelTypeResultMock'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
@@ -235,7 +236,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           isMyProfile={isOwner}
           bookmarkCount={bookmarkCount}
           reviewCount={displayedReviewCount}
-          tripCount={0}
+          tripCount={mockMyTripCourses.length}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
@@ -270,6 +271,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
         {activeTab === 'trip' && (
           <MyTripsSection
+            trips={mockMyTripCourses}
             canManage={isOwner}
             onCreateTrip={() => router.push(ROUTES.TRIP_CREATE)}
           />
