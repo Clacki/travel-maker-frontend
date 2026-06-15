@@ -27,7 +27,6 @@ interface ExploreGridProps {
   gridRef: RefObject<HTMLElement | null>
   places: Place[]
   isLoading: boolean
-  totalCount: number
   currentPage: number
   totalPages: number
   onLikeToggle: (placeId: number) => void
@@ -39,7 +38,6 @@ export function ExploreGrid({
   gridRef,
   places,
   isLoading,
-  totalCount,
   currentPage,
   totalPages,
   onLikeToggle,

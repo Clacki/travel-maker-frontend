@@ -188,7 +188,6 @@ function ExploreContent() {
         gridRef={gridRef}
         places={places}
         isLoading={isLoading}
-        totalCount={totalCount}
         currentPage={currentPage}
         totalPages={totalPages}
         onLikeToggle={handleLikeToggle}
