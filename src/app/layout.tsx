@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
 import { AuthInitializer } from '@/features/auth/components/AuthInitializer'
+import { TopLoader } from '@/components/layout/TopLoader'
 import { css } from '@/styled-system/css'
 import '@/styles/globals.css'
 
@@ -31,6 +32,7 @@ export default function RootLayout({
             color: 'text.primary',
           })}
         >
+          <TopLoader />
           <AuthInitializer>{children}</AuthInitializer>
         </div>
       </body>

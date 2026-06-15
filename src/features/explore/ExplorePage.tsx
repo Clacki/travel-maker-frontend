@@ -790,6 +790,7 @@ function ExploreContent() {
                     onClick={(e) => {
                       if (!(e.target as HTMLElement).closest('button')) {
                         e.preventDefault()
+                        window.dispatchEvent(new Event('navigate-start'))
                         router.push(ROUTES.DETAIL(String(place.id)))
                       }
                     }}
