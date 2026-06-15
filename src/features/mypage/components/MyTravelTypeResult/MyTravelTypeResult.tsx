@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import {
   CalendarDays,
   HelpCircle,
-  ImageIcon,
   RotateCcw,
   Share2,
   Sparkles,
@@ -17,11 +17,11 @@ import {
   ErrorState,
   LoadingState,
 } from '@/components/common/status'
+import type { RecommendedDestination } from '@/features/result/result.types'
 import { css } from '@/styled-system/css'
 import type {
-  RecommendedDestination,
   TravelTypeResult,
-  TravelTypeResultVectorItem,
+  VectorItem,
 } from '../../api/travelTypeResultApi'
 
 export type TravelTypeResultState =
@@ -48,6 +48,7 @@ const contentGridStyle = css({
 const lowerGridStyle = css({
   display: 'grid',
   gridTemplateColumns: { base: '1fr', lg: 'minmax(0, 2fr) minmax(280px, 1fr)' },
+  alignItems: 'stretch',
   gap: '5',
   mt: '5',
 })
@@ -129,18 +130,14 @@ const retryButtonStyle = css({
   bg: 'bg.surface',
   borderColor: 'bg.surface',
   color: 'primary',
-  _hover: {
-    bg: 'primary.soft',
-  },
+  _hover: { bg: 'primary.soft' },
 })
 
 const shareButtonStyle = css({
   bg: 'white/20',
   borderColor: 'white/20',
   color: 'text.inverse',
-  _hover: {
-    bg: 'white/28',
-  },
+  _hover: { bg: 'white/28' },
 })
 
 const imageBoxStyle = css({
@@ -175,7 +172,6 @@ const cardStyle = css({
 const infoCardStyle = css({
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'space-between',
   gap: '5',
   p: { base: '5', md: '6' },
   borderRadius: 'lg',
@@ -233,18 +229,6 @@ const primaryValueStyle = css({
   color: 'primary',
 })
 
-const savedNoticeStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  p: '3',
-  borderRadius: 'md',
-  bg: 'bg.surface',
-  color: 'text.primary',
-  fontSize: 'sm',
-  lineHeight: 'normal',
-})
-
 const vectorListStyle = css({
   display: 'grid',
   gap: '5',
@@ -297,16 +281,31 @@ const progressBarStyle = css({
   height: 'full',
   borderRadius: 'pill',
   bg: 'primary',
+  width: 'var(--progress-value)',
 })
 
-const detailGridStyle = css({
+const destinationCardStyle = css({
+  display: 'flex',
+  flexDirection: 'column',
+  h: 'full',
+  p: { base: '5', md: '6' },
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'lg',
+  bg: 'bg.surface',
+})
+
+const destinationListStyle = css({
   display: 'grid',
-  gridTemplateColumns: { base: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
-  gap: '3',
-  mt: '6',
+  gap: '4',
+  flex: 1,
 })
 
-const detailCardStyle = css({
+const destinationItemStyle = css({
+  display: 'grid',
+  gridTemplateColumns: 'auto minmax(0, 1fr)',
+  alignItems: 'center',
+  gap: '4',
   p: '4',
   borderWidth: '1px',
   borderColor: 'border.subtle',
@@ -314,65 +313,32 @@ const detailCardStyle = css({
   bg: 'bg.canvas',
 })
 
-const detailTitleStyle = css({
-  mb: '2',
-  color: 'text.primary',
-  fontSize: 'sm',
-  fontWeight: 'bold',
-})
-
-const detailDescriptionStyle = css({
-  color: 'text.secondary',
-  fontSize: 'sm',
-  lineHeight: 'normal',
-})
-
-const destinationListStyle = css({
-  display: 'grid',
-  gap: '3',
-})
-
-const destinationItemStyle = css({
-  display: 'grid',
-  gridTemplateColumns: 'auto minmax(0, 1fr)',
-  gap: '3',
-  p: '3',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  borderRadius: 'md',
-  bg: 'bg.surface',
-})
-
 const rankStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: '8',
-  height: '8',
+  flexShrink: 0,
+  width: '9',
+  height: '9',
   borderRadius: 'md',
   bg: 'primary.soft',
   color: 'primary',
-  fontSize: 'sm',
+  fontSize: 'md',
   fontWeight: 'bold',
 })
 
 const destinationContentStyle = css({
-  display: 'grid',
-  gap: '2',
-  minW: 0,
-})
-
-const destinationTopRowStyle = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '2',
+  minW: 0,
 })
 
 const destinationNameStyle = css({
   color: 'text.primary',
   fontSize: 'sm',
-  fontWeight: 'bold',
+  fontWeight: 'semibold',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -381,34 +347,8 @@ const destinationNameStyle = css({
 const matchRateStyle = css({
   flexShrink: 0,
   color: 'primary',
-  fontSize: 'xs',
+  fontSize: 'sm',
   fontWeight: 'bold',
-})
-
-const destinationDescriptionStyle = css({
-  color: 'text.secondary',
-  fontSize: 'xs',
-  lineHeight: 'normal',
-  overflow: 'hidden',
-  display: '-webkit-box',
-  WebkitLineClamp: 2,
-})
-
-const destinationTagsStyle = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '1',
-})
-
-const destinationTagStyle = css({
-  display: 'inline-flex',
-  px: '2',
-  py: '0.5',
-  borderRadius: 'pill',
-  bg: 'primary.soft',
-  color: 'primary',
-  fontSize: 'xs',
-  fontWeight: 'medium',
 })
 
 const compactEmptyStyle = css({
@@ -419,16 +359,9 @@ const compactEmptyStyle = css({
 })
 
 function formatDate(value?: string) {
-  if (!value) {
-    return null
-  }
-
+  if (!value) return null
   const date = new Date(value)
-
-  if (Number.isNaN(date.getTime())) {
-    return null
-  }
-
+  if (Number.isNaN(date.getTime())) return null
   return new Intl.DateTimeFormat('ko-KR', {
     year: 'numeric',
     month: '2-digit',
@@ -451,10 +384,10 @@ function ResultImage({ src, alt }: { src: string; alt: string }) {
   }
 
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    <Image
       alt={alt}
       className={resultImageStyle}
+      fill
       onError={() => setHasError(true)}
       src={src}
     />
@@ -519,88 +452,78 @@ function TravelTypeInfoCard({ result }: { result: TravelTypeResult }) {
 
   return (
     <aside className={infoCardStyle}>
-      <div>
-        <div className={cardHeaderStyle}>
-          <div>
-            <h3 className={cardTitleStyle}>테스트 정보</h3>
-            <p className={cardSubtitleStyle}>최근 저장된 성향 결과예요</p>
-          </div>
-        </div>
-        <div className={infoListStyle}>
-          {result.answered_count !== undefined && (
-            <div className={infoRowStyle}>
-              <span className={infoLabelStyle}>
-                <HelpCircle aria-hidden="true" size={15} />
-                응답한 질문
-              </span>
-              <span className={infoValueStyle}>{result.answered_count}개</span>
-            </div>
-          )}
-          {updatedAt && (
-            <div className={infoRowStyle}>
-              <span className={infoLabelStyle}>
-                <CalendarDays aria-hidden="true" size={15} />
-                테스트 일자
-              </span>
-              <span className={infoValueStyle}>{updatedAt}</span>
-            </div>
-          )}
-          <div className={infoRowStyle}>
-            <span className={infoLabelStyle}>성향 유형</span>
-            <span className={`${infoValueStyle} ${primaryValueStyle}`}>
-              {result.name}
-            </span>
-          </div>
-          <div className={infoRowStyle}>
-            <span className={infoLabelStyle}>유형 코드</span>
-            <span className={infoValueStyle}>{result.type_key}</span>
-          </div>
+      <div className={cardHeaderStyle}>
+        <div>
+          <h3 className={cardTitleStyle}>테스트 정보</h3>
+          <p className={cardSubtitleStyle}>최근 저장된 성향 결과예요</p>
         </div>
       </div>
-      {!result.saved && (
-        <p className={savedNoticeStyle}>
-          <ImageIcon aria-hidden="true" size={16} /> 아직 저장되지 않은
-          결과예요.
-        </p>
-      )}
+      <div className={infoListStyle}>
+        {updatedAt && (
+          <div className={infoRowStyle}>
+            <span className={infoLabelStyle}>
+              <CalendarDays aria-hidden="true" size={15} />
+              테스트 일자
+            </span>
+            <span className={infoValueStyle}>{updatedAt}</span>
+          </div>
+        )}
+        <div className={infoRowStyle}>
+          <span className={infoLabelStyle}>성향 유형</span>
+          <span className={`${infoValueStyle} ${primaryValueStyle}`}>
+            {result.name}
+          </span>
+        </div>
+        <div className={infoRowStyle}>
+          <span className={infoLabelStyle}>유형 코드</span>
+          <span className={infoValueStyle}>{result.type_key}</span>
+        </div>
+        <div className={infoRowStyle}>
+          <span className={infoLabelStyle}>
+            <HelpCircle aria-hidden="true" size={15} />
+            정확도
+          </span>
+          <span className={`${infoValueStyle} ${primaryValueStyle}`}>
+            {result.accuracy}%
+          </span>
+        </div>
+      </div>
     </aside>
   )
 }
 
-function TravelTypeVectorCard({
-  vectors,
-  details,
-}: {
-  vectors: TravelTypeResultVectorItem[]
-  details: TravelTypeResult['detail_cards']
-}) {
+function TravelTypeVectorCard({ vectors }: { vectors: VectorItem[] }) {
   return (
     <article className={cardStyle}>
       <div className={cardHeaderStyle}>
         <div>
           <h3 className={cardTitleStyle}>성향 상세 분석</h3>
-          <p className={cardSubtitleStyle}>백엔드 라벨 기준으로 표시됩니다</p>
+          <p className={cardSubtitleStyle}>6축 여행 성향 지표예요</p>
         </div>
         <span className={cardSubtitleStyle}>총 {vectors.length}개 지표</span>
       </div>
 
       {vectors.length > 0 ? (
         <div className={vectorListStyle}>
-          {vectors.map((vector) => (
-            <div key={vector.label}>
+          {vectors.map((item) => (
+            <div key={item.label}>
               <div className={vectorHeaderStyle}>
                 <span className={vectorLabelStyle}>
                   <span className={vectorIconStyle}>
                     <Waves aria-hidden="true" size={16} />
                   </span>
-                  {vector.label}
+                  {item.label}
                 </span>
-                <span className={vectorValueStyle}>{vector.value}%</span>
+                <span className={vectorValueStyle}>{item.value}%</span>
               </div>
               <div className={progressTrackStyle}>
                 <div
                   className={progressBarStyle}
-                  style={{ width: `${vector.value}%` }}
+                  style={
+                    {
+                      '--progress-value': `${item.value}%`,
+                    } as React.CSSProperties
+                  }
                 />
               </div>
             </div>
@@ -608,17 +531,6 @@ function TravelTypeVectorCard({
         </div>
       ) : (
         <p className={compactEmptyStyle}>표시할 성향 지표가 없어요.</p>
-      )}
-
-      {details.length > 0 && (
-        <div className={detailGridStyle}>
-          {details.slice(0, 4).map((detail) => (
-            <section key={detail.title} className={detailCardStyle}>
-              <h4 className={detailTitleStyle}>{detail.title}</h4>
-              <p className={detailDescriptionStyle}>{detail.description}</p>
-            </section>
-          ))}
-        </div>
       )}
     </article>
   )
@@ -630,7 +542,7 @@ function RecommendedDestinationCard({
   destinations: RecommendedDestination[]
 }) {
   return (
-    <aside className={cardStyle}>
+    <aside className={destinationCardStyle}>
       <div className={cardHeaderStyle}>
         <div>
           <h3 className={cardTitleStyle}>추천 여행지</h3>
@@ -640,37 +552,15 @@ function RecommendedDestinationCard({
 
       {destinations.length > 0 ? (
         <div className={destinationListStyle}>
-          {destinations.slice(0, 4).map((destination, index) => (
-            <article
-              key={destination.place_id}
-              className={destinationItemStyle}
-            >
+          {destinations.slice(0, 6).map((destination, index) => (
+            <article key={destination.id} className={destinationItemStyle}>
               <span className={rankStyle}>{index + 1}</span>
               <div className={destinationContentStyle}>
-                <div className={destinationTopRowStyle}>
-                  <h4 className={destinationNameStyle}>
-                    {destination.place_name}
-                  </h4>
-                  {destination.match_rate !== undefined && (
-                    <span className={matchRateStyle}>
-                      매칭 {destination.match_rate}%
-                    </span>
-                  )}
-                </div>
-                <p
-                  className={destinationDescriptionStyle}
-                  style={{ WebkitBoxOrient: 'vertical' }}
-                >
-                  {destination.description}
-                </p>
-                {destination.tags.length > 0 && (
-                  <div className={destinationTagsStyle}>
-                    {destination.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className={destinationTagStyle}>
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
+                <h4 className={destinationNameStyle}>{destination.title}</h4>
+                {destination.matchRate !== undefined && (
+                  <span className={matchRateStyle}>
+                    {destination.matchRate}%
+                  </span>
                 )}
               </div>
             </article>
@@ -722,18 +612,17 @@ export function MyTravelTypeResult({
     )
   }
 
+  const { data } = state
+
   return (
     <section className={shellStyle} aria-label="성향 테스트 결과">
       <div className={contentGridStyle}>
-        <TravelTypeHeroCard onRetryTest={onRetryTest} result={state.data} />
-        <TravelTypeInfoCard result={state.data} />
+        <TravelTypeHeroCard onRetryTest={onRetryTest} result={data} />
+        <TravelTypeInfoCard result={data} />
       </div>
       <div className={lowerGridStyle}>
-        <TravelTypeVectorCard
-          details={state.data.detail_cards}
-          vectors={state.data.result_vector}
-        />
-        <RecommendedDestinationCard destinations={state.data.destinations} />
+        <TravelTypeVectorCard vectors={data.result_vector} />
+        <RecommendedDestinationCard destinations={data.destinations} />
       </div>
     </section>
   )

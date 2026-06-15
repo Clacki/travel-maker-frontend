@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+
+import { isAxiosError } from 'axios'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
@@ -11,13 +13,13 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
-import { isAxiosError } from 'axios'
-
 import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
-import { normalizeTravelTypeResult } from '../../api/travelTypeResultApi'
+import {
+  getTravelTypeResult,
+  normalizeTravelTypeResult,
+} from '../../api/travelTypeResultApi'
 import { mockMyTripCourses } from '../../data/myTripsMock'
-import { mockTravelTypeResultResponse } from '../../data/travelTypeResultMock'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
 import { useMyReviews } from '../../hooks/useMyReviews'
@@ -118,17 +120,35 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     targetUserId: isOwner ? undefined : user.id,
   })
 
-  const normalizedTravelTypeResult = useMemo(
-    () => normalizeTravelTypeResult(mockTravelTypeResultResponse),
-    []
-  )
-  const travelTypeResultState = useMemo<TravelTypeResultState>(() => {
-    if (!normalizedTravelTypeResult) {
-      return { status: 'empty' }
-    }
+  const [travelTypeResultState, setTravelTypeResultState] =
+    useState<TravelTypeResultState>({ status: 'loading' })
 
-    return { status: 'success', data: normalizedTravelTypeResult }
-  }, [normalizedTravelTypeResult])
+  useEffect(() => {
+    if (!isAuthInitialized || !isLoggedIn || activeTab !== 'test') return
+    // 이미 로드된 경우 재요청하지 않음
+    if (travelTypeResultState.status !== 'loading') return
+
+    getTravelTypeResult()
+      .then((response) => {
+        const normalized = normalizeTravelTypeResult(response)
+        if (!normalized) {
+          setTravelTypeResultState({ status: 'empty' })
+        } else {
+          setTravelTypeResultState({ status: 'success', data: normalized })
+        }
+      })
+      .catch((error: unknown) => {
+        const status = isAxiosError(error) ? error.response?.status : undefined
+        if (status === 404) {
+          setTravelTypeResultState({ status: 'empty' })
+        } else {
+          setTravelTypeResultState({
+            status: 'error',
+            message: '성향 테스트 결과를 불러오지 못했어요.',
+          })
+        }
+      })
+  }, [isAuthInitialized, isLoggedIn, activeTab, travelTypeResultState.status])
 
   useEffect(() => {
     if (!isAuthInitialized) {
@@ -197,8 +217,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     router.push(`/profile/${userId}/edit`)
   }
 
-  const handleWithdraw = (reason: string) => {
-    console.log('withdraw', reason)
+  const handleWithdraw = (_reason: string) => {
+    // TODO: 회원 탈퇴 API 연동
   }
 
   const handleTabChange = (tab: TabType) => {

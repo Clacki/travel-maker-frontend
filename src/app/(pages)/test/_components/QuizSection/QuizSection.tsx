@@ -69,6 +69,7 @@ export function QuizSection() {
     setApiResult,
   } = useQuizStore()
   const [isLoading, setIsLoading] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
     resetQuiz()
@@ -89,10 +90,11 @@ export function QuizSection() {
     if (selectedChoice === null) return
     if (isLast) {
       // goNext 호출 전에 finalAnswers를 직접 구성
+      // C1: 동일 질문에 대한 기존 답변을 필터링해 중복 제출 방지
       const currentAnswers = useQuizStore.getState().answers
       const finalAnswers: QuizAnswer[] = [
-        ...currentAnswers,
-        { questionId: question.id, selected: selectedChoice as 'A' | 'B' },
+        ...currentAnswers.filter((a) => a.questionId !== question.id),
+        { questionId: question.id, selected: selectedChoice },
       ]
       setCalculatedResult(finalAnswers)
 
@@ -100,12 +102,19 @@ export function QuizSection() {
       try {
         const response = await postQuizSubmit(finalAnswers)
         setApiResult(response)
-      } catch (error) {
-        console.error('퀴즈 제출 API 실패, 로컬 결과로 진행:', error)
-      } finally {
         setIsLoading(false)
         goNext(question.id, TOTAL_QUESTIONS)
         router.push(ROUTES.TEST_RESULT)
+      } catch (error) {
+        console.error('퀴즈 제출 API 실패, 로컬 결과로 진행:', error)
+        setIsLoading(false)
+        setSubmitError(
+          '결과 저장에 실패했어요. 잠시 후 결과 페이지로 이동합니다.'
+        )
+        setTimeout(() => {
+          goNext(question.id, TOTAL_QUESTIONS)
+          router.push(ROUTES.TEST_RESULT)
+        }, 2000)
       }
       return
     }
@@ -142,9 +151,23 @@ export function QuizSection() {
         </div>
       </div>
 
+      {submitError && (
+        <p
+          className={css({
+            fontSize: 'sm',
+            color: 'text.secondary',
+            textAlign: 'center',
+          })}
+        >
+          {submitError}
+        </p>
+      )}
+
       <QuizNavigation
         currentIndex={currentIndex}
-        canGoNext={selectedChoice !== null && !isLoading}
+        canGoNext={
+          selectedChoice !== null && !isLoading && submitError === null
+        }
         isLast={isLast}
         onPrev={goPrev}
         onNext={handleNext}
