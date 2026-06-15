@@ -2,6 +2,15 @@
 
 @layer reset, base, tokens, recipes, utilities;
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @layer base {
   :root {
     color-scheme: light;

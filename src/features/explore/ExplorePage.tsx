@@ -773,6 +773,7 @@ function ExploreContent() {
           ) : places.length > 0 ? (
             <>
               <div
+                key={`places-${places.length}-${places[0]?.id ?? ''}`}
                 className={css({
                   display: 'grid',
                   gridTemplateColumns: {
@@ -782,11 +783,15 @@ function ExploreContent() {
                     xl: 'repeat(4, 1fr)',
                   },
                   gap: 6,
+                  animation: 'fadeIn 0.35s ease',
                 })}
               >
                 {places.map((place) => (
                   <div
                     key={place.id}
+                    onMouseEnter={() =>
+                      router.prefetch(ROUTES.DETAIL(String(place.id)))
+                    }
                     onClick={(e) => {
                       if (!(e.target as HTMLElement).closest('button')) {
                         e.preventDefault()

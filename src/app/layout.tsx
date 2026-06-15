@@ -24,6 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning className={pretendard.variable}>
+      <head>
+        <link rel="preconnect" href="https://tong.visitkorea.or.kr" />
+        <link rel="preconnect" href="https://dapi.kakao.com" />
+        <link rel="dns-prefetch" href="https://tong.visitkorea.or.kr" />
+        <link rel="dns-prefetch" href="https://dapi.kakao.com" />
+      </head>
       <body>
         <div
           className={css({
