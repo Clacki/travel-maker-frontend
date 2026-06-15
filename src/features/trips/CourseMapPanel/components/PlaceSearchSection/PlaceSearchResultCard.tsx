@@ -1,6 +1,6 @@
 'use client'
 
-import { Check, Clock, MapPin, Plus, ScanEye } from 'lucide-react'
+import { Check, Clock, Plus, ScanEye } from 'lucide-react'
 
 import { css, cx } from '@/styled-system/css'
 import type { Place } from '@/features/explore/types/places.types'
@@ -8,7 +8,7 @@ import type { Place } from '@/features/explore/types/places.types'
 interface PlaceSearchResultCardProps {
   place: Place
   isAdded: boolean
-  onAdd: () => void
+  onAdd?: () => void
   onViewOnMap?: () => void
 }
 
@@ -46,14 +46,6 @@ const tagBadgeStyle = css({
   bg: 'primary.soft',
   borderRadius: 'pill',
   lineHeight: '1.4',
-})
-
-const addressStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1',
-  fontSize: 'xs',
-  color: 'text.secondary',
 })
 
 const descriptionStyle = css({
@@ -129,8 +121,12 @@ const addButtonDisabledStyle = css({
 const formatDuration = (minutes: number): string => {
   const h = Math.floor(minutes / 60)
   const m = minutes % 60
-  if (h > 0 && m > 0) return `${h}시간 ${m}분`
-  if (h > 0) return `${h}시간`
+  if (h > 0 && m > 0) {
+    return `${h}시간 ${m}분`
+  }
+  if (h > 0) {
+    return `${h}시간`
+  }
   return `${m}분`
 }
 
@@ -141,7 +137,7 @@ export function PlaceSearchResultCard({
   onViewOnMap,
 }: PlaceSearchResultCardProps) {
   return (
-    <div className={cardStyle}>
+    <article className={cardStyle}>
       {/* 장소명 + 태그 */}
       <div className={nameRowStyle}>
         <span className={nameStyle}>{place.place_name}</span>
@@ -151,14 +147,6 @@ export function PlaceSearchResultCard({
           </span>
         ))}
       </div>
-
-      {/* 주소 */}
-      {place.address && (
-        <div className={addressStyle}>
-          <MapPin size={12} />
-          {place.address}
-        </div>
-      )}
 
       {/* 설명 */}
       {place.description && (
@@ -187,12 +175,19 @@ export function PlaceSearchResultCard({
         )}
         <button
           type="button"
-          disabled={isAdded}
+          disabled={isAdded || onAdd === undefined}
           onClick={onAdd}
           className={cx(
             addButtonBaseStyle,
-            isAdded ? addButtonDisabledStyle : addButtonActiveStyle
+            isAdded || onAdd === undefined
+              ? addButtonDisabledStyle
+              : addButtonActiveStyle
           )}
+          title={
+            onAdd === undefined
+              ? '위치 정보가 없어 추가할 수 없는 장소예요'
+              : undefined
+          }
         >
           {isAdded ? (
             <>
@@ -207,6 +202,6 @@ export function PlaceSearchResultCard({
           )}
         </button>
       </div>
-    </div>
+    </article>
   )
 }

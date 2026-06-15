@@ -34,7 +34,10 @@ type CourseStore = CourseStoreState & {
   updatePlaceDetail: (
     placeId: string,
     patch: Partial<
-      Pick<CoursePlace, 'stayMinutes' | 'memo' | 'transportMode' | 'dayIndex'>
+      Pick<
+        CoursePlace,
+        'stayMinutes' | 'travelMinutes' | 'memo' | 'transportMode' | 'dayIndex'
+      >
     >
   ) => void
   setDateRange: (range: CourseDateRange | null) => void

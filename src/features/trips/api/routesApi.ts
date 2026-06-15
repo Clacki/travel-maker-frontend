@@ -17,6 +17,16 @@ export type CreateRouteResponse = {
   created_at: string
 }
 
+export type PatchRouteRequest = Partial<Omit<CreateRouteRequest, 'days'>> & {
+  days?: Array<{ day_index: number; place_ids: number[] }>
+}
+
+export type PatchRouteResponse = {
+  route_id: number
+  title: string
+  updated_at: string
+}
+
 export const postRoute = async (
   payload: CreateRouteRequest
 ): Promise<CreateRouteResponse> => {
@@ -60,4 +70,15 @@ export const getRoutes = async (
   }
 
   return { items: data.results, totalCount: data.count }
+}
+
+export const patchRoute = async (
+  routeId: number,
+  payload: PatchRouteRequest
+): Promise<PatchRouteResponse> => {
+  const response = await api.patch<PatchRouteResponse>(
+    `/routes/${routeId}`,
+    payload
+  )
+  return response.data
 }

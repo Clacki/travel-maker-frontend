@@ -1,3 +1,5 @@
+'use client'
+
 import {
   REGION_OPTIONS,
   THEME_OPTIONS,
@@ -32,7 +34,7 @@ const fieldStyle = css({
 
 const labelStyle = css({
   fontSize: 'sm',
-  fontWeight: 'medium',
+  fontWeight: 'semibold',
   color: 'text.primary',
 })
 
@@ -131,6 +133,7 @@ export function CourseInfoSection({
         options={REGION_OPTIONS}
         selectedValues={selectedRegion ? [selectedRegion] : []}
         onToggle={handleRegionToggle}
+        collapseAt={7}
       />
       <TagToggleGroup
         label="테마"

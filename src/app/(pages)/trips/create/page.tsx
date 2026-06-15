@@ -40,7 +40,7 @@ const badgeStyle = css({
   color: 'primary',
   borderRadius: 'pill',
   fontSize: 'xs',
-  fontWeight: 'medium',
+  fontWeight: 'semibold',
   mb: '3',
 })
 
@@ -54,7 +54,7 @@ const badgeDotStyle = css({
 
 const pageTitleStyle = css({
   fontSize: '3xl',
-  fontWeight: 'bold',
+  fontWeight: 'semibold',
   color: 'text.primary',
   lineHeight: 'tight',
   mb: '2',
@@ -71,7 +71,7 @@ const bodyStyle = css({
 })
 
 const leftStyle = css({
-  flex: '0 0 44%',
+  flex: '0 0 50%',
   minW: 0,
   pr: '3',
   py: '4',
@@ -81,14 +81,17 @@ const leftStyle = css({
 })
 
 const rightStyle = css({
-  flex: '0 0 56%',
+  flex: '0 0 50%',
   minW: 0,
-  position: 'sticky',
-  top: '72px',
-  height: 'calc(100vh - 72px)',
   pl: '3',
   py: '4',
-  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '3',
+})
+
+const searchWrapperStyle = css({
+  flexShrink: 0,
 })
 
 export default function TripsCreatePage() {
@@ -111,12 +114,14 @@ export default function TripsCreatePage() {
           <div className={leftStyle}>
             <CourseInfoCard />
             <ScheduleCard />
-            <PlaceSearchSection />
             <CoursePlaceCard />
             <TimelineCard />
           </div>
           <div className={rightStyle}>
             <CourseMapPanel />
+            <div className={searchWrapperStyle}>
+              <PlaceSearchSection />
+            </div>
           </div>
         </div>
       </LayoutContainer>

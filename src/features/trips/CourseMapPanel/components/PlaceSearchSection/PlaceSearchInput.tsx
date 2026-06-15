@@ -4,6 +4,11 @@ import { Search, X } from 'lucide-react'
 
 import { css } from '@/styled-system/css'
 
+const searchIconStyle = css({
+  color: 'text.secondary',
+  flexShrink: 0,
+})
+
 interface PlaceSearchInputProps {
   value: string
   onChange: (v: string) => void
@@ -63,12 +68,13 @@ export function PlaceSearchInput({
 }: PlaceSearchInputProps) {
   return (
     <div className={inputWrapperStyle}>
-      <Search size={16} color="var(--colors-text-secondary)" />
+      <Search size={16} className={searchIconStyle} />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-label="장소 검색"
         className={inputStyle}
       />
       {value && (

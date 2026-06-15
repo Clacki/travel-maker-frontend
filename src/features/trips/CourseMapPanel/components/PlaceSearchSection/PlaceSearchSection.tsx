@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
 import { getPlacesSearch } from '@/features/explore/api/placesApi'
 import type { Place } from '@/features/explore/types/places.types'
@@ -44,20 +44,9 @@ const titleStyle = css({
   color: 'text.primary',
 })
 
-const addDayButtonStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  px: '2.5',
-  py: '1',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
-  color: 'primary',
-  bg: 'primary.soft',
-  borderRadius: 'sm',
-  border: 'none',
-  cursor: 'default',
-  whiteSpace: 'nowrap',
+const searchIconStyle = css({
+  color: 'text.secondary',
+  flexShrink: 0,
 })
 
 const emptyStyle = css({
@@ -134,10 +123,13 @@ export function PlaceSearchSection() {
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
 
-  // 언마운트 시 타이머 정리
+  // 언마운트 시 타이머 정리 + mounted 플래그 해제
   useEffect(() => {
+    mountedRef.current = true
     return () => {
+      mountedRef.current = false
       if (debounceRef.current) {
         clearTimeout(debounceRef.current)
       }
@@ -161,6 +153,9 @@ export function PlaceSearchSection() {
 
       // setIsLoading을 setTimeout 내부에서 호출해 debounce 취소 시 로딩 고착 방지
       debounceRef.current = setTimeout(async () => {
+        if (!mountedRef.current) {
+          return
+        }
         setIsLoading(true)
         try {
           const combinedKeyword =
@@ -173,13 +168,21 @@ export function PlaceSearchSection() {
             page: nextPage,
             page_size: PAGE_SIZE,
           })
+          if (!mountedRef.current) {
+            return
+          }
           setResults(response.results)
           setTotalCount(response.count)
         } catch {
+          if (!mountedRef.current) {
+            return
+          }
           setResults([])
           setTotalCount(0)
         } finally {
-          setIsLoading(false)
+          if (mountedRef.current) {
+            setIsLoading(false)
+          }
         }
       }, 300)
     },
@@ -209,14 +212,27 @@ export function PlaceSearchSection() {
     fetchResults(keyword, activeCategory, nextPage)
   }
 
+  const parseCoord = (val: string | null): number | undefined => {
+    if (!val) {
+      return undefined
+    }
+    const n = parseFloat(val)
+    return isNaN(n) ? undefined : n
+  }
+
   const handleAddPlace = (place: Place) => {
+    const lat = parseCoord(place.latitude)
+    const lng = parseCoord(place.longitude)
+    if (lat === undefined || lng === undefined) {
+      return
+    }
     addPlace({
       id: crypto.randomUUID(),
       backendId: place.id,
       name: place.place_name,
-      address: place.address ?? '',
-      lat: place.lat,
-      lng: place.lng,
+      address: '',
+      lat,
+      lng,
     })
   }
 
@@ -229,11 +245,19 @@ export function PlaceSearchSection() {
       <div className={sectionStyle}>
         {/* 헤더 */}
         <div className={headerStyle}>
-          <span className={titleStyle}>장소 검색</span>
-          <span className={addDayButtonStyle}>
-            <Plus size={12} />
-            {selectedDay}일차에 추가
-          </span>
+          <div>
+            <span className={titleStyle}>장소 검색</span>
+            <p
+              className={css({
+                fontSize: 'xs',
+                color: 'text.secondary',
+                mt: '0.5',
+              })}
+            >
+              추가 버튼을 눌러 {selectedDay}일차 코스에 바로 담으세요
+            </p>
+          </div>
+          <Search size={16} className={searchIconStyle} />
         </div>
 
         {/* 검색 입력 */}
@@ -258,13 +282,17 @@ export function PlaceSearchSection() {
                       key={place.id}
                       place={place}
                       isAdded={isAdded(place)}
-                      onAdd={() => handleAddPlace(place)}
+                      onAdd={
+                        place.latitude !== null && place.longitude !== null
+                          ? () => handleAddPlace(place)
+                          : undefined
+                      }
                       onViewOnMap={
-                        place.lat !== undefined && place.lng !== undefined
+                        place.latitude !== null && place.longitude !== null
                           ? () =>
                               setFocusLocation({
-                                lat: place.lat!,
-                                lng: place.lng!,
+                                lat: parseFloat(place.latitude!),
+                                lng: parseFloat(place.longitude!),
                               })
                           : undefined
                       }

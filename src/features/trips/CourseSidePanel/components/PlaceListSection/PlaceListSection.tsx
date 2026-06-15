@@ -61,8 +61,10 @@ export function PlaceListSection({
       acc.push(startMinutes)
     } else {
       const prevArrival = acc[idx - 1]
-      const prevStay = places[idx - 1].stayMinutes ?? DEFAULT_STAY_MINUTES
-      acc.push(prevArrival + prevStay)
+      const prev = places[idx - 1]
+      const prevStay = prev.stayMinutes ?? DEFAULT_STAY_MINUTES
+      const prevTravel = prev.travelMinutes ?? 0
+      acc.push(prevArrival + prevStay + prevTravel)
     }
     return acc
   }, [])
@@ -104,6 +106,7 @@ export function PlaceListSection({
                 index={idx + 1}
                 place={place}
                 isSelected={place.id === selectedPlaceId}
+                isLast={idx === places.length - 1}
                 arrivalTimeMinutes={arrivalTimes[idx] ?? 0}
                 onRemove={onRemove}
                 onSelect={setSelectedPlaceId}

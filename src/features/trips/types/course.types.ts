@@ -8,28 +8,41 @@ export type CoursePlace = {
   dayIndex: number
   category?: string
   stayMinutes?: number
+  travelMinutes?: number
   memo?: string
   transportMode?: 'walk' | 'transit' | 'car'
 }
 
+// explore 필터 region 섹션 tag_name 기준 (API tag_name과 일치)
 export const REGION_OPTIONS = [
-  '제주',
+  '서울',
+  '경기',
+  '인천',
+  '강원',
+  '충북',
+  '충남',
+  '대전',
+  '세종',
+  '전북',
+  '전남',
+  '광주',
+  '경북',
+  '경남',
+  '대구',
+  '울산',
   '부산',
-  '강릉',
-  '경주',
-  '전주',
-  '여수',
-  '속초',
+  '제주',
 ] as const
 
+// explore 필터 style(1차) 섹션 CATEGORY_TO_TAG_NAME 기준 (API tag_name과 일치)
 export const THEME_OPTIONS = [
-  '산악탐험',
-  '문화체험',
+  '해변',
+  '산악',
+  '도시',
+  '문화',
+  '미식',
   '액티비티',
-  '해변휴양',
-  '도시탐방',
-  '미식여행',
-  '로맨틱여행',
+  '로맨틱',
 ] as const
 
 export type CourseDateRange = {
