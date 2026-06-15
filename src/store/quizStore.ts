@@ -5,6 +5,7 @@ import {
   getTypeKey,
   type TypeKey,
 } from '@/features/result/quizCalculator'
+import type { RelatedTravelType } from '@/features/result/result.types'
 import type { PlaceRecommendation } from '@/features/test/api/quizApi'
 import type { QuizAnswer } from '@/features/test/quiz.types'
 
@@ -20,6 +21,8 @@ type QuizStore = {
   destinations: PlaceRecommendation[] | null
   /** API에서 받은 백엔드 여행 타입 ID. 프로필 이미지 지정 시 사용 */
   travelTypeId: number | null
+  compatibleType: RelatedTravelType | null
+  incompatibleType: RelatedTravelType | null
   selectChoice: (choice: 'A' | 'B') => void
   goNext: (questionId: number, totalQuestions: number) => void
   goPrev: () => void
@@ -28,6 +31,10 @@ type QuizStore = {
   setCalculatedResult: (answers: QuizAnswer[]) => void
   setDestinations: (destinations: PlaceRecommendation[]) => void
   setTravelTypeId: (travelTypeId: number) => void
+  setRelatedTypes: (
+    compatibleType: RelatedTravelType | null,
+    incompatibleType: RelatedTravelType | null
+  ) => void
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
@@ -38,6 +45,8 @@ export const useQuizStore = create<QuizStore>((set) => ({
   typeKey: null,
   destinations: null,
   travelTypeId: null,
+  compatibleType: null,
+  incompatibleType: null,
 
   selectChoice: (choice) => set({ selectedChoice: choice }),
 
@@ -92,6 +101,8 @@ export const useQuizStore = create<QuizStore>((set) => ({
       typeKey: null,
       destinations: null,
       travelTypeId: null,
+      compatibleType: null,
+      incompatibleType: null,
     }),
 
   setCalculatedResult: (answers) => {
@@ -103,4 +114,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
   setDestinations: (destinations) => set({ destinations }),
 
   setTravelTypeId: (travelTypeId) => set({ travelTypeId }),
+
+  setRelatedTypes: (compatibleType, incompatibleType) =>
+    set({ compatibleType, incompatibleType }),
 }))

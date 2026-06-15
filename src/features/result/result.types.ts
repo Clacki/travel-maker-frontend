@@ -42,6 +42,15 @@ export type TravelType = {
   isMyType: boolean
 }
 
+export type RelatedTravelType = {
+  travel_type_id: number
+  type_key: string
+  name: string
+  description: string
+  image_url?: string | null
+  type_tags?: string[] | null
+}
+
 export type TestResultResponse = {
   typeCode: string
   typeName: string
@@ -57,4 +66,6 @@ export type TestResultResponse = {
   compassData: CompassData
   recommendedDestinations: RecommendedDestination[]
   allTypes: TravelType[]
+  compatible_type?: RelatedTravelType | null
+  incompatible_type?: RelatedTravelType | null
 }

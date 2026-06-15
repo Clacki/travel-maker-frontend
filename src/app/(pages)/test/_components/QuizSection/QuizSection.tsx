@@ -67,6 +67,7 @@ export function QuizSection() {
     resetQuiz,
     setCalculatedResult,
     setDestinations,
+    setRelatedTypes,
     setTravelTypeId,
   } = useQuizStore()
 
@@ -104,6 +105,10 @@ export function QuizSection() {
         const res = await postQuizSubmit(answersArray)
         setDestinations(res.destinations)
         setTravelTypeId(res.travel_type_id)
+        setRelatedTypes(
+          res.compatible_type ?? null,
+          res.incompatible_type ?? null
+        )
       } catch (error) {
         // 네트워크 오류 등 — destinations 없이 결과 페이지로 이동
         console.error('[QuizSection] quiz submit API 실패:', error)

@@ -1,5 +1,7 @@
 import api from '@/lib/api'
 
+import type { RelatedTravelType } from '@/features/result/result.types'
+
 export type DetailCard = {
   title: string
   description: string
@@ -25,6 +27,8 @@ export type QuizSubmitResponse = {
   detail_cards: DetailCard[]
   result_vector: number[]
   destinations: PlaceRecommendation[]
+  compatible_type?: RelatedTravelType | null
+  incompatible_type?: RelatedTravelType | null
 }
 
 export const postQuizSubmit = async (
