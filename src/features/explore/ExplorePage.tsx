@@ -12,7 +12,7 @@ import { parseParams, getFilterChips } from './utils'
 import {
   useExplorePlaces,
   useTags,
-  useSelectedTagIds,
+  getSelectedTagIds,
 } from './hooks/useExplorePlaces'
 import { useExploreSort } from './hooks/useExploreSort'
 import { useExploreHero } from './hooks/useExploreHero'
@@ -51,7 +51,10 @@ function ExploreContent() {
   )
 
   const tags = useTags()
-  const selectedTagIds = useSelectedTagIds(selected, categoryId, tags)
+  const selectedTagIds = useMemo(
+    () => getSelectedTagIds(selected, categoryId, tags),
+    [selected, categoryId, tags]
+  )
   const selectedTagIdsKey = selectedTagIds.join(',')
 
   const hasActiveFilter =

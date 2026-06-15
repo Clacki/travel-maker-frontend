@@ -203,7 +203,7 @@ export function useTags() {
   return tags
 }
 
-export function useSelectedTagIds(
+export function getSelectedTagIds(
   selected: Record<string, string[]>,
   categoryId: string | null,
   tags: Tag[] | null
