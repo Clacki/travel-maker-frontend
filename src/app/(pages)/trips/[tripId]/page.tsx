@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
-import { findTripDetailById } from '@/features/trips/detail/data/tripDetailMock'
+
+import { getRouteDetail } from '@/features/trips/api/routesApi'
+import { toTripCourseDetail } from '@/features/trips/detail/data/tripDetailAdapter'
 import { TripDetailPage } from '@/features/trips/detail/TripDetailPage'
 
 interface TripDetailRoutePageProps {
@@ -10,9 +12,17 @@ export default async function TripDetailRoutePage({
   params,
 }: TripDetailRoutePageProps) {
   const { tripId } = await params
-  const trip = findTripDetailById(tripId)
+  const routeId = Number(tripId)
 
-  if (!trip) {
+  if (!Number.isInteger(routeId) || routeId <= 0) {
+    notFound()
+  }
+
+  let trip
+  try {
+    const route = await getRouteDetail(routeId)
+    trip = toTripCourseDetail(route)
+  } catch {
     notFound()
   }
 

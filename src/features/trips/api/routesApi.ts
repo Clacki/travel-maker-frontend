@@ -7,6 +7,7 @@ import type {
   PatchRouteResponse,
   RouteListParams,
   RouteListResult,
+  RouteDetail,
 } from '../types/route.types'
 
 export type {
@@ -16,6 +17,7 @@ export type {
   PatchRouteResponse,
   RouteListParams,
   RouteListResult,
+  RouteDetail,
 }
 
 type PaginatedRouteList = {
@@ -47,6 +49,11 @@ export const getRoutes = async (
   }
 
   return { items: data.results, totalCount: data.count }
+}
+
+export const getRouteDetail = async (routeId: number): Promise<RouteDetail> => {
+  const response = await api.get<RouteDetail>(`/routes/${routeId}`)
+  return response.data
 }
 
 export const patchRoute = async (
