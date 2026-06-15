@@ -1,2 +1,6 @@
 export { ReviewModal } from './ReviewModal'
-export type { ReviewModalProps, ReviewModalMode } from './ReviewModal'
+export type {
+  ReviewModalProps,
+  ReviewModalMode,
+  ReviewSubmitPayload,
+} from './ReviewModal'

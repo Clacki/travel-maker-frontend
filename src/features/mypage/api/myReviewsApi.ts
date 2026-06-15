@@ -6,6 +6,8 @@ export type MyReviewItem = {
   place_name: string
   rating: number
   content: string
+  image_url?: string | null
+  img_url?: string | null
   // TODO: 백엔드에서 리뷰 이미지 URL 필드가 추가되면 image_url 타입을 연결한다.
   created_at: string
   updated_at: string

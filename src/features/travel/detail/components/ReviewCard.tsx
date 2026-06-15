@@ -2,12 +2,18 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { isAxiosError } from 'axios'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
+import type { ReviewSubmitPayload } from '@/components/common/ReviewModal'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { deleteReview } from '@/features/reviews/api/reviewsApi'
+import {
+  deleteReview,
+  updateReview,
+  uploadReviewImage,
+} from '@/features/reviews/api/reviewsApi'
 
 import type { Review } from '../types/travelDetail.types'
 
@@ -91,6 +97,24 @@ const contentStyle = css({
   lineHeight: 'relaxed',
 })
 
+const reviewImageFrameStyle = css({
+  width: 'full',
+  maxW: '36rem',
+  maxH: '20rem',
+  overflow: 'hidden',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'lg',
+  bg: 'bg.muted',
+})
+
+const reviewImageStyle = css({
+  display: 'block',
+  width: 'full',
+  maxH: '20rem',
+  objectFit: 'cover',
+})
+
 const actionGroupStyle = css({
   display: 'flex',
   ml: 'auto',
@@ -161,8 +185,11 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
+  const [displayImageUrl, setDisplayImageUrl] = useState(review.imageUrl)
 
   const handleEditClick = () => {
     if (!isAuthInitialized) return
@@ -170,6 +197,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
       setIsLoginModalOpen(true)
       return
     }
+    setSubmitError(null)
     setIsEditOpen(true)
   }
 
@@ -182,11 +210,50 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
     setIsDeleteOpen(true)
   }
 
-  const handleEditSubmit = (newRating: number, newContent: string) => {
-    setDisplayRating(newRating)
-    setDisplayContent(newContent)
-    // TODO: 리뷰 수정 API 호출
-    setIsEditOpen(false)
+  const handleEditSubmit = async ({
+    rating,
+    content,
+    imageUrl,
+    imageFile,
+  }: ReviewSubmitPayload) => {
+    if (isSubmitting) {
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      let nextImageUrl = imageUrl
+
+      if (imageFile) {
+        try {
+          nextImageUrl = await uploadReviewImage(imageFile)
+        } catch (error) {
+          setSubmitError(
+            isAxiosError(error)
+              ? '이미지 업로드 URL 발급에 실패했습니다.'
+              : '이미지 업로드에 실패했습니다.'
+          )
+          return
+        }
+      }
+
+      await updateReview(review.id, {
+        rating,
+        content,
+        ...(nextImageUrl ? { image_url: nextImageUrl } : {}),
+      })
+
+      setDisplayRating(rating)
+      setDisplayContent(content)
+      setDisplayImageUrl(nextImageUrl ?? displayImageUrl)
+      setIsEditOpen(false)
+    } catch {
+      setSubmitError('리뷰 수정에 실패했습니다. 잠시 후 다시 시도해주세요.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleDelete = async () => {
@@ -257,6 +324,16 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
           )}
         </div>
         <p className={contentStyle}>{displayContent}</p>
+        {displayImageUrl && (
+          <div className={reviewImageFrameStyle}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={displayImageUrl}
+              alt={`${author.name} 리뷰 이미지`}
+              className={reviewImageStyle}
+            />
+          </div>
+        )}
       </article>
 
       {isOwner && isEditOpen && (
@@ -266,6 +343,9 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
           mode="edit"
           initialRating={displayRating}
           initialContent={displayContent}
+          initialImageSrc={displayImageUrl}
+          isSubmitting={isSubmitting}
+          errorMessage={submitError}
           onSubmit={handleEditSubmit}
         />
       )}

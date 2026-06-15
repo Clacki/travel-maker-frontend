@@ -78,6 +78,7 @@ export function MyReviewsSection({
             placeName={review.placeName}
             description={review.content}
             rating={review.rating}
+            imageUrl={review.imageUrl ?? undefined}
             canManage={canManage}
             onEditClick={onEditReview}
             onDeleteClick={onDeleteReview}

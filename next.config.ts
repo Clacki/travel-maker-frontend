@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'travel-maker-bucket.s3.ap-northeast-2.amazonaws.com',
-        pathname: '/profiles/**',
+        pathname: '/**',
       },
     ],
   },
