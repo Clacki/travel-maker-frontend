@@ -14,6 +14,8 @@ interface ProfileCardProps {
   onEditClick?: () => void
   onWithdrawClick?: () => void
   onFollowToggle?: () => void
+  onFollowerClick?: () => void
+  onFollowingClick?: () => void
 }
 
 const cardStyle = css({
@@ -97,12 +99,6 @@ const bioStyle = css({
 const statsRowStyle = css({
   display: 'flex',
   gap: '4',
-})
-
-const statItemStyle = css({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
 })
 
 const statValueStyle = css({
@@ -232,6 +228,21 @@ const withdrawButtonStyle = css({
   },
 })
 
+const statButtonStyle = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  bg: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  px: '1',
+  py: '0',
+  borderRadius: 'sm',
+  _hover: {
+    opacity: 0.7,
+  },
+})
+
 export function ProfileCard({
   user,
   isMyProfile,
@@ -242,6 +253,8 @@ export function ProfileCard({
   onEditClick,
   onWithdrawClick,
   onFollowToggle,
+  onFollowerClick,
+  onFollowingClick,
 }: ProfileCardProps) {
   return (
     <div className={cardStyle}>
@@ -278,14 +291,22 @@ export function ProfileCard({
         {user.bio && <p className={bioStyle}>{user.bio}</p>}
 
         <div className={statsRowStyle}>
-          <div className={statItemStyle}>
+          <button
+            type="button"
+            className={statButtonStyle}
+            onClick={onFollowerClick}
+          >
             <span className={statValueStyle}>{user.follower_count}</span>
             <span className={statLabelStyle}>팔로워</span>
-          </div>
-          <div className={statItemStyle}>
+          </button>
+          <button
+            type="button"
+            className={statButtonStyle}
+            onClick={onFollowingClick}
+          >
             <span className={statValueStyle}>{user.following_count}</span>
             <span className={statLabelStyle}>팔로잉</span>
-          </div>
+          </button>
         </div>
 
         {user.tags.length > 0 && (

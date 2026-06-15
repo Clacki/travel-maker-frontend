@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'tong.visitkorea.or.kr' },
       { protocol: 'http', hostname: 'tong.visitkorea.or.kr' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
+      {
+        protocol: 'https',
+        hostname: 'travel-maker-bucket.s3.ap-northeast-2.amazonaws.com',
+      },
     ],
   },
 }
