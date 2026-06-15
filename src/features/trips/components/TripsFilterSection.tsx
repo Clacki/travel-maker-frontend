@@ -1,20 +1,22 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import { EmptyState } from '@/components/common/status'
 import { FilterTag } from '@/components/common/tag'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
-import type { TripCourse, TripSortOption } from '../types/trip'
-import {
-  REGION_FILTERS,
-  SORT_OPTIONS,
-  THEME_FILTERS,
-} from '../data/tripCourses'
+import { toTripCourse } from '../types/trip'
+import { getRoutes } from '../api/routesApi'
 import { TripCourseCard } from './TripCourseCard'
+import type { RouteTag, TripCourse, TripSortOption } from '../types/trip'
 import { css } from '@/styled-system/css'
 
-const ITEMS_PER_PAGE = 9
+const SORT_OPTIONS: { label: string; value: TripSortOption }[] = [
+  { label: '최신순', value: 'latest' },
+  { label: '인기순', value: 'popular' },
+]
+
+const ALL_FILTER = '전체'
 
 const sectionStyle = css({
   display: 'grid',
@@ -99,6 +101,12 @@ const gridStyle = css({
   gap: '6',
 })
 
+const loadingGridStyle = css({
+  opacity: 0.5,
+  transitionProperty: 'opacity',
+  transitionDuration: '150ms',
+})
+
 const emptyStyle = css({
   py: '12',
   bg: 'bg.surface',
@@ -112,52 +120,75 @@ const paginationWrapStyle = css({
 })
 
 interface TripsFilterSectionProps {
-  courses: TripCourse[]
+  initialCourses: TripCourse[]
+  initialTotalCount: number
+  regionTags: RouteTag[]
+  themeTags: RouteTag[]
+  pageSize: number
 }
 
-function sortCourses(courses: TripCourse[], sort: TripSortOption) {
-  const sorted = [...courses]
-
-  if (sort === 'popular') {
-    return sorted.sort((a, b) => b.viewCount - a.viewCount)
-  }
-
-  if (sort === 'saved') {
-    return sorted.sort((a, b) => b.saveCount - a.saveCount)
-  }
-
-  return sorted.sort(
-    (a, b) =>
-      new Date(b.createdAt.replaceAll('.', '-')).getTime() -
-      new Date(a.createdAt.replaceAll('.', '-')).getTime()
-  )
-}
-
-export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
-  const [region, setRegion] = useState('전체')
-  const [theme, setTheme] = useState('전체')
+export function TripsFilterSection({
+  initialCourses,
+  initialTotalCount,
+  regionTags,
+  themeTags,
+  pageSize,
+}: TripsFilterSectionProps) {
+  const [region, setRegion] = useState(ALL_FILTER)
+  const [theme, setTheme] = useState(ALL_FILTER)
   const [sort, setSort] = useState<TripSortOption>('latest')
   const [currentPage, setCurrentPage] = useState(1)
 
-  const filteredCourses = useMemo(() => {
-    const filtered = courses.filter((course) => {
-      const matchesRegion = region === '전체' || course.region === region
-      const matchesTheme = theme === '전체' || course.themes.includes(theme)
-      return matchesRegion && matchesTheme
+  const [courses, setCourses] = useState<TripCourse[]>(initialCourses)
+  const [totalCount, setTotalCount] = useState(initialTotalCount)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // 초기 상태(필터 없음, 최신순, 1페이지)는 서버에서 받은 데이터를 그대로 쓴다.
+  const isInitialState = useRef(true)
+  const requestId = useRef(0)
+
+  const regionTagMap = new Map(regionTags.map((tag) => [tag.tag_name, tag.id]))
+  const themeTagMap = new Map(themeTags.map((tag) => [tag.tag_name, tag.id]))
+
+  useEffect(() => {
+    if (isInitialState.current) {
+      isInitialState.current = false
+      return
+    }
+
+    const id = ++requestId.current
+    setIsLoading(true)
+
+    const regionTagId =
+      region === ALL_FILTER ? undefined : regionTagMap.get(region)
+    const themeTagId = theme === ALL_FILTER ? undefined : themeTagMap.get(theme)
+
+    getRoutes({
+      ordering: sort,
+      page: currentPage,
+      page_size: pageSize,
+      region_tag_id: regionTagId,
+      theme_tag_ids: themeTagId !== undefined ? [themeTagId] : undefined,
     })
+      .then((result) => {
+        if (id !== requestId.current) return
+        setCourses(result.items.map(toTripCourse))
+        setTotalCount(result.totalCount)
+      })
+      .catch(() => {
+        if (id !== requestId.current) return
+        setCourses([])
+        setTotalCount(0)
+      })
+      .finally(() => {
+        if (id !== requestId.current) return
+        setIsLoading(false)
+      })
+    // regionTagMap/themeTagMap은 props 기반으로 안정적이라 의존성에서 제외한다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [region, theme, sort, currentPage, pageSize])
 
-    return sortCourses(filtered, sort)
-  }, [courses, region, sort, theme])
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredCourses.length / ITEMS_PER_PAGE)
-  )
-
-  const visibleCourses = filteredCourses.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
   const changeRegion = (nextRegion: string) => {
     setRegion(nextRegion)
@@ -175,11 +206,14 @@ export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
   }
 
   const resetFilters = () => {
-    setRegion('전체')
-    setTheme('전체')
+    setRegion(ALL_FILTER)
+    setTheme(ALL_FILTER)
     setSort('latest')
     setCurrentPage(1)
   }
+
+  const regionFilters = [ALL_FILTER, ...regionTags.map((tag) => tag.tag_name)]
+  const themeFilters = [ALL_FILTER, ...themeTags.map((tag) => tag.tag_name)]
 
   return (
     <section className={sectionStyle} aria-labelledby="trip-list-title">
@@ -190,7 +224,7 @@ export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
             지역
           </span>
           <div className={chipGroupStyle}>
-            {REGION_FILTERS.map((filter) => (
+            {regionFilters.map((filter) => (
               <FilterTag
                 key={filter}
                 label={filter}
@@ -208,7 +242,7 @@ export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
             테마
           </span>
           <div className={chipGroupStyle}>
-            {THEME_FILTERS.map((filter) => (
+            {themeFilters.map((filter) => (
               <FilterTag
                 key={filter}
                 label={filter}
@@ -221,9 +255,7 @@ export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
         </div>
 
         <div className={sortRowStyle}>
-          <p className={countTextStyle}>
-            총 {filteredCourses.length}개의 여행 코스
-          </p>
+          <p className={countTextStyle}>총 {totalCount}개의 여행 코스</p>
           <select
             aria-label="정렬"
             className={sortSelectStyle}
@@ -241,13 +273,16 @@ export function TripsFilterSection({ courses }: TripsFilterSectionProps) {
         </div>
       </div>
 
-      {visibleCourses.length > 0 ? (
+      {courses.length > 0 ? (
         <>
           <h2 id="trip-list-title" className={css({ srOnly: true })}>
             여행 코스 목록
           </h2>
-          <div className={gridStyle}>
-            {visibleCourses.map((course) => (
+          <div
+            className={`${gridStyle} ${isLoading ? loadingGridStyle : ''}`}
+            aria-busy={isLoading ? 'true' : 'false'}
+          >
+            {courses.map((course) => (
               <TripCourseCard key={course.id} course={course} />
             ))}
           </div>
