@@ -27,6 +27,20 @@ export type MyReviewCardItem = {
   updatedAt: string
 }
 
+export type MyTripCourse = {
+  routeId: number
+  title: string
+  description: string
+  imageUrl?: string | null
+  regionName?: string
+  startDate?: string
+  endDate?: string
+  dayCount?: number
+  placeCount?: number
+  tags: string[]
+  isPublic: boolean
+}
+
 export type ReviewModalState = {
   isOpen: boolean
   mode: ReviewModalMode
