@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
-import { getPlacesSearch } from '@/features/explore/api/placesApi'
-import type { Place } from '@/features/explore/types/places.types'
+import { getPlacesSearch } from '@/lib/placesApi'
+import type { Place } from '@/types/place.types'
 import { useCourseStore } from '@/store/tripsStore'
 
 import { css } from '@/styled-system/css'
