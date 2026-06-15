@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import axios from 'axios'
 
 import TagList from './TagList'
@@ -8,6 +8,7 @@ import InfoGrid from './InfoGrid'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
+import { getTravelDetail } from '../api/travelDetailApi'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -157,6 +158,13 @@ export default function InfoCard({ detail }: InfoCardProps) {
   const [isWishPending, setIsWishPending] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const isSharing = useRef(false)
+
+  useEffect(() => {
+    if (!isAuthInitialized || !isLoggedIn) return
+    getTravelDetail(String(id))
+      .then((data) => setIsWished(data.is_bookmarked ?? false))
+      .catch((error) => console.error('찜 상태 동기화 실패', error))
+  }, [isAuthInitialized, isLoggedIn, id])
 
   const handleWishToggle = async () => {
     if (!isAuthInitialized || isWishPending) {
