@@ -67,6 +67,7 @@ export default function Home() {
             py: { base: 8, lg: 0 },
             wordBreak: 'keep-all',
             overflowWrap: 'break-word',
+            userSelect: 'none',
           })}
         >
           <div
