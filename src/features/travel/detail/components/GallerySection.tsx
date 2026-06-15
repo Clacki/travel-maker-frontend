@@ -98,7 +98,7 @@ const THUMBNAIL_COUNT = 4
 
 export default function GallerySection({
   images,
-  placeId,
+  placeId: _placeId,
 }: GallerySectionProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isDraggingStyle, setIsDraggingStyle] = useState(false)
@@ -151,6 +151,7 @@ export default function GallerySection({
               src={mainImage}
               alt="여행지 메인 이미지"
               fill
+              sizes="(max-width: 1024px) 100vw, 58vw"
               style={{ objectFit: 'cover' }}
               priority
             />
@@ -190,6 +191,7 @@ export default function GallerySection({
                 src={src}
                 alt={`여행지 이미지 ${index + 1}`}
                 fill
+                sizes="80px"
                 draggable={false}
                 style={{ objectFit: 'cover' }}
               />

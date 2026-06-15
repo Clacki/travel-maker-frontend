@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { buttonRecipe } from '@/components/common/button/Button'
 import { css, cx } from '@/styled-system/css'
 
@@ -76,6 +76,14 @@ const mapButtonStyle = css({
   zIndex: 10,
 })
 
+const mapSkeletonStyle = css({
+  position: 'absolute',
+  inset: 0,
+  bg: 'bg.subtle',
+  animation: 'pulse',
+  zIndex: 1,
+})
+
 const APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
 
 export default function MapSection({
@@ -84,6 +92,7 @@ export default function MapSection({
   longitude,
 }: MapSectionProps) {
   const mapRef = useRef<HTMLDivElement>(null)
+  const [isMapReady, setIsMapReady] = useState(false)
   const kakaoMapUrl = `https://map.kakao.com/link/map/${encodeURIComponent(name)},${latitude},${longitude}`
 
   useEffect(() => {
@@ -98,6 +107,7 @@ export default function MapSection({
         })
         const marker = new window.kakao.maps.Marker({ position: center })
         marker.setMap(map)
+        setIsMapReady(true)
       })
     }
 
@@ -108,16 +118,20 @@ export default function MapSection({
 
     const script = document.createElement('script')
     script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${APP_KEY}&autoload=false`
+    script.async = true
     script.onload = renderMap
     document.head.appendChild(script)
 
     return () => {
-      document.head.removeChild(script)
+      if (document.head.contains(script)) {
+        document.head.removeChild(script)
+      }
     }
   }, [latitude, longitude])
 
   return (
     <div className={wrapperStyle}>
+      {!isMapReady && <div className={mapSkeletonStyle} />}
       <div ref={mapRef} className={mapContainerStyle} />
       <span className={addressOverlayStyle}>{name}</span>
       <a

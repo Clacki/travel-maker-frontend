@@ -109,6 +109,44 @@ export default function DetailLoading() {
             <div className={mapSkeletonStyle} />
           </div>
         </div>
+
+        {/* 리뷰 섹션 */}
+        <div
+          className={css({
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '3',
+          })}
+        >
+          <Skeleton width="48px" height="24px" />
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className={css({
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '3',
+                p: '4',
+                borderRadius: 'lg',
+                border: '1px solid',
+                borderColor: 'border.subtle',
+              })}
+            >
+              <div
+                className={css({
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '2',
+                })}
+              >
+                <Skeleton width="32px" height="32px" radius="pill" />
+                <Skeleton width="80px" height="14px" />
+              </div>
+              <Skeleton width="100%" height="14px" />
+              <Skeleton width="70%" height="14px" />
+            </div>
+          ))}
+        </div>
       </div>
     </PageLayout>
   )
