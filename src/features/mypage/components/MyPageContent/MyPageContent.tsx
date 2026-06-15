@@ -105,10 +105,11 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     handleReviewSubmit,
     handleReviewDeleteConfirm,
   } = useMyReviews({
-    enabled: activeTab === 'review',
+    enabled: isOwner ? activeTab === 'review' : isAuthInitialized && isLoggedIn,
     canManage: canManageReviews,
     isAuthInitialized,
     isLoggedIn,
+    targetUserId: isOwner ? undefined : user.id,
   })
 
   const normalizedTravelTypeResult = useMemo(

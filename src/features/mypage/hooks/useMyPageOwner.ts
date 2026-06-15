@@ -82,7 +82,7 @@ export function useMyPageOwner(userId: string) {
         following_count: publicProfile.following_count,
         email: '',
         bookmark_count: 0,
-        review_count: 0,
+        review_count: publicProfile.review_count,
         travel_type_name: publicProfile.travel_type_name,
         created_at: publicProfile.created_at,
         updated_at: publicProfile.updated_at,

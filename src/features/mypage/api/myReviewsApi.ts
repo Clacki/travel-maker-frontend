@@ -38,3 +38,20 @@ export async function getMyReviews({
 
   return response.data
 }
+
+export async function getPublicUserReviews(
+  userId: number,
+  { page = 1, pageSize = 8 }: GetMyReviewsParams = {}
+) {
+  const response = await api.get<MyReviewsResponse>(
+    `/users/${userId}/reviews`,
+    {
+      params: {
+        page,
+        page_size: pageSize,
+      },
+    }
+  )
+
+  return response.data
+}
