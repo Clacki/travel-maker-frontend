@@ -1,5 +1,1 @@
-export type Tag = {
-  id: number
-  tag_name: string
-  tag_type: string
-}
+export type { Tag } from '@/types/tag.types'

@@ -8,7 +8,8 @@ import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { toTripCourse } from '../types/trip'
 import { getRoutes } from '../api/routesApi'
 import { TripCourseCard } from './TripCourseCard'
-import type { RouteTag, TripCourse, TripSortOption } from '../types/trip'
+import type { TripCourse, TripSortOption } from '../types/trip'
+import type { Tag } from '@/types/tag.types'
 import { css } from '@/styled-system/css'
 
 const SORT_OPTIONS: { label: string; value: TripSortOption }[] = [
@@ -122,8 +123,8 @@ const paginationWrapStyle = css({
 interface TripsFilterSectionProps {
   initialCourses: TripCourse[]
   initialTotalCount: number
-  regionTags: RouteTag[]
-  themeTags: RouteTag[]
+  regionTags: Tag[]
+  themeTags: Tag[]
   pageSize: number
 }
 

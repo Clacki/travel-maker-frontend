@@ -27,11 +27,6 @@ export type RouteListItem = {
   theme_tags: string[]
 }
 
-export type RouteTag = {
-  id: number
-  tag_name: string
-}
-
 const FALLBACK_IMAGE = '/images/bg_Theme/travel-bg.webp'
 
 export function toTripCourse(item: RouteListItem): TripCourse {

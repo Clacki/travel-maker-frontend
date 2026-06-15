@@ -5,7 +5,7 @@ import { TripsFilterSection } from './components/TripsFilterSection'
 import { getRoutes } from './api/routesApi'
 import { getRegionTags, getThemeTags } from './api/tagsApi'
 import { toTripCourse } from './types/trip'
-import type { RouteTag } from './types/trip'
+import type { Tag } from '@/types/tag.types'
 import { css } from '@/styled-system/css'
 
 const pageStyle = css({
@@ -31,8 +31,8 @@ export async function TripsListPage() {
         items: [],
         totalCount: 0,
       })),
-      getRegionTags().catch((): RouteTag[] => []),
-      getThemeTags().catch((): RouteTag[] => []),
+      getRegionTags().catch((): Tag[] => []),
+      getThemeTags().catch((): Tag[] => []),
     ]
   )
 

@@ -13,12 +13,8 @@ import {
   patchRoute,
   type CreateRouteRequest,
 } from '@/features/trips/api/routesApi'
-import { getTags } from '@/features/explore/api/tagsApi'
-import type { Tag } from '@/features/explore/types/tags.types'
-import {
-  REGION_OPTIONS,
-  THEME_OPTIONS,
-} from '@/features/trips/types/course.types'
+import { getRegionTags, getThemeTags } from '@/features/trips/api/tagsApi'
+import type { Tag } from '@/types/tag.types'
 import { ROUTES } from '@/constants/routes'
 
 import { css, cx } from '@/styled-system/css'
@@ -295,14 +291,12 @@ export function CourseMapPanel({
     }
   }, [mode, resetCourse])
 
-  // 전체 태그 조회 후 알려진 tag_name 집합으로 분류
+  // 지역/테마 태그 분리 조회
   useEffect(() => {
-    const regionSet = new Set<string>(REGION_OPTIONS)
-    const themeSet = new Set<string>(THEME_OPTIONS)
-    getTags()
-      .then((allTags) => {
-        setRegionTags(allTags.filter((t) => regionSet.has(t.tag_name)))
-        setThemeTags(allTags.filter((t) => themeSet.has(t.tag_name)))
+    Promise.all([getRegionTags(), getThemeTags()])
+      .then(([regions, themes]) => {
+        setRegionTags(regions)
+        setThemeTags(themes)
       })
       .catch(() => {
         setTagLoadError(
