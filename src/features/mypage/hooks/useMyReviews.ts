@@ -56,7 +56,7 @@ function mapMyReviewToCard(review: MyReviewItem): MyReviewCardItem {
     placeName: review.place_name,
     rating: review.rating,
     content: review.content,
-    imageUrl: review.image_url ?? null,
+    imageUrl: review.image_url ?? review.img_url ?? null,
     createdAt: review.created_at,
     updatedAt: review.updated_at,
   }

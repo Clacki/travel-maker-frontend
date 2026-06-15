@@ -10,6 +10,7 @@ export type PlaceReviewItem = {
   rating: number
   content: string
   image_url: string | null
+  img_url?: string | null
   created_at: string
   updated_at: string
   is_owner: boolean

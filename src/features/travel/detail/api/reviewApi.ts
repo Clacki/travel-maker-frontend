@@ -13,7 +13,7 @@ export const getPlaceReviews = async (placeId: number): Promise<Review[]> => {
     author: { id: item.user_id, name: item.user_nickname },
     rating: item.rating,
     content: item.content,
-    imageUrl: item.image_url,
+    imageUrl: item.image_url ?? item.img_url ?? null,
     createdAt: item.created_at,
     isOwner: item.is_owner,
   }))

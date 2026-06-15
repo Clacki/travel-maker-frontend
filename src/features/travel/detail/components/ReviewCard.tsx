@@ -97,6 +97,24 @@ const contentStyle = css({
   lineHeight: 'relaxed',
 })
 
+const reviewImageFrameStyle = css({
+  width: 'full',
+  maxW: '36rem',
+  maxH: '20rem',
+  overflow: 'hidden',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'lg',
+  bg: 'bg.muted',
+})
+
+const reviewImageStyle = css({
+  display: 'block',
+  width: 'full',
+  maxH: '20rem',
+  objectFit: 'cover',
+})
+
 const actionGroupStyle = css({
   display: 'flex',
   ml: 'auto',
@@ -306,6 +324,16 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
           )}
         </div>
         <p className={contentStyle}>{displayContent}</p>
+        {displayImageUrl && (
+          <div className={reviewImageFrameStyle}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={displayImageUrl}
+              alt={`${author.name} 리뷰 이미지`}
+              className={reviewImageStyle}
+            />
+          </div>
+        )}
       </article>
 
       {isOwner && isEditOpen && (
