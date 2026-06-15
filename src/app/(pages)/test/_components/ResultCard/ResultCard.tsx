@@ -50,14 +50,11 @@ const typeNameStyle = css({
 })
 
 const bannerStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
   mx: '6',
-  py: '8',
+  h: '220px',
   borderRadius: 'xl',
-  /* TODO: gradient token이 없으므로 primary.soft 단색 처리. 디자인 확정 후 linear-gradient 적용 */
-  bg: 'primary.soft',
+  overflow: 'hidden',
+  position: 'relative',
 })
 
 const titleSectionStyle = css({

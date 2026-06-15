@@ -56,14 +56,14 @@ function normalizeRelatedType(
 }
 
 export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
-  const {
-    resultVector,
-    typeKey: storeTypeKey,
-    apiResult,
-  } = useQuizStore()
+  const { resultVector, typeKey: storeTypeKey, apiResult } = useQuizStore()
   const router = useRouter()
 
+  // type_key: API 우선 → 로컬 계산 → sharedTypeKey 순으로 폴백
   const effectiveTypeKey =
+    (apiResult?.type_key && isValidTypeKey(apiResult.type_key)
+      ? apiResult.type_key
+      : null) ??
     storeTypeKey ??
     (sharedTypeKey && isValidTypeKey(sharedTypeKey) ? sharedTypeKey : null)
 
@@ -78,11 +78,27 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
   }
 
   const typeData = TRAVEL_TYPE_MAP[effectiveTypeKey]
-  const effectiveVector = resultVector ?? buildDefaultVector(effectiveTypeKey)
 
-  const description = apiResult?.description ?? (resultVector
-    ? buildDescription(resultVector)
-    : typeData.traits[0].description)
+  // result_vector: API가 JSON 문자열로 반환하므로 파싱 필요
+  const parsedApiVector: number[] | null = (() => {
+    if (!apiResult?.result_vector) return null
+    try {
+      const parsed = JSON.parse(apiResult.result_vector)
+      return Array.isArray(parsed) ? parsed : null
+    } catch {
+      return null
+    }
+  })()
+
+  // result_vector: 파싱된 API 값 우선 → 로컬 계산 → buildDefaultVector 순으로 폴백
+  const effectiveVector =
+    parsedApiVector ?? resultVector ?? buildDefaultVector(effectiveTypeKey)
+
+  const description =
+    apiResult?.description ??
+    (resultVector
+      ? buildDescription(resultVector)
+      : typeData.traits[0].description)
   const compassAxes = buildCompassAxes(effectiveVector)
   const typeIndex = TYPE_KEY_ORDER[effectiveTypeKey]
   const typeLabel = `TYPE · ${String(typeIndex).padStart(2, '0')} / 08`
@@ -96,6 +112,9 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
 
   const thumbnailSrc = apiResult?.image_url || typeData.imageSrc
   const keywords = apiResult?.type_tags ?? typeData.tags
+
+  // name: API 우선 → TRAVEL_TYPE_MAP 폴백
+  const typeName = apiResult?.name ?? typeData.name
 
   const traits = apiResult?.detail_cards
     ? apiResult.detail_cards.map((card, i) => ({
@@ -113,6 +132,7 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
     title: d.place_name,
     description: d.description ?? '',
     hashtags: d.tags,
+    matchRate: d.match_rate,
   }))
 
   const allTypes = (Object.entries(TYPE_KEY_ORDER) as [TypeKey, number][])
@@ -134,16 +154,17 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
 
   const result = {
     typeCode: typeData.typeCode,
-    typeName: typeData.name,
+    typeName,
     typeNameEn: typeData.nameEn,
     typeLabel,
     description,
     thumbnailSrc,
     keywords,
+    matchScore: apiResult?.accuracy,
     typeRank: typeIndex,
     compassData: {
       centerImageSrc: typeData.imageSrc,
-      centerLabel: typeData.name,
+      centerLabel: typeName,
       axes: compassAxes,
       reading: buildDescription(effectiveVector),
       traits,

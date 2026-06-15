@@ -18,11 +18,17 @@ const avatarButtonStyle = css({
 })
 
 export function AvatarButton({ travelTypeId }: AvatarButtonProps) {
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
   const [status, setStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
   >('idle')
   const isLoadingRef = useRef(false)
+
+  // 인증 초기화 전이거나 비로그인 상태면 버튼 미노출
+  if (!isAuthInitialized || !isLoggedIn) {
+    return null
+  }
 
   const handleClick = async () => {
     if (isLoadingRef.current) {
@@ -32,8 +38,8 @@ export function AvatarButton({ travelTypeId }: AvatarButtonProps) {
     setStatus('loading')
 
     try {
-      await patchUserAvatar(travelTypeId)
-      setStatus('success')
+      const result = await patchUserAvatar(travelTypeId)
+      setStatus(result.updated ? 'success' : 'error')
       setTimeout(() => setStatus('idle'), 2000)
     } catch (error) {
       console.error('프로필 이미지 지정 실패:', error)
@@ -59,7 +65,7 @@ export function AvatarButton({ travelTypeId }: AvatarButtonProps) {
         avatarButtonStyle
       )}
       onClick={handleClick}
-      disabled={!isAuthInitialized || status === 'loading'}
+      disabled={status === 'loading'}
     >
       {label}
     </button>
