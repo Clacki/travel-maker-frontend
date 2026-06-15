@@ -14,6 +14,7 @@ import { css } from '@/styled-system/css'
 import { isAxiosError } from 'axios'
 
 import { followUser, unfollowUser } from '../../api/followApi'
+import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { normalizeTravelTypeResult } from '../../api/travelTypeResultApi'
 import { mockTravelTypeResultResponse } from '../../data/travelTypeResultMock'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
@@ -69,6 +70,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
+  const [followModal, setFollowModal] = useState<{
+    type: 'followers' | 'following'
+    isOpen: boolean
+  }>({ type: 'followers', isOpen: false })
   const [isFollowing, setIsFollowing] = useState(false)
   const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [localFollowerCount, setLocalFollowerCount] = useState<number | null>(
@@ -217,6 +222,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         onEditClick={handleEditProfile}
         onWithdrawClick={() => setIsWithdrawOpen(true)}
         onFollowToggle={handleFollowToggle}
+        onFollowerClick={() =>
+          setFollowModal({ type: 'followers', isOpen: true })
+        }
+        onFollowingClick={() =>
+          setFollowModal({ type: 'following', isOpen: true })
+        }
       />
 
       <div className={tabContentStyle}>
@@ -271,6 +282,13 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           />
         )}
       </div>
+
+      <FollowListModal
+        isOpen={followModal.isOpen}
+        userId={user.id}
+        type={followModal.type}
+        onClose={() => setFollowModal((prev) => ({ ...prev, isOpen: false }))}
+      />
 
       <WithdrawModal
         isOpen={isWithdrawOpen}
