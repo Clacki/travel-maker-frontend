@@ -2,7 +2,7 @@ import { PageLayout } from '@/components/layout/PageLayout'
 import Breadcrumb from './components/Breadcrumb'
 import GallerySectionContainer from './components/GallerySectionContainer'
 import InfoCard from './components/InfoCard'
-import MapSection from './components/MapSection'
+import MapSectionClient from './components/MapSectionClient'
 import ReviewsSection from './components/ReviewsSection'
 
 import type { TravelDetail } from './types/travelDetail.types'
@@ -17,6 +17,7 @@ const pageStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '8',
+  animation: 'blurIn 0.6s ease-out',
 })
 
 const contentGridStyle = css({
@@ -43,7 +44,7 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
 
           <div className={rightColumnStyle}>
             <InfoCard detail={detail} />
-            <MapSection
+            <MapSectionClient
               name={detail.place_name}
               latitude={detail.latitude}
               longitude={detail.longitude}

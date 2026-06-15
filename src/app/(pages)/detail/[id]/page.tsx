@@ -1,16 +1,16 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { isAxiosError } from 'axios'
 
 import { getTravelDetail } from '@/features/travel/detail/api/travelDetailApi'
 import TravelDetailPage from '@/features/travel/detail/TravelDetailPage'
+import DetailLoading from './loading'
 
 interface DetailPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function DetailPage({ params }: DetailPageProps) {
-  const { id } = await params
-
+async function TravelDetailContent({ id }: { id: string }) {
   let detail
   try {
     detail = await getTravelDetail(id)
@@ -24,4 +24,14 @@ export default async function DetailPage({ params }: DetailPageProps) {
   }
 
   return <TravelDetailPage detail={detail} />
+}
+
+export default async function DetailPage({ params }: DetailPageProps) {
+  const { id } = await params
+
+  return (
+    <Suspense fallback={<DetailLoading />}>
+      <TravelDetailContent id={id} />
+    </Suspense>
+  )
 }
