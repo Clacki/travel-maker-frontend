@@ -1,6 +1,6 @@
 'use client'
 
-import { type RefObject } from 'react'
+import { type RefObject, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
 import { css, cx } from '@/styled-system/css'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
@@ -56,11 +56,8 @@ export function ExploreGrid({
             ))}
           </div>
         ) : places.length > 0 ? (
-          <>
-            <div
-              key={`places-${places.length}-${places[0]?.id ?? ''}`}
-              className={cx(gridStyle, fadeInStyle)}
-            >
+          <Fragment key={`places-${places.length}-${places[0]?.id ?? ''}`}>
+            <div className={cx(gridStyle, fadeInStyle)}>
               {places.map((place) => (
                 <div
                   key={place.id}
@@ -93,7 +90,7 @@ export function ExploreGrid({
               totalPages={totalPages}
               onPageChange={onPageChange}
             />
-          </>
+          </Fragment>
         ) : (
           <div className={css({ textAlign: 'center', py: 20 })}>
             <p

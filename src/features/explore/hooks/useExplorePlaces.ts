@@ -59,7 +59,6 @@ export function useExplorePlaces({
     if (!isAuthInitialized) return
 
     let cancelled = false
-    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
     if (pendingTag) return
 
     if (sort === 'recommended') {
@@ -91,12 +90,13 @@ export function useExplorePlaces({
           if (cancelled) return
           setPlaces(data.results)
           setTotalCount(data.count)
-          setFetchedKey(key)
+          setFetchedKey(currentKey)
         })
         .catch(() => {
           if (cancelled) return
           setPlaces([])
-          setFetchedKey(key)
+          setTotalCount(0)
+          setFetchedKey(currentKey)
         })
 
       return () => {
@@ -137,12 +137,13 @@ export function useExplorePlaces({
         if (cancelled) return
         setPlaces(data.results)
         setTotalCount(data.count)
-        setFetchedKey(key)
+        setFetchedKey(currentKey)
       })
       .catch(() => {
         if (cancelled) return
         setPlaces([])
-        setFetchedKey(key)
+        setTotalCount(0)
+        setFetchedKey(currentKey)
       })
 
     return () => {

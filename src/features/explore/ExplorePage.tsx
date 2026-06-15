@@ -116,7 +116,7 @@ function ExploreContent() {
     let newCategoryId = categoryId
     if (styleValues.length === 1 && styleValues[0] !== 'all') {
       newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
-    } else if (styleValues.length === 0 || styleValues.includes('all')) {
+    } else {
       newCategoryId = null
     }
 
@@ -197,7 +197,6 @@ function ExploreContent() {
         onPageChange={goToPage}
         onClearFilters={clearAllFilters}
       />
-
 
       <LoginModal
         isOpen={isLoginModalOpen}
