@@ -12,6 +12,14 @@ import CourseMapPanel from '@/features/trips/CourseMapPanel'
 import { PlaceSearchSection } from '@/features/trips/CourseMapPanel/components/PlaceSearchSection'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
 
+import {
+  pageStyle,
+  headerStyle,
+  badgeDotStyle,
+  pageSubtitleStyle,
+  bodyStyle,
+} from '@/features/trips/styles/courseEditor.styles'
+
 import { css } from '@/styled-system/css'
 
 export const metadata: Metadata = {
@@ -19,16 +27,6 @@ export const metadata: Metadata = {
   description:
     '가고 싶은 장소를 지도에서 담고, 일정에 맞춰 나만의 여행 코스를 완성해보세요.',
 }
-
-const pageStyle = css({
-  minH: 'calc(100vh - 72px)',
-  bg: 'bg.canvas',
-})
-
-const headerStyle = css({
-  pt: '6',
-  pb: '4',
-})
 
 const badgeStyle = css({
   display: 'inline-flex',
@@ -44,30 +42,12 @@ const badgeStyle = css({
   mb: '3',
 })
 
-const badgeDotStyle = css({
-  w: '1.5',
-  h: '1.5',
-  borderRadius: 'pill',
-  bg: 'primary',
-  flexShrink: 0,
-})
-
 const pageTitleStyle = css({
   fontSize: '3xl',
   fontWeight: 'semibold',
   color: 'text.primary',
   lineHeight: 'tight',
   mb: '2',
-})
-
-const pageSubtitleStyle = css({
-  fontSize: 'sm',
-  color: 'text.secondary',
-})
-
-const bodyStyle = css({
-  display: 'flex',
-  alignItems: 'flex-start',
 })
 
 const leftStyle = css({

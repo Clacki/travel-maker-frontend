@@ -1,18 +1,9 @@
-import api from '@/lib/api'
-import type { RouteTag } from '../types/trip'
+import { getTags } from '@/lib/tagsApi'
+import type { Tag } from '@/types/tag.types'
 
 const REGION_TAG_TYPE = '지역'
 const THEME_TAG_TYPE = '세부 테마'
 
-const getTagsByType = async (tagType: string): Promise<RouteTag[]> => {
-  const response = await api.get<RouteTag[]>('/tags/', {
-    params: { tag_type: tagType },
-  })
-  return response.data.map((tag) => ({ id: tag.id, tag_name: tag.tag_name }))
-}
+export const getRegionTags = (): Promise<Tag[]> => getTags(REGION_TAG_TYPE)
 
-export const getRegionTags = (): Promise<RouteTag[]> =>
-  getTagsByType(REGION_TAG_TYPE)
-
-export const getThemeTags = (): Promise<RouteTag[]> =>
-  getTagsByType(THEME_TAG_TYPE)
+export const getThemeTags = (): Promise<Tag[]> => getTags(THEME_TAG_TYPE)

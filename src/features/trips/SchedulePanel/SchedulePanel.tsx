@@ -10,30 +10,13 @@ import { DayTabGroup } from './components/DayTabGroup'
 import { TimelineSection } from './components/TimelineSection'
 import { TimePicker } from './components/TimePicker'
 
+import {
+  cardStyle,
+  cardTitleStyle,
+  cardDescStyle,
+} from '@/features/trips/styles/courseEditor.styles'
+
 import { css } from '@/styled-system/css'
-
-const cardStyle = css({
-  bg: 'bg.surface',
-  borderRadius: '2xl',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  p: '4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4',
-})
-
-const cardTitleStyle = css({
-  fontSize: 'md',
-  fontWeight: 'semibold',
-  color: 'text.primary',
-})
-
-const cardDescStyle = css({
-  fontSize: 'sm',
-  color: 'text.secondary',
-  mt: '0.5',
-})
 
 const gridStyle = css({
   display: 'grid',

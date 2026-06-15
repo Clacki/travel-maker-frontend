@@ -4,38 +4,22 @@ import dynamic from 'next/dynamic'
 
 import { useCourseStore } from '@/store/tripsStore'
 import type { CoursePlace } from '@/features/trips/types/course.types'
+import {
+  cardStyle,
+  cardTitleStyle,
+  cardDescStyle,
+} from '@/features/trips/styles/courseEditor.styles'
 
 import { css } from '@/styled-system/css'
 
 import { CourseInfoSection } from './components/CourseInfoSection'
 
+const loadingStyle = css({ h: '20' })
+
 const PlaceListSection = dynamic(
   () => import('./components/PlaceListSection').then((m) => m.PlaceListSection),
-  { ssr: false, loading: () => <div style={{ height: '80px' }} /> }
+  { ssr: false, loading: () => <div className={loadingStyle} /> }
 )
-
-const cardStyle = css({
-  bg: 'bg.surface',
-  borderRadius: '2xl',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  p: '4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4',
-})
-
-const cardTitleStyle = css({
-  fontSize: 'md',
-  fontWeight: 'semibold',
-  color: 'text.primary',
-})
-
-const cardDescStyle = css({
-  fontSize: 'sm',
-  color: 'text.secondary',
-  mt: '0.5',
-})
 
 const cardHeaderStyle = css({
   display: 'flex',
