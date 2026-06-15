@@ -17,7 +17,7 @@ const pageStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '8',
-  animation: 'fadeIn 0.3s ease',
+  animation: 'blurIn 0.6s ease-out',
 })
 
 const contentGridStyle = css({

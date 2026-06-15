@@ -11,6 +11,17 @@
   }
 }
 
+@keyframes blurIn {
+  from {
+    filter: blur(12px);
+    opacity: 0.6;
+  }
+  to {
+    filter: blur(0px);
+    opacity: 1;
+  }
+}
+
 @layer base {
   :root {
     color-scheme: light;
