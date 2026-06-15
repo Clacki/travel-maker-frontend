@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 
 import Image from 'next/image'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import { css, cx } from '@/styled-system/css'
 
@@ -58,6 +59,23 @@ const thumbnailSelectedStyle = css({
   borderColor: 'primary',
 })
 
+const thumbnailOverlayStyle = css({
+  position: 'absolute',
+  inset: 0,
+  bg: 'primary/40',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  pointerEvents: 'none',
+})
+
+const checkIconStyle = css({
+  w: '20px',
+  h: '20px',
+  color: 'white',
+  filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
+})
+
 const moreButtonStyle = css({
   flex: '0 0 80px',
   width: '80px',
@@ -91,7 +109,7 @@ export default function GallerySection({
   const dragMoved = useRef(false)
 
   const mainImage = images[selectedIndex] ?? images[0]
-  const thumbnails = images.slice(1)
+  const thumbnails = images
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (!rowRef.current) return
@@ -120,13 +138,24 @@ export default function GallerySection({
   return (
     <div className={wrapperStyle}>
       <div className={mainImageWrapperStyle}>
-        <Image
-          src={mainImage}
-          alt="여행지 메인 이미지"
-          fill
-          style={{ objectFit: 'cover' }}
-          priority
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className={css({ position: 'absolute', inset: 0 })}
+          >
+            <Image
+              src={mainImage}
+              alt="여행지 메인 이미지"
+              fill
+              style={{ objectFit: 'cover' }}
+              priority
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       <div
@@ -141,13 +170,12 @@ export default function GallerySection({
         onMouseLeave={handleMouseUp}
       >
         {thumbnails.map((src, index) => {
-          const actualIndex = index + 1
-          const isSelected = selectedIndex === actualIndex
+          const isSelected = selectedIndex === index
           return (
             <button
               key={src}
               type="button"
-              aria-label={`${actualIndex + 1}번째 이미지 보기`}
+              aria-label={`${index + 1}번째 이미지 보기`}
               aria-pressed={isSelected}
               className={cx(
                 thumbnailWrapperStyle,
@@ -155,20 +183,35 @@ export default function GallerySection({
               )}
               draggable={false}
               onClick={() => {
-                if (!dragMoved.current) setSelectedIndex(actualIndex)
+                if (!dragMoved.current) setSelectedIndex(index)
               }}
             >
               <Image
                 src={src}
-                alt={`여행지 이미지 ${actualIndex + 1}`}
+                alt={`여행지 이미지 ${index + 1}`}
                 fill
                 draggable={false}
                 style={{ objectFit: 'cover' }}
               />
+              {isSelected && (
+                <div className={thumbnailOverlayStyle}>
+                  <svg
+                    className={checkIconStyle}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              )}
             </button>
           )
         })}
-        {images.length > THUMBNAIL_COUNT + 1 && (
+        {images.length > THUMBNAIL_COUNT && (
           <button
             type="button"
             aria-label="이미지 전체 보기"
