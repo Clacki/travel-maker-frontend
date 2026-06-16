@@ -37,6 +37,9 @@ function ExploreContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
   const [filterResetKey, setFilterResetKey] = useState(0)
+  const [filterInitialSelected, setFilterInitialSelected] = useState<
+    Record<string, string[]>
+  >(() => parseParams(searchParams))
   const gridRef = useRef<HTMLElement>(null)
 
   const [prevKeyword, setPrevKeyword] = useState(
@@ -182,10 +185,10 @@ function ExploreContent() {
 
   function clearAllFilters() {
     const params = new URLSearchParams()
-    if (categoryId) params.set('category', categoryId)
     if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     params.set('page', '1')
     setSearchInput('')
+    setFilterInitialSelected({})
     setFilterResetKey((k) => k + 1)
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
@@ -214,7 +217,7 @@ function ExploreContent() {
           <FilterCard
             key={filterResetKey}
             sections={travelFilterSections}
-            initialSelected={selected}
+            initialSelected={filterInitialSelected}
             resultCount={totalCount}
             onApply={applyFilters}
             onReset={clearAllFilters}
