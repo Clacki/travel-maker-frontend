@@ -122,5 +122,6 @@ export function useMyPageOwner(userId: string) {
     canManageReviews: isOwner,
     canManageBookmarks: isOwner,
     user,
+    initialIsFollowing: publicProfile?.is_following ?? false,
   }
 }

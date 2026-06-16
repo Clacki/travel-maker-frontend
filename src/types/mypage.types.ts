@@ -14,7 +14,12 @@ export type UserProfile = {
   updated_at: string
 }
 
-export type PublicUserProfile = Omit<UserProfile, 'email' | 'bookmark_count'>
+export type PublicUserProfile = Omit<
+  UserProfile,
+  'email' | 'bookmark_count'
+> & {
+  is_following: boolean
+}
 
 export type BookmarkItem = {
   place_id: number
