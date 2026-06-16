@@ -214,6 +214,29 @@ const imageDeleteButtonStyle = css({
     borderColor: 'warning',
     color: 'warning',
   },
+  _disabled: {
+    opacity: '0.4',
+    cursor: 'not-allowed',
+    pointerEvents: 'none',
+  },
+})
+
+const optionalBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  px: '2',
+  py: '0.5',
+  borderRadius: 'sm',
+  bg: 'bg.muted',
+  color: 'text.secondary',
+  fontSize: 'xs',
+  fontWeight: 'medium',
+  lineHeight: 'normal',
+})
+
+const flashDangerStyle = css({
+  borderRadius: 'lg',
+  animation: 'flashDanger 1s ease',
 })
 
 const textareaStyle = css({
@@ -290,9 +313,15 @@ interface StarRatingProps {
   labelId: string
   value: number
   onChange: (rating: number) => void
+  flashClassName?: string
 }
 
-function StarRating({ labelId, value, onChange }: StarRatingProps) {
+function StarRating({
+  labelId,
+  value,
+  onChange,
+  flashClassName,
+}: StarRatingProps) {
   const [hovered, setHovered] = useState(0)
   const displayValue = hovered || value
 
@@ -300,7 +329,7 @@ function StarRating({ labelId, value, onChange }: StarRatingProps) {
     <div
       aria-labelledby={labelId}
       aria-label={`현재 평점 ${value}점`}
-      className={ratingPanelStyle}
+      className={cx(ratingPanelStyle, flashClassName)}
       role="radiogroup"
     >
       <div className={starRowStyle}>
@@ -367,6 +396,8 @@ export function ReviewModal({
   const textareaId = useId()
   const imageInputId = useId()
   const fileObjectUrlRef = useRef<string | null>(null)
+  const ratingPanelRef = useRef<HTMLElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [rating, setRating] = useState(initialRating)
   const [content, setContent] = useState(initialContent)
   const [previewSrc, setPreviewSrc] = useState<string | null>(
@@ -374,6 +405,9 @@ export function ReviewModal({
   )
   const [imageFile, setImageFile] = useState<File | undefined>(undefined)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [flashField, setFlashField] = useState<'rating' | 'content' | null>(
+    null
+  )
 
   useEffect(() => {
     return () => {
@@ -402,11 +436,24 @@ export function ReviewModal({
 
     if (rating < 1 || rating > 5) {
       setValidationError('평점을 선택해주세요.')
+      setFlashField('rating')
+      ratingPanelRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+      setTimeout(() => setFlashField(null), 1000)
       return
     }
 
     if (trimmedContent === '') {
       setValidationError('리뷰 내용을 입력해주세요.')
+      setFlashField('content')
+      textareaRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+      textareaRef.current?.focus({ preventScroll: true })
+      setTimeout(() => setFlashField(null), 1000)
       return
     }
 
@@ -528,13 +575,16 @@ export function ReviewModal({
       }
     >
       <form className={formStyle} onSubmit={(event) => event.preventDefault()}>
-        <section className={fieldStyle}>
+        <section ref={ratingPanelRef} className={fieldStyle}>
           <h3 className={labelStyle} id={ratingLabelId}>
             평점 선택
           </h3>
           <StarRating
             labelId={ratingLabelId}
             value={rating}
+            flashClassName={
+              flashField === 'rating' ? flashDangerStyle : undefined
+            }
             onChange={(nextRating) => {
               setRating(nextRating)
               setValidationError(null)
@@ -543,7 +593,15 @@ export function ReviewModal({
         </section>
 
         <section className={fieldStyle}>
-          <h3 className={labelStyle}>리뷰 이미지</h3>
+          <h3
+            className={cx(
+              labelStyle,
+              css({ display: 'flex', alignItems: 'center', gap: '2' })
+            )}
+          >
+            리뷰 이미지
+            <span className={optionalBadgeStyle}>선택</span>
+          </h3>
           <div className={imagePreviewStyle}>
             {previewSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -575,6 +633,7 @@ export function ReviewModal({
             </label>
             <button
               className={cx(imageChangeButtonStyle, imageDeleteButtonStyle)}
+              disabled={!previewSrc}
               onClick={handleImageDelete}
               type="button"
             >
@@ -589,8 +648,12 @@ export function ReviewModal({
             상세 리뷰
           </label>
           <textarea
+            ref={textareaRef}
             aria-describedby={`${textareaId}-meta`}
-            className={textareaStyle}
+            className={cx(
+              textareaStyle,
+              flashField === 'content' && flashDangerStyle
+            )}
             id={textareaId}
             maxLength={MAX_CONTENT_LENGTH}
             onChange={(event) => {

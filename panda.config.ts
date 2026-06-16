@@ -132,6 +132,14 @@ export default defineConfig({
   },
 
   globalCss: {
+    '@keyframes flashDanger': {
+      '0%': { outline: '2px solid transparent' },
+      '20%': { outline: '2px solid #E5484D' },
+      '40%': { outline: '2px solid transparent' },
+      '60%': { outline: '2px solid #E5484D' },
+      '80%': { outline: '2px solid transparent' },
+      '100%': { outline: '2px solid transparent' },
+    },
     'html, body': {
       minHeight: '100%',
       backgroundColor: 'bg.canvas',
