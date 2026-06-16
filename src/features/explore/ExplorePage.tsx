@@ -163,11 +163,9 @@ function ExploreContent() {
     const params = new URLSearchParams()
 
     const styleValues = newSelected.style ?? []
-    let newCategoryId = categoryId
+    let newCategoryId: string | null = null
     if (styleValues.length === 1 && styleValues[0] !== 'all') {
-      newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
-    } else if (styleValues.length >= 2) {
-      newCategoryId = null
+      newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? null
     }
 
     if (newCategoryId) params.set('category', newCategoryId)
