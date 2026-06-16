@@ -36,6 +36,7 @@ function ExploreContent() {
   const { isAuthInitialized } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
+  const [filterResetKey, setFilterResetKey] = useState(0)
   const gridRef = useRef<HTMLElement>(null)
 
   const [prevKeyword, setPrevKeyword] = useState(
@@ -185,6 +186,7 @@ function ExploreContent() {
     if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     params.set('page', '1')
     setSearchInput('')
+    setFilterResetKey((k) => k + 1)
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
@@ -210,6 +212,7 @@ function ExploreContent() {
       >
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           <FilterCard
+            key={filterResetKey}
             sections={travelFilterSections}
             initialSelected={selected}
             resultCount={totalCount}
