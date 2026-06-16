@@ -1,219 +1,40 @@
 'use client'
 
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import axios from 'axios'
+import { Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { motion, AnimatePresence } from 'framer-motion'
-import { travelCategories } from '@/mocks/data/travel-data'
 import { travelFilterSections } from '@/lib/filter-data'
-import { getPlaces, getPlacesFilter, getPlacesSearch } from './api/placesApi'
-import { getTags } from './api/tagsApi'
-import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
-import {
-  useProfileStore,
-  getDefaultEditableProfile,
-} from '@/store/profileStore'
-import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import type { Place, GetPlacesFilterParams } from './types/places.types'
-import type { Tag } from './types/tags.types'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
-import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
-import { ROUTES } from '@/constants/routes'
 import { css } from '@/styled-system/css'
-import { Skeleton } from '@/components/ui/Skeleton'
-
-const ITEMS_PER_PAGE = 12
-
-type SortKey = 'popular' | 'bookmarks' | 'reviews' | 'recommended'
-
-const SORT_LABELS: Record<SortKey, string> = {
-  popular: '인기순',
-  bookmarks: '북마크순',
-  reviews: '리뷰순',
-  recommended: '추천순',
-}
-
-const SORT_API_MAP: Record<
-  Exclude<SortKey, 'recommended'>,
-  Pick<GetPlacesFilterParams, 'sort' | 'order'>
-> = {
-  popular: { sort: 'rating', order: 'desc' },
-  bookmarks: { sort: 'bookmark', order: 'desc' },
-  reviews: { sort: 'review', order: 'desc' },
-}
-
-const DEFAULT_BG =
-  'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1600&h=900&fit=crop'
-
-const STYLE_TO_CATEGORY: Record<string, string> = {
-  beach: 'beach',
-  mountain: 'mountain',
-  city: 'city',
-  culture: 'culture',
-  food: 'food',
-  activity: 'adventure',
-  romantic: 'romantic',
-}
-
-const CATEGORY_TO_TAG_NAME: Record<string, string> = {
-  beach: '해변',
-  mountain: '산악',
-  city: '도시',
-  culture: '문화',
-  food: '미식',
-  adventure: '액티비티',
-  romantic: '로맨틱',
-}
-
-const FILTER_TAG_TO_TAG_NAME: Record<string, string> = {
-  'beach-coast': '해수욕·해안',
-  'water-sports': '수상레저',
-  camping: '캠핑·글램핑',
-  'mountain-valley': '산·숲·계곡',
-  'nature-eco': '자연생태',
-  trekking: '자연공원·트레킹',
-  landmark: '랜드마크',
-  'park-street': '공원·거리',
-  shopping: '쇼핑',
-  history: '역사·유적',
-  museum: '박물관·전시',
-  traditional: '전통체험',
-  restaurant: '음식점',
-  cafe: '카페·디저트',
-  market: '시장·먹거리',
-  'land-sports': '육상스포츠',
-  extreme: '항공·익스트림',
-  'theme-park': '테마파크·시설',
-  spa: '스파·웰니스',
-  resort: '숙박·리조트',
-  solo: '혼자',
-  couple: '커플',
-  family: '가족',
-  friends: '친구',
-  seoul: '서울',
-  gyeonggi: '경기',
-  incheon: '인천',
-  gangwon: '강원',
-  chungbuk: '충북',
-  chungnam: '충남',
-  daejeon: '대전',
-  sejong: '세종',
-  jeonbuk: '전북',
-  jeonnam: '전남',
-  gwangju: '광주',
-  gyeongbuk: '경북',
-  gyeongnam: '경남',
-  daegu: '대구',
-  ulsan: '울산',
-  busan: '부산',
-  jeju: '제주',
-  parking: '주차',
-  pet: '반려동물',
-  free: '무료',
-}
-
-const placeCardSkeletonStyle = css({
-  borderRadius: 'lg',
-  overflow: 'hidden',
-  bg: 'bg.surface',
-  borderWidth: '1px',
-  borderStyle: 'solid',
-  borderColor: 'border.subtle',
-})
-
-const skeletonImageStyle = css({
-  w: 'full',
-  aspectRatio: '16/10',
-  bg: 'bg.subtle',
-  animation: 'pulse',
-})
-
-const skeletonBodyStyle = css({
-  p: '3',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2',
-})
-
-function PlaceCardSkeleton() {
-  return (
-    <div className={placeCardSkeletonStyle}>
-      <div className={skeletonImageStyle} />
-      <div className={skeletonBodyStyle}>
-        <Skeleton width="70%" height="20px" />
-        <div className={css({ display: 'flex', gap: '1' })}>
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} width="56px" height="20px" radius="pill" />
-          ))}
-        </div>
-        <Skeleton width="90%" height="16px" />
-        <Skeleton width="60%" height="16px" />
-      </div>
-    </div>
-  )
-}
-
-function parseParams(
-  searchParams: ReturnType<typeof useSearchParams>
-): Record<string, string[]> {
-  const result: Record<string, string[]> = {}
-  searchParams.forEach((value, key) => {
-    if (key !== 'sort' && key !== 'category' && value) {
-      result[key] = value.split(',')
-    }
-  })
-  return result
-}
-
-function getFilterChips(selected: Record<string, string[]>) {
-  const chips: { sectionId: string; tagId: string; label: string }[] = []
-  for (const section of travelFilterSections) {
-    const ids = selected[section.id] || []
-    for (const tagId of ids) {
-      const tag = section.tags.find((t) => t.id === tagId)
-      if (tag) {
-        const label = tag.emoji ? `${tag.emoji} ${tag.label}` : tag.label
-        chips.push({ sectionId: section.id, tagId, label })
-      }
-    }
-  }
-  return chips
-}
+import { ITEMS_PER_PAGE, STYLE_TO_CATEGORY } from './constants'
+import { parseParams, getFilterChips } from './utils'
+import {
+  useExplorePlaces,
+  useTags,
+  getSelectedTagIds,
+} from './hooks/useExplorePlaces'
+import { useExploreSort } from './hooks/useExploreSort'
+import { useExploreHero } from './hooks/useExploreHero'
+import { ExploreHero } from './components/ExploreHero'
+import { ExploreSortDropdown } from './components/ExploreSortDropdown'
+import { ExploreGrid } from './components/ExploreGrid'
 
 function ExploreContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { isLoggedIn, isAuthInitialized } = useAuthStore()
+  const { isAuthInitialized } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  const categoryId = searchParams.get('category')
-  const sort = (searchParams.get('sort') ?? 'popular') as SortKey
-  const keyword = searchParams.get('keyword') ?? ''
-  const selected = useMemo(() => parseParams(searchParams), [searchParams])
-  const filterChips = useMemo(() => getFilterChips(selected), [selected])
-
-  const [tags, setTags] = useState<Tag[] | null>(null)
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
-  const [places, setPlaces] = useState<Place[]>([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [fetchedKey, setFetchedKey] = useState<string | null>(null)
-  const [prevKeyword, setPrevKeyword] = useState(keyword)
-  const [searchInput, setSearchInput] = useState(keyword)
   const gridRef = useRef<HTMLElement>(null)
+
+  const [prevKeyword, setPrevKeyword] = useState(
+    searchParams.get('keyword') ?? ''
+  )
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get('keyword') ?? ''
+  )
+  const keyword = searchParams.get('keyword') ?? ''
 
   // URL keyword 변경 시(뒤로가기 포함) searchInput 동기화 — React 공식 getDerivedState 패턴
   if (prevKeyword !== keyword) {
@@ -221,65 +42,19 @@ function ExploreContent() {
     setSearchInput(keyword)
   }
 
-  useEffect(() => {
-    getTags()
-      .then(setTags)
-      .catch(() => setTags([]))
-  }, [])
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setIsDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
-  useEffect(() => {
-    if (isAuthInitialized && !isLoggedIn && sort === 'recommended') {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set('sort', 'popular')
-      params.set('page', '1')
-      router.push(`/explore?${params.toString()}`, { scroll: false })
-    }
-  }, [isAuthInitialized, isLoggedIn, sort, searchParams, router])
-
+  const categoryId = searchParams.get('category')
+  const selected = useMemo(() => parseParams(searchParams), [searchParams])
+  const filterChips = useMemo(() => getFilterChips(selected), [selected])
   const currentPage = Math.max(
     1,
     parseInt(searchParams.get('page') ?? '1', 10) || 1
   )
 
-  const selectedTagIds = useMemo(() => {
-    const tagNameToId = new Map((tags ?? []).map((t) => [t.tag_name, t.id]))
-    const ids: number[] = []
-
-    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
-    for (const s of styleValues) {
-      const cat = STYLE_TO_CATEGORY[s] ?? s
-      const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[cat] ?? '')
-      if (id !== undefined) ids.push(id)
-    }
-
-    for (const section of ['theme', 'companion', 'region', 'facility']) {
-      for (const v of selected[section] ?? []) {
-        const id = tagNameToId.get(FILTER_TAG_TO_TAG_NAME[v] ?? '')
-        if (id !== undefined) ids.push(id)
-      }
-    }
-
-    if (ids.length === 0 && categoryId) {
-      const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[categoryId] ?? '')
-      if (id !== undefined) return [id]
-    }
-
-    return ids
-  }, [selected, categoryId, tags])
-
+  const tags = useTags()
+  const selectedTagIds = useMemo(
+    () => getSelectedTagIds(selected, categoryId, tags),
+    [selected, categoryId, tags]
+  )
   const selectedTagIdsKey = selectedTagIds.join(',')
 
   const hasActiveFilter =
@@ -288,148 +63,34 @@ function ExploreContent() {
       return raw.split(',').some((v) => v && v !== 'all')
     }) || !!categoryId
   const pendingTag = hasActiveFilter && tags === null ? 'pending' : ''
-  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
-  const isLoading = fetchedKey !== currentKey
 
-  const handleLikeToggle = async (placeId: number) => {
-    if (!isAuthInitialized || !isLoggedIn) {
-      setIsLoginModalOpen(true)
-      return
-    }
+  const {
+    sort,
+    isDropdownOpen,
+    setIsDropdownOpen,
+    dropdownRef,
+    handleSortSelect,
+    isLoggedIn,
+  } = useExploreSort(() => setIsLoginModalOpen(true))
 
-    const targetPlace = places.find((p) => p.id === placeId)
-    if (!targetPlace) {
-      return
-    }
-
-    const isAdding = !targetPlace.is_bookmarked
-    const originalPlaces = [...places]
-    setPlaces((prev) =>
-      prev.map((p) =>
-        p.id === placeId ? { ...p, is_bookmarked: isAdding } : p
-      )
-    )
-
-    try {
-      if (isAdding) {
-        await postBookmark(placeId)
-      } else {
-        await deleteBookmark(placeId)
-      }
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
-        return
-      }
-
-      setPlaces(originalPlaces)
-      alert('처리에 실패했습니다. 다시 시도해주세요.')
-    }
-  }
-
-  useEffect(() => {
-    if (!isAuthInitialized) return
-
-    let cancelled = false
-    const key = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
-    if (pendingTag) return
-
-    if (sort === 'recommended') {
-      if (tags === null) return
-
-      const userId = useUserProfileStore.getState().userProfile?.id
-      const profile = userId
-        ? useProfileStore
-            .getState()
-            .getProfile(userId, getDefaultEditableProfile())
-        : getDefaultEditableProfile()
-
-      const tagNameToId = new Map(tags.map((t) => [t.tag_name, t.id]))
-      const recommendTagIds = profile.tagIds
-        .map((tagId) => {
-          const tagName = FILTER_TAG_TO_TAG_NAME[tagId]
-          return tagName ? tagNameToId.get(tagName) : undefined
-        })
-        .filter((id): id is number => id !== undefined)
-
-      const recommendRequest = getPlacesFilter({
-        ...(recommendTagIds.length > 0
-          ? { tags: recommendTagIds }
-          : { sort: 'rating', order: 'desc' }),
-        page: currentPage,
-        page_size: ITEMS_PER_PAGE,
-      })
-
-      recommendRequest
-        .then((data) => {
-          if (cancelled) return
-          setPlaces(data.results)
-          setTotalCount(data.count)
-          setFetchedKey(key)
-        })
-        .catch(() => {
-          if (cancelled) return
-          setPlaces([])
-          setFetchedKey(key)
-        })
-
-      return () => {
-        cancelled = true
-      }
-    }
-
-    const tagIds = selectedTagIdsKey
-      ? selectedTagIdsKey.split(',').map(Number)
-      : []
-    const sortParams = SORT_API_MAP[sort as Exclude<SortKey, 'recommended'>]
-    const hasTags = tagIds.length > 0
-    const hasKeyword = keyword.trim().length > 0
-    const hasSortOption = !!sortParams.sort
-
-    let request: ReturnType<typeof getPlaces>
-
-    if (hasTags || hasSortOption) {
-      request = getPlacesFilter({
-        ...(hasTags ? { tags: tagIds } : {}),
-        ...(hasKeyword ? { keyword: keyword.trim() } : {}),
-        ...sortParams,
-        page: currentPage,
-        page_size: ITEMS_PER_PAGE,
-      })
-    } else if (hasKeyword) {
-      request = getPlacesSearch({
-        keyword: keyword.trim(),
-        page: currentPage,
-        page_size: ITEMS_PER_PAGE,
-      })
-    } else {
-      request = getPlaces({ page: currentPage, page_size: ITEMS_PER_PAGE })
-    }
-
-    request
-      .then((data) => {
-        if (cancelled) return
-        setPlaces(data.results)
-        setTotalCount(data.count)
-        setFetchedKey(key)
-      })
-      .catch(() => {
-        if (cancelled) return
-        setPlaces([])
-        setFetchedKey(key)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [
+  const { places, totalCount, isLoading, handleLikeToggle } = useExplorePlaces({
     currentPage,
     selectedTagIdsKey,
     sort,
     keyword,
+    categoryId,
+    selected,
+    tags,
     pendingTag,
     isAuthInitialized,
-    tags,
-  ])
+    onLoginRequired: () => setIsLoginModalOpen(true),
+  })
+
+  const { bgImage, heroTitle, heroDesc } = useExploreHero(
+    previewStyle,
+    selected,
+    categoryId
+  )
 
   const handleFilterChange = useCallback(
     (liveSelected: Record<string, string[]>) => {
@@ -438,53 +99,11 @@ function ExploreContent() {
     []
   )
 
-  const activeCategoryId = useMemo(() => {
-    const effectiveStyle = previewStyle ?? selected.style ?? []
-    const nonAllStyles = effectiveStyle.filter((s) => s !== 'all')
-    if (nonAllStyles.length > 0) {
-      const lastStyle = nonAllStyles[nonAllStyles.length - 1]
-      return STYLE_TO_CATEGORY[lastStyle] ?? categoryId ?? null
-    }
-    if (categoryId) {
-      return categoryId
-    }
-    return null
-  }, [categoryId, previewStyle, selected.style])
-
-  const activeCategory = useMemo(
-    () => travelCategories.find((c) => c.id === activeCategoryId) ?? null,
-    [activeCategoryId]
-  )
-
-  const bgImage = activeCategory?.image ?? DEFAULT_BG
-  const heroTitle = activeCategory?.name ?? '여행지 탐색'
-  const heroDesc =
-    activeCategory?.description ?? '세계 각지의 여행지를 탐색해 보세요'
-
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
-
   function goToPage(page: number) {
     const params = new URLSearchParams(searchParams.toString())
     params.set('page', String(page))
     router.push(`/explore?${params.toString()}`, { scroll: false })
     gridRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  function setSort(key: SortKey) {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('sort', key)
-    params.set('page', '1')
-    router.push(`/explore?${params.toString()}`, { scroll: false })
-  }
-
-  function handleSortSelect(key: SortKey) {
-    if (key === 'recommended' && (!isAuthInitialized || !isLoggedIn)) {
-      setIsLoginModalOpen(true)
-      setIsDropdownOpen(false)
-      return
-    }
-    setSort(key)
-    setIsDropdownOpen(false)
   }
 
   function applyFilters(
@@ -497,119 +116,43 @@ function ExploreContent() {
     let newCategoryId = categoryId
     if (styleValues.length === 1 && styleValues[0] !== 'all') {
       newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
-    } else if (styleValues.length === 0 || styleValues.includes('all')) {
+    } else if (styleValues.length >= 2) {
       newCategoryId = null
     }
 
-    if (newCategoryId) {
-      params.set('category', newCategoryId)
-    }
-    if (searchParams.get('sort')) {
-      params.set('sort', searchParams.get('sort')!)
-    }
+    if (newCategoryId) params.set('category', newCategoryId)
+    if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     for (const [key, values] of Object.entries(newSelected)) {
       if (values.length > 0 && key !== 'keyword' && key !== 'page') {
         params.set(key, values.join(','))
       }
     }
     const trimmedInput = (searchValue ?? searchInput).trim()
-    if (trimmedInput) {
-      params.set('keyword', trimmedInput)
-    }
+    if (trimmedInput) params.set('keyword', trimmedInput)
     params.set('page', '1')
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
   function clearAllFilters() {
     const params = new URLSearchParams()
-    if (categoryId) {
-      params.set('category', categoryId)
-    }
-    if (searchParams.get('sort')) {
-      params.set('sort', searchParams.get('sort')!)
-    }
+    if (categoryId) params.set('category', categoryId)
+    if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     params.set('page', '1')
     setSearchInput('')
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
   const hasFilter = filterChips.length > 0
 
   return (
     <main className={css({ minH: '100vh', bg: 'bg.canvas' })}>
-      {/* Hero Section */}
-      <section
-        className={css({
-          position: 'relative',
-          h: { base: '260px', md: '340px' },
-          overflow: 'hidden',
-        })}
-      >
-        <AnimatePresence mode="sync">
-          <motion.div
-            key={bgImage}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className={css({ position: 'absolute', inset: 0 })}
-          >
-            <Image
-              src={bgImage}
-              alt={heroTitle}
-              fill
-              className={css({ objectFit: 'cover' })}
-              priority
-            />
-          </motion.div>
-        </AnimatePresence>
+      <ExploreHero
+        bgImage={bgImage}
+        heroTitle={heroTitle}
+        heroDesc={heroDesc}
+      />
 
-        <div
-          className={css({ position: 'absolute', inset: 0 })}
-          style={{
-            background:
-              'linear-gradient(to top, var(--colors-bg-canvas) 0%, color-mix(in srgb, var(--colors-bg-canvas) 50%, transparent) 55%, transparent 100%)',
-          }}
-        />
-
-        <div
-          className={css({
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            p: { base: 6, md: 12 },
-          })}
-        >
-          <div className={css({ maxW: '7xl', mx: 'auto' })}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={heroTitle}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h1
-                  className={css({
-                    fontSize: { base: '2xl', md: '4xl' },
-                    fontWeight: 'bold',
-                    color: 'text.primary',
-                    mb: 1,
-                  })}
-                >
-                  {heroTitle}
-                </h1>
-                <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
-                  {heroDesc}
-                </p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        </div>
-      </section>
-
-      {/* FilterCard */}
       <section
         className={css({
           px: 6,
@@ -633,227 +176,28 @@ function ExploreContent() {
         </div>
       </section>
 
-      {/* Sort + Count */}
-      <section
-        className={css({
-          py: 5,
-          px: 6,
-          borderBottom: hasFilter ? '1px solid' : 'none',
-          borderColor: 'border',
-        })}
-      >
-        <div className={css({ maxW: '7xl', mx: 'auto' })}>
-          <div
-            className={css({
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 4,
-            })}
-          >
-            <p className={css({ fontSize: 'sm', color: 'text.secondary' })}>
-              {hasFilter ? '필터 적용됨 · ' : ''}
-              {totalCount}개의 여행지
-            </p>
-            <div ref={dropdownRef} className={css({ position: 'relative' })}>
-              <button
-                type="button"
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className={css({
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  px: '14px',
-                  py: '7px',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: '1.5px solid',
-                  borderColor: 'primary',
-                  bg: 'primary',
-                  color: 'text.inverse',
-                  transitionProperty: 'opacity',
-                  transitionDuration: '150ms',
-                  _hover: { opacity: 0.88 },
-                })}
-              >
-                {SORT_LABELS[sort]}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 12 12"
-                  fill="none"
-                  style={{
-                    transform: isDropdownOpen
-                      ? 'rotate(180deg)'
-                      : 'rotate(0deg)',
-                    transition: 'transform 150ms',
-                  }}
-                >
-                  <path
-                    d="M2 4L6 8L10 4"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
+      <ExploreSortDropdown
+        sort={sort}
+        isOpen={isDropdownOpen}
+        isLoggedIn={isLoggedIn}
+        dropdownRef={dropdownRef}
+        onToggle={() => setIsDropdownOpen((prev) => !prev)}
+        onSelect={handleSortSelect}
+        totalCount={totalCount}
+        hasFilter={hasFilter}
+      />
 
-              {isDropdownOpen && (
-                <div
-                  className={css({
-                    position: 'absolute',
-                    top: 'calc(100% + 4px)',
-                    right: 0,
-                    bg: 'bg.surface',
-                    borderRadius: '8px',
-                    border: '1px solid',
-                    borderColor: 'border',
-                    boxShadow: 'md',
-                    overflow: 'hidden',
-                    zIndex: 10,
-                    minW: '120px',
-                  })}
-                >
-                  {(Object.keys(SORT_LABELS) as SortKey[])
-                    .filter((key) => key !== 'recommended' || isLoggedIn)
-                    .map((key) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => handleSortSelect(key)}
-                        className={css({
-                          display: 'block',
-                          w: 'full',
-                          px: '14px',
-                          py: '9px',
-                          fontSize: '13px',
-                          fontWeight: sort === key ? 600 : 400,
-                          textAlign: 'left',
-                          cursor: 'pointer',
-                          bg: sort === key ? 'bg.subtle' : 'transparent',
-                          color: sort === key ? 'primary' : 'text.secondary',
-                          border: 'none',
-                          _hover: { bg: 'bg.subtle', color: 'text.primary' },
-                        })}
-                      >
-                        {SORT_LABELS[key]}
-                      </button>
-                    ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <ExploreGrid
+        gridRef={gridRef}
+        places={places}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onLikeToggle={handleLikeToggle}
+        onPageChange={goToPage}
+        onClearFilters={clearAllFilters}
+      />
 
-      {/* Destinations Grid */}
-      <section ref={gridRef} className={css({ py: 10, px: 6 })}>
-        <div className={css({ maxW: '7xl', mx: 'auto' })}>
-          {isLoading ? (
-            <div
-              className={css({
-                display: 'grid',
-                gridTemplateColumns: {
-                  base: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  lg: 'repeat(3, 1fr)',
-                  xl: 'repeat(4, 1fr)',
-                },
-                gap: 6,
-              })}
-            >
-              {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
-                <PlaceCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : places.length > 0 ? (
-            <>
-              <div
-                key={`places-${places.length}-${places[0]?.id ?? ''}`}
-                className={css({
-                  display: 'grid',
-                  gridTemplateColumns: {
-                    base: '1fr',
-                    sm: 'repeat(2, 1fr)',
-                    lg: 'repeat(3, 1fr)',
-                    xl: 'repeat(4, 1fr)',
-                  },
-                  gap: 6,
-                  animation: 'fadeIn 0.35s ease',
-                })}
-              >
-                {places.map((place) => (
-                  <div
-                    key={place.id}
-                    onMouseEnter={() =>
-                      router.prefetch(ROUTES.DETAIL(String(place.id)))
-                    }
-                    onClick={(e) => {
-                      if (!(e.target as HTMLElement).closest('button')) {
-                        router.push(ROUTES.DETAIL(String(place.id)))
-                      }
-                    }}
-                    className={css({ cursor: 'pointer' })}
-                  >
-                    <PlaceCard
-                      key={place.id}
-                      placeId={place.id}
-                      placeName={place.place_name}
-                      description={place.description ?? undefined}
-                      tags={place.tags.map((t) => t.tag_name)}
-                      rating={Number(place.rating_avg)}
-                      imageUrl={place.image_url ?? undefined}
-                      variant="bookmark"
-                      isLiked={place.is_bookmarked}
-                      onLikeToggle={handleLikeToggle}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={goToPage}
-              />
-            </>
-          ) : (
-            <div className={css({ textAlign: 'center', py: 20 })}>
-              <p
-                className={css({
-                  fontSize: 'lg',
-                  color: 'text.secondary',
-                  mb: 4,
-                })}
-              >
-                조건에 맞는 여행지가 없습니다
-              </p>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className={css({
-                  px: 6,
-                  py: 3,
-                  bg: 'primary',
-                  color: 'text.inverse',
-                  borderRadius: '10px',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  border: 'none',
-                  _hover: { opacity: 0.88 },
-                })}
-              >
-                필터 초기화하기
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
