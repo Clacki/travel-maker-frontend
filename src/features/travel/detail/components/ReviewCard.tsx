@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { isAxiosError } from 'axios'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewSubmitPayload } from '@/components/common/ReviewModal'
+import { ReviewImageLightbox } from '@/components/common/ReviewImageLightbox'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
@@ -31,12 +32,22 @@ const cardStyle = css({
   borderColor: 'border.subtle',
   p: '6',
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   gap: '3',
+  alignItems: 'flex-start',
 })
 
 const ownerCardStyle = css({
   borderColor: 'primary',
+})
+
+// 좌측: 헤더 + 텍스트 + 더보기
+const textSectionStyle = css({
+  flex: '1',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+  minW: 0,
 })
 
 const headerStyle = css({
@@ -91,27 +102,91 @@ const metaStyle = css({
   color: 'text.secondary',
 })
 
+const textContainerStyle = css({
+  position: 'relative',
+})
+
 const contentStyle = css({
   fontSize: 'sm',
   color: 'text.primary',
   lineHeight: 'relaxed',
 })
 
+const contentClampedStyle = css({
+  lineClamp: 1,
+  overflow: 'hidden',
+})
+
+// 텍스트 끝 오른쪽에 absolute로 붙는 더보기
+const expandButtonStyle = css({
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  fontSize: 'xs',
+  color: 'primary',
+  bg: 'bg.surface',
+  pl: '4',
+  border: 'none',
+  cursor: 'pointer',
+  _hover: {
+    textDecoration: 'underline',
+  },
+})
+
+// 펼쳐진 상태의 접기 버튼 (텍스트 우측 하단 absolute)
+const collapseButtonStyle = css({
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  fontSize: 'xs',
+  color: 'primary',
+  bg: 'bg.surface',
+  pl: '4',
+  border: 'none',
+  cursor: 'pointer',
+  _hover: {
+    textDecoration: 'underline',
+  },
+})
+
+// 우측 전체: (수정/삭제 + 더보기) | 이미지 가로 배치, 이미지는 항상 맨 오른쪽 끝 고정
+const rightSectionStyle = css({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-end',
+  gap: '2',
+  flexShrink: '0',
+})
+
+// 수정/삭제 + 더보기를 세로로 쌓는 컬럼
+const rightActionsStyle = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  gap: '2',
+})
+
 const reviewImageFrameStyle = css({
-  width: 'full',
-  maxW: '36rem',
-  maxH: '20rem',
+  display: 'inline-block',
+  width: '120px',
+  height: '90px',
   overflow: 'hidden',
   borderWidth: '1px',
   borderColor: 'border.subtle',
-  borderRadius: 'lg',
+  borderRadius: 'md',
   bg: 'bg.muted',
+  cursor: 'pointer',
+  flexShrink: '0',
+  _hover: {
+    opacity: 0.85,
+  },
 })
 
 const reviewImageStyle = css({
   display: 'block',
   width: 'full',
-  maxH: '20rem',
+  height: 'full',
   objectFit: 'cover',
 })
 
@@ -185,11 +260,25 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [isTextExpanded, setIsTextExpanded] = useState(false)
+  const [isTruncated, setIsTruncated] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
   const [displayImageUrl, setDisplayImageUrl] = useState(review.imageUrl)
+  const textRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    if (isTextExpanded) return
+    const el = textRef.current
+    if (!el) return
+    const raf = requestAnimationFrame(() => {
+      setIsTruncated(el.scrollHeight > el.clientHeight)
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [displayContent, isTextExpanded])
 
   const handleEditClick = () => {
     if (!isAuthInitialized) return
@@ -265,73 +354,117 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   return (
     <>
       <article className={cx(cardStyle, isOwner && ownerCardStyle)}>
-        <div className={headerStyle}>
-          <Link
-            href={ROUTES.PROFILE(String(author.id))}
-            className={authorLinkStyle}
-          >
-            {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
-            {author.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={author.avatarUrl}
-                alt={`${author.name} 프로필`}
-                className={css({
-                  width: '10',
-                  height: '10',
-                  borderRadius: 'pill',
-                  objectFit: 'cover',
-                })}
-              />
-            ) : (
-              <div className={avatarStyle} aria-hidden="true">
-                {getInitials(author.name)}
+        {/* 좌측: 헤더(아바타·이름·별점·날짜) + 텍스트 + 더보기 */}
+        <div className={textSectionStyle}>
+          <div className={headerStyle}>
+            <Link
+              href={ROUTES.PROFILE(String(author.id))}
+              className={authorLinkStyle}
+            >
+              {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
+              {author.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={author.avatarUrl}
+                  alt={`${author.name} 프로필`}
+                  className={css({
+                    width: '10',
+                    height: '10',
+                    borderRadius: 'pill',
+                    objectFit: 'cover',
+                  })}
+                />
+              ) : (
+                <div className={avatarStyle} aria-hidden="true">
+                  {getInitials(author.name)}
+                </div>
+              )}
+              <div className={authorInfoStyle}>
+                <span className={authorNameStyle}>{author.name}</span>
+                <div className={metaStyle}>
+                  <span aria-label={`별점 ${displayRating}점`}>
+                    {'★'.repeat(displayRating)}
+                    {'☆'.repeat(5 - displayRating)}
+                  </span>
+                  <span aria-hidden="true">·</span>
+                  <time dateTime={createdAt}>{formatDate(createdAt)}</time>
+                </div>
+              </div>
+            </Link>
+          </div>
+          <div className={textContainerStyle}>
+            <p
+              ref={textRef}
+              className={cx(
+                contentStyle,
+                !isTextExpanded && contentClampedStyle
+              )}
+            >
+              {displayContent}
+            </p>
+            {!isTextExpanded && isTruncated && (
+              <button
+                type="button"
+                className={expandButtonStyle}
+                onClick={() => setIsTextExpanded(true)}
+              >
+                더보기
+              </button>
+            )}
+            {isTextExpanded && (
+              <button
+                type="button"
+                className={collapseButtonStyle}
+                onClick={() => setIsTextExpanded(false)}
+              >
+                접기
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 우측: [수정|삭제] [이미지] */}
+        {(displayImageUrl || isOwner) && (
+          <div className={rightSectionStyle}>
+            {isOwner && (
+              <div className={rightActionsStyle}>
+                <div className={actionGroupStyle}>
+                  <button
+                    type="button"
+                    className={editButtonStyle}
+                    onClick={handleEditClick}
+                    disabled={!isAuthInitialized}
+                    aria-busy={!isAuthInitialized}
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    className={deleteButtonStyle}
+                    onClick={handleDeleteClick}
+                    disabled={!isAuthInitialized}
+                    aria-busy={!isAuthInitialized}
+                  >
+                    삭제
+                  </button>
+                </div>
               </div>
             )}
-            <div className={authorInfoStyle}>
-              <span className={authorNameStyle}>{author.name}</span>
-              <div className={metaStyle}>
-                <span aria-label={`별점 ${displayRating}점`}>
-                  {'★'.repeat(displayRating)}
-                  {'☆'.repeat(5 - displayRating)}
-                </span>
-                <span aria-hidden="true">·</span>
-                <time dateTime={createdAt}>{formatDate(createdAt)}</time>
-              </div>
-            </div>
-          </Link>
-          {isOwner && (
-            <div className={actionGroupStyle}>
+            {displayImageUrl && (
               <button
                 type="button"
-                className={editButtonStyle}
-                onClick={handleEditClick}
-                disabled={!isAuthInitialized}
-                aria-busy={!isAuthInitialized}
+                className={reviewImageFrameStyle}
+                onClick={() => setIsLightboxOpen(true)}
+                aria-label="리뷰 이미지 크게 보기"
               >
-                수정
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={displayImageUrl}
+                  alt={`${author.name} 리뷰 이미지`}
+                  className={reviewImageStyle}
+                />
               </button>
-              <button
-                type="button"
-                className={deleteButtonStyle}
-                onClick={handleDeleteClick}
-                disabled={!isAuthInitialized}
-                aria-busy={!isAuthInitialized}
-              >
-                삭제
-              </button>
-            </div>
-          )}
-        </div>
-        <p className={contentStyle}>{displayContent}</p>
-        {displayImageUrl && (
-          <div className={reviewImageFrameStyle}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={displayImageUrl}
-              alt={`${author.name} 리뷰 이미지`}
-              className={reviewImageStyle}
-            />
+            )}
           </div>
         )}
       </article>
@@ -361,6 +494,14 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+      {displayImageUrl && (
+        <ReviewImageLightbox
+          src={displayImageUrl}
+          alt={`${author.name} 리뷰 이미지`}
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+        />
+      )}
     </>
   )
 }
