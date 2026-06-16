@@ -19,7 +19,6 @@ import {
   getTravelTypeResult,
   normalizeTravelTypeResult,
 } from '../../api/travelTypeResultApi'
-import { mockMyTripCourses } from '../../data/myTripsMock'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
 import { useMyReviews } from '../../hooks/useMyReviews'
@@ -260,7 +259,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           isMyProfile={isOwner}
           bookmarkCount={bookmarkCount}
           reviewCount={displayedReviewCount}
-          tripCount={mockMyTripCourses.length}
+          tripCount={0}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
@@ -295,7 +294,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
         {activeTab === 'trip' && (
           <MyTripsSection
-            trips={mockMyTripCourses}
+            trips={[]}
             canManage={isOwner}
             onCreateTrip={() => router.push(ROUTES.TRIP_CREATE)}
           />

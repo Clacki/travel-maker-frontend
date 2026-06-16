@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Eye, MapPin, Bookmark } from 'lucide-react'
+import { ArrowRight, MapPin, Bookmark } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
 import type { TripCourse } from '../types/trip'
@@ -56,12 +56,6 @@ const badgeStyle = css({
   color: 'text.inverse',
   fontSize: 'xs',
   fontWeight: 'bold',
-})
-
-const authorStyle = css({
-  color: 'text.secondary',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
 })
 
 const titleStyle = css({
@@ -165,9 +159,6 @@ export function FeaturedTripCourse({ course }: FeaturedTripCourseProps) {
         <div className={contentStyle}>
           <div className={badgeRowStyle}>
             <span className={badgeStyle}>가장 많이 저장된 코스</span>
-            {course.authorName && (
-              <span className={authorStyle}>by {course.authorName}</span>
-            )}
           </div>
 
           <h3 className={titleStyle}>{course.title}</h3>
@@ -184,16 +175,6 @@ export function FeaturedTripCourse({ course }: FeaturedTripCourseProps) {
               <MapPin size={15} aria-hidden="true" />
               장소 {course.placeCount}개
             </span>
-            <span className={metaItemStyle}>
-              <Bookmark size={15} aria-hidden="true" />
-              저장 {course.saveCount}
-            </span>
-            {course.viewCount > 0 && (
-              <span className={metaItemStyle}>
-                <Eye size={15} aria-hidden="true" />
-                조회 {course.viewCount.toLocaleString('ko-KR')}
-              </span>
-            )}
           </div>
 
           <Link

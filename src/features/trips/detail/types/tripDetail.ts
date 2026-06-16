@@ -48,9 +48,6 @@ export type TripCourseDetail = {
   thumbnailUrl: string
   author: TripAuthor
   createdAt: string
-  viewCount: number
-  likeCount: number
-  bookmarkCount: number
   isOwner: boolean
   isPublic: boolean
   days: TripDay[]

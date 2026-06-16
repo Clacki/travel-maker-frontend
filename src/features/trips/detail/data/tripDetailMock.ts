@@ -15,9 +15,6 @@ export const tripDetailMock: TripCourseDetail = {
     nickname: '강릉여행자',
   },
   createdAt: '2026.06.08',
-  viewCount: 1240,
-  likeCount: 86,
-  bookmarkCount: 128,
   isOwner: true,
   isPublic: true,
   days: [

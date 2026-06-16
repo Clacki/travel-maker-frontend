@@ -66,3 +66,7 @@ export const patchRoute = async (
   )
   return response.data
 }
+
+export const deleteRoute = async (routeId: number): Promise<void> => {
+  await api.delete(`/routes/${routeId}`)
+}

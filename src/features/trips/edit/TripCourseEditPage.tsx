@@ -23,13 +23,13 @@ import {
   bodyStyle,
 } from '@/features/trips/styles/courseEditor.styles'
 
-import type { TripDetailResponse } from '@/features/trips/types/trips.types'
+import type { RouteDetail } from '@/features/trips/types/route.types'
 import type { CoursePlace } from '@/features/trips/types/course.types'
 
 import { css } from '@/styled-system/css'
 
 interface TripCourseEditPageProps {
-  trip: TripDetailResponse
+  route: RouteDetail
 }
 
 const badgeStyle = css({
@@ -78,38 +78,41 @@ const searchWrapperStyle = css({
   flexShrink: 0,
 })
 
-export function TripCourseEditPage({ trip }: TripCourseEditPageProps) {
+export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
   const initCourse = useCourseStore((state) => state.initCourse)
 
   useEffect(() => {
-    // TODO: 백엔드 API에서 dayIndex를 포함한 응답이 오면 dayIndex 매핑 로직 수정 필요
-    // 현재는 TripPlace 타입에 dayIndex가 없어 모든 장소를 1일차로 처리
-    const places: CoursePlace[] = trip.places.map((p) => ({
-      id: p.id,
-      backendId: 0, // TODO: 백엔드 API에서 place int ID를 포함한 응답이 오면 매핑
-      name: p.name,
-      address: p.address,
-      dayIndex: 1,
-      lat: p.lat,
-      lng: p.lng,
-    }))
+    const places: CoursePlace[] = route.days.flatMap((day) =>
+      day.places.map((p) => ({
+        id: String(p.place_id),
+        backendId: p.place_id,
+        name: p.place_name,
+        address: [p.address_primary, p.address_detail]
+          .filter(Boolean)
+          .join(' '),
+        dayIndex: day.day_index,
+        lat: p.latitude,
+        lng: p.longitude,
+      }))
+    )
 
-    const startDate = trip.startDate ? new Date(trip.startDate) : undefined
-    const endDate = trip.endDate ? new Date(trip.endDate) : undefined
+    const startDate = route.start_date ? new Date(route.start_date) : undefined
+    const endDate = route.end_date ? new Date(route.end_date) : undefined
 
     initCourse({
-      title: trip.title,
-      description: trip.description,
-      selectedRegion: trip.region,
+      title: route.title,
+      description: route.description ?? '',
+      selectedRegion: route.region_tag ?? '',
+      selectedThemes: route.theme_tags,
       places,
       dateRange: {
         from: startDate,
         to: endDate,
       },
     })
-    // trip.id 기준으로만 초기화 — trip 객체 참조 변경 시 불필요한 store 리셋 방지
+    // route.route_id 기준으로만 초기화 — route 객체 참조 변경 시 불필요한 store 리셋 방지
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip.id])
+  }, [route.route_id])
 
   return (
     <div className={pageStyle}>
@@ -133,7 +136,7 @@ export function TripCourseEditPage({ trip }: TripCourseEditPageProps) {
             <TimelineCard />
           </div>
           <div className={rightStyle}>
-            <CourseMapPanel mode="edit" tripId={trip.id} />
+            <CourseMapPanel mode="edit" tripId={route.route_id.toString()} />
             <div className={searchWrapperStyle}>
               <PlaceSearchSection />
             </div>

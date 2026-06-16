@@ -431,7 +431,14 @@ function TravelTypeHeroCard({
             <RotateCcw aria-hidden="true" size={16} />
             다시 테스트
           </Button>
-          <Button className={shareButtonStyle} shape="pill" variant="outline">
+          <Button
+            className={shareButtonStyle}
+            shape="pill"
+            variant="outline"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+            }}
+          >
             <Share2 aria-hidden="true" size={16} />
             결과 공유
           </Button>

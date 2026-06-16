@@ -27,7 +27,10 @@ function getDurationType(
   return map[nights] ?? { durationType: 'same-day', durationLabel: '당일치기' }
 }
 
-export function toTripCourseDetail(route: RouteDetail): TripCourseDetail {
+export function toTripCourseDetail(
+  route: RouteDetail,
+  currentUserId?: number
+): TripCourseDetail {
   const { durationType, durationLabel } = getDurationType(
     route.start_date,
     route.end_date
@@ -41,8 +44,8 @@ export function toTripCourseDetail(route: RouteDetail): TripCourseDetail {
       id: p.place_id,
       order: p.order,
       name: p.place_name,
-      category: '',
-      address: '',
+      category: p.description,
+      address: [p.address_primary, p.address_detail].filter(Boolean).join(' '),
       latitude: p.latitude,
       longitude: p.longitude,
       imageUrl: p.image_url ?? undefined,
@@ -58,12 +61,9 @@ export function toTripCourseDetail(route: RouteDetail): TripCourseDetail {
     durationLabel,
     tags: route.theme_tags,
     thumbnailUrl,
-    author: { id: 0, nickname: '' },
+    author: { id: route.user_id, nickname: route.user_nickname },
     createdAt: route.created_at.slice(0, 10),
-    viewCount: 0,
-    likeCount: route.like_count,
-    bookmarkCount: 0,
-    isOwner: false,
+    isOwner: currentUserId !== undefined && currentUserId === route.user_id,
     isPublic: true,
     days,
     similarCourses: [],

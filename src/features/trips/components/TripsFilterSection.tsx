@@ -9,6 +9,7 @@ import { toTripCourse } from '../types/trip'
 import { getRoutes } from '../api/routesApi'
 import { TripCourseCard } from './TripCourseCard'
 import type { TripCourse, TripSortOption } from '../types/trip'
+import { THEME_OPTIONS } from '../types/course.types'
 import type { Tag } from '@/types/tag.types'
 import { css } from '@/styled-system/css'
 
@@ -214,7 +215,7 @@ export function TripsFilterSection({
   }
 
   const regionFilters = [ALL_FILTER, ...regionTags.map((tag) => tag.tag_name)]
-  const themeFilters = [ALL_FILTER, ...themeTags.map((tag) => tag.tag_name)]
+  const themeFilters = [ALL_FILTER, ...THEME_OPTIONS]
 
   return (
     <section className={sectionStyle} aria-labelledby="trip-list-title">

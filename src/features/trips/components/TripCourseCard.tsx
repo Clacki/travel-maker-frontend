@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Eye, Heart, MapPin } from 'lucide-react'
+import { ArrowRight, MapPin } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
 import type { TripCourse } from '../types/trip'
@@ -72,35 +72,12 @@ const descriptionStyle = css({
 })
 
 const metaRowStyle = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '3',
-  mt: '6',
-  color: 'text.secondary',
-  fontSize: 'xs',
-})
-
-const authorStyle = css({
-  minW: 0,
-  color: 'text.primary',
-  fontWeight: 'semibold',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
-
-const statsStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '3',
-  flexShrink: 0,
-})
-
-const statStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
+  mt: '6',
+  color: 'text.secondary',
+  fontSize: 'xs',
 })
 
 const footerStyle = css({
@@ -164,25 +141,8 @@ export function TripCourseCard({ course }: TripCourseCardProps) {
         <p className={descriptionStyle}>{course.description}</p>
 
         <div className={metaRowStyle}>
-          {course.authorName && (
-            <span className={authorStyle}>{course.authorName}</span>
-          )}
-          <span className={statsStyle}>
-            <span className={statStyle}>
-              <MapPin size={13} aria-hidden="true" />
-              장소 {course.placeCount}개
-            </span>
-            <span className={statStyle}>
-              <Heart size={13} aria-hidden="true" />
-              {course.saveCount}
-            </span>
-            {course.viewCount > 0 && (
-              <span className={statStyle}>
-                <Eye size={13} aria-hidden="true" />
-                {course.viewCount}
-              </span>
-            )}
-          </span>
+          <MapPin size={13} aria-hidden="true" />
+          장소 {course.placeCount}개
         </div>
 
         <div className={footerStyle}>
