@@ -11,6 +11,7 @@ import { css } from '@/styled-system/css'
 
 interface TravelDetailPageProps {
   detail: TravelDetail
+  highlightedTags?: string[]
 }
 
 const pageStyle = css({
@@ -33,7 +34,10 @@ const rightColumnStyle = css({
   gap: '4',
 })
 
-export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
+export default function TravelDetailPage({
+  detail,
+  highlightedTags,
+}: TravelDetailPageProps) {
   return (
     <PageLayout>
       <div className={pageStyle}>
@@ -43,7 +47,7 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
           <GallerySectionContainer images={detail.images} placeId={detail.id} />
 
           <div className={rightColumnStyle}>
-            <InfoCard detail={detail} />
+            <InfoCard detail={detail} highlightedTags={highlightedTags} />
             <MapSectionClient
               name={detail.place_name}
               latitude={detail.latitude}

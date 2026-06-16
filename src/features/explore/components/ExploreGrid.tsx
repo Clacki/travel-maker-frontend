@@ -29,6 +29,7 @@ interface ExploreGridProps {
   isLoading: boolean
   currentPage: number
   totalPages: number
+  selectedTagNames: string[]
   onLikeToggle: (placeId: number) => void
   onPageChange: (page: number) => void
   onClearFilters: () => void
@@ -40,10 +41,15 @@ export function ExploreGrid({
   isLoading,
   currentPage,
   totalPages,
+  selectedTagNames,
   onLikeToggle,
   onPageChange,
   onClearFilters,
 }: ExploreGridProps) {
+  const selectedTagSet = new Set(selectedTagNames)
+  const highlightSuffix = selectedTagNames.length
+    ? `?highlight=${selectedTagNames.join(',')}`
+    : ''
   const router = useRouter()
 
   return (
@@ -66,7 +72,9 @@ export function ExploreGrid({
                   }
                   onClick={(e) => {
                     if (!(e.target as HTMLElement).closest('button')) {
-                      router.push(ROUTES.DETAIL(String(place.id)))
+                      router.push(
+                        ROUTES.DETAIL(String(place.id)) + highlightSuffix
+                      )
                     }
                   }}
                   className={css({ cursor: 'pointer' })}
@@ -75,7 +83,13 @@ export function ExploreGrid({
                     placeId={place.id}
                     placeName={place.place_name}
                     description={place.description ?? undefined}
-                    tags={place.tags.map((t) => t.tag_name)}
+                    tags={[...place.tags.map((t) => t.tag_name)].sort(
+                      (a, b) =>
+                        (selectedTagSet.has(a) ? 0 : 1) -
+                        (selectedTagSet.has(b) ? 0 : 1)
+                    )}
+                    highlightedTags={selectedTagNames}
+                    hrefSuffix={highlightSuffix || undefined}
                     rating={Number(place.rating_avg)}
                     imageUrl={place.image_url ?? undefined}
                     variant="bookmark"

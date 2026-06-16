@@ -6,8 +6,18 @@ import { travelFilterSections } from '@/lib/filter-data'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import {
+  useProfileStore,
+  getDefaultEditableProfile,
+} from '@/store/profileStore'
 import { css } from '@/styled-system/css'
-import { ITEMS_PER_PAGE, STYLE_TO_CATEGORY } from './constants'
+import {
+  ITEMS_PER_PAGE,
+  STYLE_TO_CATEGORY,
+  CATEGORY_TO_TAG_NAME,
+  FILTER_TAG_TO_TAG_NAME,
+} from './constants'
 import { parseParams, getFilterChips } from './utils'
 import {
   useExplorePlaces,
@@ -51,6 +61,39 @@ function ExploreContent() {
   )
 
   const tags = useTags()
+
+  const selectedTagNames = useMemo(() => {
+    const names: string[] = []
+    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
+    for (const s of styleValues) {
+      const cat = STYLE_TO_CATEGORY[s] ?? s
+      const name = CATEGORY_TO_TAG_NAME[cat]
+      if (name) names.push(name)
+    }
+    for (const section of ['theme', 'companion', 'region', 'facility']) {
+      for (const v of selected[section] ?? []) {
+        const name = FILTER_TAG_TO_TAG_NAME[v]
+        if (name) names.push(name)
+      }
+    }
+    if (names.length === 0 && categoryId) {
+      const name = CATEGORY_TO_TAG_NAME[categoryId]
+      if (name) names.push(name)
+    }
+    return names
+  }, [selected, categoryId])
+
+  const userId = useUserProfileStore((state) => state.userProfile?.id)
+  const profileTagNames = useMemo(() => {
+    const profiles = useProfileStore.getState().profiles
+    const profile = userId
+      ? (profiles[userId] ?? getDefaultEditableProfile())
+      : getDefaultEditableProfile()
+    return profile.tagIds
+      .map((tagId) => FILTER_TAG_TO_TAG_NAME[tagId])
+      .filter((name): name is string => Boolean(name))
+  }, [userId])
+
   const selectedTagIds = useMemo(
     () => getSelectedTagIds(selected, categoryId, tags),
     [selected, categoryId, tags]
@@ -72,6 +115,9 @@ function ExploreContent() {
     handleSortSelect,
     isLoggedIn,
   } = useExploreSort(() => setIsLoginModalOpen(true))
+
+  const effectiveTagNames =
+    sort === 'recommended' ? profileTagNames : selectedTagNames
 
   const { places, totalCount, isLoading, handleLikeToggle } = useExplorePlaces({
     currentPage,
@@ -193,6 +239,7 @@ function ExploreContent() {
         isLoading={isLoading}
         currentPage={currentPage}
         totalPages={totalPages}
+        selectedTagNames={effectiveTagNames}
         onLikeToggle={handleLikeToggle}
         onPageChange={goToPage}
         onClearFilters={clearAllFilters}

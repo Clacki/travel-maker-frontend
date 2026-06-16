@@ -28,6 +28,7 @@ interface InfoCardProps {
     | 'info'
     | 'is_bookmarked'
   >
+  highlightedTags?: string[]
 }
 
 const cardStyle = css({
@@ -139,7 +140,7 @@ const descriptionStyle = css({
   py: '1',
 })
 
-export default function InfoCard({ detail }: InfoCardProps) {
+export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
   const {
     id,
     place_name,
@@ -328,7 +329,7 @@ export default function InfoCard({ detail }: InfoCardProps) {
           </div>
         </div>
 
-        <TagList tags={tags} />
+        <TagList tags={tags} highlightedTags={highlightedTags} />
 
         <p className={descriptionStyle}>{description}</p>
 

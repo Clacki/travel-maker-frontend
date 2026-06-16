@@ -13,6 +13,8 @@ export interface PlaceCardBaseProps {
   tags?: string[]
   rating?: number
   imageUrl?: string
+  highlightedTags?: string[]
+  hrefSuffix?: string
 }
 
 export interface BookmarkPlaceCardProps extends PlaceCardBaseProps {
@@ -139,6 +141,22 @@ const tagStyle = css({
   lineHeight: 'tight',
 })
 
+const tagHighlightedStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  px: '2',
+  py: '1',
+  borderRadius: 'pill',
+  color: 'primary',
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+  lineHeight: 'tight',
+  backgroundImage:
+    'linear-gradient(90deg, #A8DCF0 0%, #A8DCF0 30%, rgba(255,255,255,0.85) 50%, #A8DCF0 70%, #A8DCF0 100%)',
+  backgroundSize: '300% 100%',
+  animation: 'tagShimmer 2.5s linear infinite',
+})
+
 const descriptionStyle = css({
   fontSize: 'xs',
   color: 'text.secondary',
@@ -157,6 +175,8 @@ export function PlaceCard(props: PlaceCardProps) {
     rating,
     imageUrl,
     variant,
+    highlightedTags,
+    hrefSuffix,
   } = props
 
   return (
@@ -205,7 +225,7 @@ export function PlaceCard(props: PlaceCardProps) {
         )}
 
       <Link
-        href={ROUTES.DETAIL(String(placeId))}
+        href={ROUTES.DETAIL(String(placeId)) + (hrefSuffix ?? '')}
         className={contentStyle}
         aria-label={`${placeName} 상세 페이지로 이동`}
       >
@@ -216,7 +236,14 @@ export function PlaceCard(props: PlaceCardProps) {
         {tags.length > 0 && (
           <div className={tagRowStyle}>
             {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className={tagStyle}>
+              <span
+                key={tag}
+                className={
+                  highlightedTags?.includes(tag)
+                    ? tagHighlightedStyle
+                    : tagStyle
+                }
+              >
                 {tag}
               </span>
             ))}
