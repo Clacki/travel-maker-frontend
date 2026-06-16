@@ -116,7 +116,7 @@ function ExploreContent() {
     let newCategoryId = categoryId
     if (styleValues.length === 1 && styleValues[0] !== 'all') {
       newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
-    } else {
+    } else if (styleValues.length >= 2) {
       newCategoryId = null
     }
 
