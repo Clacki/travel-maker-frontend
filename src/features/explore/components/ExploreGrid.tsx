@@ -2,6 +2,8 @@
 
 import { type RefObject, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import errorStatusImage from '@/assets/images/status/error-status.svg'
 import { css, cx } from '@/styled-system/css'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -116,6 +118,17 @@ export function ExploreGrid({
           </Fragment>
         ) : (
           <div className={css({ textAlign: 'center', py: 20 })}>
+            <Image
+              src={errorStatusImage}
+              alt=""
+              className={css({
+                mx: 'auto',
+                mb: 4,
+                w: '120px',
+                h: '120px',
+                objectFit: 'contain',
+              })}
+            />
             <p
               className={css({
                 fontSize: 'lg',
