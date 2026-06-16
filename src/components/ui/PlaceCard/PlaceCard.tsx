@@ -259,7 +259,7 @@ export function PlaceCard(props: PlaceCardProps) {
               ) : (
                 <MessageCircle size={11} />
               )}
-              {countBadge.count}
+              {countBadge.count > 999 ? '999+' : countBadge.count}
             </span>
           )}
         </div>
