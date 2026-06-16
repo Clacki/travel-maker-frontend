@@ -76,26 +76,6 @@ const checkIconStyle = css({
   filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
 })
 
-const moreButtonStyle = css({
-  flex: '0 0 80px',
-  width: '80px',
-  height: '80px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 'sm',
-  bg: 'bg.muted',
-  color: 'text.secondary',
-  fontSize: 'xl',
-  fontWeight: 'semibold',
-  cursor: 'pointer',
-  border: 'none',
-  _hover: { bg: 'border.subtle' },
-  _focusVisible: { outline: 'none', boxShadow: 'focus' },
-})
-
-const THUMBNAIL_COUNT = 4
-
 export default function GallerySection({
   images,
   placeId: _placeId,
@@ -213,18 +193,6 @@ export default function GallerySection({
             </button>
           )
         })}
-        {images.length > THUMBNAIL_COUNT && (
-          <button
-            type="button"
-            aria-label="이미지 전체 보기"
-            className={moreButtonStyle}
-            onClick={() => {
-              // TODO: 이미지 전체보기 모달 연결
-            }}
-          >
-            +
-          </button>
-        )}
       </div>
     </div>
   )

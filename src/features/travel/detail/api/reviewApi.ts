@@ -3,18 +3,38 @@ import type { PlaceReviewsResponse, Review } from '../types/travelDetail.types'
 
 const placeReviewsPath = (placeId: number) => `/places/${placeId}/reviews`
 
+export type GetPlaceReviewsParams = {
+  page?: number
+  pageSize?: number
+}
+
+export type PlaceReviewsResult = {
+  reviews: Review[]
+  total: number
+  hasMore: boolean
+}
+
 // TODO: 리뷰 목록/작성 API가 여러 feature에서 재사용되면 reviews 도메인 이동 검토.
-export const getPlaceReviews = async (placeId: number): Promise<Review[]> => {
+export const getPlaceReviews = async (
+  placeId: number,
+  { page = 1, pageSize = 4 }: GetPlaceReviewsParams = {}
+): Promise<PlaceReviewsResult> => {
   const response = await api.get<PlaceReviewsResponse>(
-    placeReviewsPath(placeId)
+    placeReviewsPath(placeId),
+    { params: { page, page_size: pageSize } }
   )
-  return response.data.results.map((item) => ({
-    id: item.review_id,
-    author: { id: item.user_id, name: item.user_nickname },
-    rating: item.rating,
-    content: item.content,
-    imageUrl: item.image_url ?? item.img_url ?? null,
-    createdAt: item.created_at,
-    isOwner: item.is_owner,
-  }))
+  const data = response.data
+  return {
+    reviews: data.results.map((item) => ({
+      id: item.review_id,
+      author: { id: item.user_id, name: item.user_nickname },
+      rating: item.rating,
+      content: item.content,
+      imageUrl: item.image_url ?? item.img_url ?? null,
+      createdAt: item.created_at,
+      isOwner: item.is_owner,
+    })),
+    total: data.count,
+    hasMore: data.next !== null,
+  }
 }
