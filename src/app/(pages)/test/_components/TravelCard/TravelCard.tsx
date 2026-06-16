@@ -12,6 +12,8 @@ export interface TravelCardProps {
   title: string
   description: string
   hashtags: string[]
+  /** 여행 성향 매칭률 (0~100). 표시 시 "%"를 붙여 우측 상단 배지로 노출 */
+  matchRate?: number
   ctaText?: string
 }
 
@@ -52,6 +54,23 @@ const badgeStyle = css({
   fontSize: 'xs',
   fontWeight: 'medium',
   color: 'text.primary',
+  zIndex: 1,
+})
+
+const matchRateBadgeStyle = css({
+  position: 'absolute',
+  top: '3',
+  right: '3',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  px: '3',
+  h: '7',
+  borderRadius: 'pill',
+  bg: 'primary',
+  fontSize: 'xs',
+  fontWeight: 'bold',
+  color: 'text.inverse',
   zIndex: 1,
 })
 
@@ -127,6 +146,7 @@ export function TravelCard({
   title,
   description,
   hashtags,
+  matchRate,
   ctaText = '자세히 보기',
 }: TravelCardProps) {
   const displayedHashtags = hashtags.slice(0, 3)
@@ -140,6 +160,9 @@ export function TravelCard({
           alt={imageAlt}
         />
         {region && <span className={badgeStyle}>{region}</span>}
+        {matchRate !== undefined && (
+          <span className={matchRateBadgeStyle}>{matchRate}% 매칭</span>
+        )}
       </div>
 
       {/* Content */}

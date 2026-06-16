@@ -60,6 +60,7 @@ export function DestinationsSection({
               title={dest.title}
               description={dest.description}
               hashtags={dest.hashtags}
+              matchRate={dest.matchRate}
             />
           ))}
         </div>

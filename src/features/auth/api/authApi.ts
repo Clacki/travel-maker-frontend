@@ -39,6 +39,15 @@ export const logout = async () => {
   await api.post(LOGOUT_PATH)
 }
 
-export const patchUserAvatar = async (travelTypeId: number) => {
-  await api.patch('/users/avatar', { travel_type_id: travelTypeId })
+export type AvatarUpdateResponse = {
+  updated: boolean
+}
+
+export const patchUserAvatar = async (
+  travelTypeId: number
+): Promise<AvatarUpdateResponse> => {
+  const response = await api.patch<AvatarUpdateResponse>('/users/avatar/', {
+    travel_type_id: travelTypeId,
+  })
+  return response.data
 }

@@ -31,6 +31,7 @@ export type RecommendedDestination = {
   title: string
   description: string
   hashtags: string[]
+  matchRate?: number
 }
 
 export type TravelType = {
