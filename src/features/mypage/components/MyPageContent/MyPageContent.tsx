@@ -69,6 +69,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     canManageAccount,
     canManageReviews,
     canManageBookmarks,
+    initialIsFollowing,
   } = useMyPageOwner(userId)
 
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
@@ -77,7 +78,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     type: 'followers' | 'following'
     isOpen: boolean
   }>({ type: 'followers', isOpen: false })
-  const [isFollowing, setIsFollowing] = useState(false)
+  const [followingOverride, setFollowingOverride] = useState<boolean | null>(
+    null
+  )
+  const isFollowing = followingOverride ?? initialIsFollowing
   const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [localFollowerCount, setLocalFollowerCount] = useState<number | null>(
     null
@@ -190,22 +194,22 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     try {
       if (isFollowing) {
         await unfollowUser(user.id)
-        setIsFollowing(false)
+        setFollowingOverride(false)
         setLocalFollowerCount((prev) =>
           Math.max(0, (prev ?? user.follower_count) - 1)
         )
       } else {
         await followUser(user.id)
-        setIsFollowing(true)
+        setFollowingOverride(true)
         setLocalFollowerCount((prev) => (prev ?? user.follower_count) + 1)
       }
     } catch (error) {
       if (isAxiosError(error)) {
         const status = error.response?.status
         if (status === 409) {
-          setIsFollowing(true)
+          setFollowingOverride(true)
         } else if (status === 404) {
-          setIsFollowing(false)
+          setFollowingOverride(false)
         }
       }
     } finally {
