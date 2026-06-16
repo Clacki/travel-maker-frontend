@@ -1,1 +1,6 @@
-export { getPlaces, getPlacesSearch, getPlacesFilter } from '@/lib/placesApi'
+export {
+  getPlaces,
+  getPlacesSearch,
+  getPlacesFilter,
+  getPlacesRecommend,
+} from '@/lib/placesApi'

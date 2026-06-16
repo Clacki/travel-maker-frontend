@@ -240,6 +240,7 @@ function ExploreContent() {
         currentPage={currentPage}
         totalPages={totalPages}
         selectedTagNames={effectiveTagNames}
+        sort={sort}
         onLikeToggle={handleLikeToggle}
         onPageChange={goToPage}
         onClearFilters={clearAllFilters}

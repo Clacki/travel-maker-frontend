@@ -7,6 +7,7 @@ export type Place = {
   place_name: string
   image_url: string | null
   description: string | null
+  review_count?: number
   bookmark_count: number
   rating_avg: number
   tags: PlaceTag[]
@@ -38,3 +39,9 @@ export type GetPlacesFilterParams = {
 }
 
 export type GetPlacesSearchParams = Omit<GetPlacesFilterParams, 'tags'>
+
+export type GetPlacesRecommendParams = {
+  tags?: number[]
+  region_tag_id?: number
+  limit?: number
+}

@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Star, ImageIcon } from 'lucide-react'
+import { Star, ImageIcon, Heart, MessageCircle } from 'lucide-react'
 import { css, cva } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
 import { LikeButton } from './LikeButton'
@@ -15,6 +15,7 @@ export interface PlaceCardBaseProps {
   imageUrl?: string
   highlightedTags?: string[]
   hrefSuffix?: string
+  countBadge?: { type: 'review' | 'bookmark'; count: number }
 }
 
 export interface BookmarkPlaceCardProps extends PlaceCardBaseProps {
@@ -112,14 +113,33 @@ const contentStyle = css({
   color: 'inherit',
 })
 
+const titleRowStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+})
+
 const titleStyle = css({
   fontSize: 'md',
   fontWeight: 'semibold',
   color: 'text.primary',
   lineHeight: 'tight',
   overflow: 'hidden',
-  display: '-webkit-box',
-  WebkitLineClamp: '1',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+  flex: '1',
+  minWidth: '0',
+})
+
+const countBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  fontSize: 'xs',
+  color: 'text.secondary',
+  fontWeight: 'medium',
+  flexShrink: '0',
+  whiteSpace: 'nowrap',
 })
 
 const tagRowStyle = css({
@@ -177,6 +197,7 @@ export function PlaceCard(props: PlaceCardProps) {
     variant,
     highlightedTags,
     hrefSuffix,
+    countBadge,
   } = props
 
   return (
@@ -229,9 +250,19 @@ export function PlaceCard(props: PlaceCardProps) {
         className={contentStyle}
         aria-label={`${placeName} 상세 페이지로 이동`}
       >
-        <h3 className={titleStyle} style={{ WebkitBoxOrient: 'vertical' }}>
-          {placeName}
-        </h3>
+        <div className={titleRowStyle}>
+          <h3 className={titleStyle}>{placeName}</h3>
+          {countBadge && (
+            <span className={countBadgeStyle}>
+              {countBadge.type === 'bookmark' ? (
+                <Heart size={11} fill="#E5484D" color="#E5484D" />
+              ) : (
+                <MessageCircle size={11} />
+              )}
+              {countBadge.count}
+            </span>
+          )}
+        </div>
 
         {tags.length > 0 && (
           <div className={tagRowStyle}>
