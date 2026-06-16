@@ -475,10 +475,6 @@ function TravelTypeInfoCard({ result }: { result: TravelTypeResult }) {
           </span>
         </div>
         <div className={infoRowStyle}>
-          <span className={infoLabelStyle}>유형 코드</span>
-          <span className={infoValueStyle}>{result.type_key}</span>
-        </div>
-        <div className={infoRowStyle}>
           <span className={infoLabelStyle}>
             <HelpCircle aria-hidden="true" size={15} />
             정확도
