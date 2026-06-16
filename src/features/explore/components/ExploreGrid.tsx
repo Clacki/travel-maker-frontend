@@ -124,8 +124,8 @@ export function ExploreGrid({
               className={css({
                 mx: 'auto',
                 mb: 4,
-                w: '120px',
-                h: '120px',
+                w: '380px',
+                h: '380px',
                 objectFit: 'contain',
               })}
             />
