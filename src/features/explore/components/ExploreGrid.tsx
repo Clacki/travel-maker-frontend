@@ -2,11 +2,13 @@
 
 import { type RefObject, Fragment } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import errorStatusImage from '@/assets/images/status/error-status.svg'
 import { css, cx } from '@/styled-system/css'
 import { PlaceCard } from '@/components/ui/PlaceCard/PlaceCard'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { ROUTES } from '@/constants/routes'
-import { ITEMS_PER_PAGE } from '../constants'
+import { ITEMS_PER_PAGE, type SortKey } from '../constants'
 import { PlaceCardSkeleton } from './PlaceCardSkeleton'
 import type { Place } from '../types/places.types'
 
@@ -29,6 +31,8 @@ interface ExploreGridProps {
   isLoading: boolean
   currentPage: number
   totalPages: number
+  selectedTagNames: string[]
+  sort: SortKey
   onLikeToggle: (placeId: number) => void
   onPageChange: (page: number) => void
   onClearFilters: () => void
@@ -40,10 +44,16 @@ export function ExploreGrid({
   isLoading,
   currentPage,
   totalPages,
+  selectedTagNames,
+  sort,
   onLikeToggle,
   onPageChange,
   onClearFilters,
 }: ExploreGridProps) {
+  const selectedTagSet = new Set(selectedTagNames)
+  const highlightSuffix = selectedTagNames.length
+    ? `?highlight=${selectedTagNames.join(',')}`
+    : ''
   const router = useRouter()
 
   return (
@@ -66,7 +76,9 @@ export function ExploreGrid({
                   }
                   onClick={(e) => {
                     if (!(e.target as HTMLElement).closest('button')) {
-                      router.push(ROUTES.DETAIL(String(place.id)))
+                      router.push(
+                        ROUTES.DETAIL(String(place.id)) + highlightSuffix
+                      )
                     }
                   }}
                   className={css({ cursor: 'pointer' })}
@@ -74,8 +86,21 @@ export function ExploreGrid({
                   <PlaceCard
                     placeId={place.id}
                     placeName={place.place_name}
+                    countBadge={
+                      sort === 'reviews' && place.review_count !== undefined
+                        ? { type: 'review', count: place.review_count }
+                        : sort === 'bookmarks'
+                          ? { type: 'bookmark', count: place.bookmark_count }
+                          : undefined
+                    }
                     description={place.description ?? undefined}
-                    tags={place.tags.map((t) => t.tag_name)}
+                    tags={[...place.tags.map((t) => t.tag_name)].sort(
+                      (a, b) =>
+                        (selectedTagSet.has(a) ? 0 : 1) -
+                        (selectedTagSet.has(b) ? 0 : 1)
+                    )}
+                    highlightedTags={selectedTagNames}
+                    hrefSuffix={highlightSuffix || undefined}
                     rating={Number(place.rating_avg)}
                     imageUrl={place.image_url ?? undefined}
                     variant="bookmark"
@@ -93,6 +118,17 @@ export function ExploreGrid({
           </Fragment>
         ) : (
           <div className={css({ textAlign: 'center', py: 20 })}>
+            <Image
+              src={errorStatusImage}
+              alt=""
+              className={css({
+                mx: 'auto',
+                mb: 4,
+                w: '380px',
+                h: '380px',
+                objectFit: 'contain',
+              })}
+            />
             <p
               className={css({
                 fontSize: 'lg',

@@ -6,8 +6,18 @@ import { travelFilterSections } from '@/lib/filter-data'
 import { FilterCard } from '@/components/filters/filter-card'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import {
+  useProfileStore,
+  getDefaultEditableProfile,
+} from '@/store/profileStore'
 import { css } from '@/styled-system/css'
-import { ITEMS_PER_PAGE, STYLE_TO_CATEGORY } from './constants'
+import {
+  ITEMS_PER_PAGE,
+  STYLE_TO_CATEGORY,
+  CATEGORY_TO_TAG_NAME,
+  FILTER_TAG_TO_TAG_NAME,
+} from './constants'
 import { parseParams, getFilterChips } from './utils'
 import {
   useExplorePlaces,
@@ -26,6 +36,10 @@ function ExploreContent() {
   const { isAuthInitialized } = useAuthStore()
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const [previewStyle, setPreviewStyle] = useState<string[] | null>(null)
+  const [filterResetKey, setFilterResetKey] = useState(0)
+  const [filterInitialSelected, setFilterInitialSelected] = useState<
+    Record<string, string[]>
+  >(() => parseParams(searchParams))
   const gridRef = useRef<HTMLElement>(null)
 
   const [prevKeyword, setPrevKeyword] = useState(
@@ -51,6 +65,39 @@ function ExploreContent() {
   )
 
   const tags = useTags()
+
+  const selectedTagNames = useMemo(() => {
+    const names: string[] = []
+    const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
+    for (const s of styleValues) {
+      const cat = STYLE_TO_CATEGORY[s] ?? s
+      const name = CATEGORY_TO_TAG_NAME[cat]
+      if (name) names.push(name)
+    }
+    for (const section of ['theme', 'companion', 'region', 'facility']) {
+      for (const v of selected[section] ?? []) {
+        const name = FILTER_TAG_TO_TAG_NAME[v]
+        if (name) names.push(name)
+      }
+    }
+    if (names.length === 0 && categoryId) {
+      const name = CATEGORY_TO_TAG_NAME[categoryId]
+      if (name) names.push(name)
+    }
+    return names
+  }, [selected, categoryId])
+
+  const userId = useUserProfileStore((state) => state.userProfile?.id)
+  const profileTagNames = useMemo(() => {
+    const profiles = useProfileStore.getState().profiles
+    const profile = userId
+      ? (profiles[userId] ?? getDefaultEditableProfile())
+      : getDefaultEditableProfile()
+    return profile.tagIds
+      .map((tagId) => FILTER_TAG_TO_TAG_NAME[tagId])
+      .filter((name): name is string => Boolean(name))
+  }, [userId])
+
   const selectedTagIds = useMemo(
     () => getSelectedTagIds(selected, categoryId, tags),
     [selected, categoryId, tags]
@@ -72,6 +119,9 @@ function ExploreContent() {
     handleSortSelect,
     isLoggedIn,
   } = useExploreSort(() => setIsLoginModalOpen(true))
+
+  const effectiveTagNames =
+    sort === 'recommended' ? profileTagNames : selectedTagNames
 
   const { places, totalCount, isLoading, handleLikeToggle } = useExplorePlaces({
     currentPage,
@@ -113,11 +163,9 @@ function ExploreContent() {
     const params = new URLSearchParams()
 
     const styleValues = newSelected.style ?? []
-    let newCategoryId = categoryId
+    let newCategoryId: string | null = null
     if (styleValues.length === 1 && styleValues[0] !== 'all') {
-      newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? categoryId
-    } else if (styleValues.length >= 2) {
-      newCategoryId = null
+      newCategoryId = STYLE_TO_CATEGORY[styleValues[0]] ?? null
     }
 
     if (newCategoryId) params.set('category', newCategoryId)
@@ -135,10 +183,11 @@ function ExploreContent() {
 
   function clearAllFilters() {
     const params = new URLSearchParams()
-    if (categoryId) params.set('category', categoryId)
     if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     params.set('page', '1')
     setSearchInput('')
+    setFilterInitialSelected({})
+    setFilterResetKey((k) => k + 1)
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
 
@@ -164,8 +213,9 @@ function ExploreContent() {
       >
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           <FilterCard
+            key={filterResetKey}
             sections={travelFilterSections}
-            initialSelected={selected}
+            initialSelected={filterInitialSelected}
             resultCount={totalCount}
             onApply={applyFilters}
             onReset={clearAllFilters}
@@ -193,6 +243,8 @@ function ExploreContent() {
         isLoading={isLoading}
         currentPage={currentPage}
         totalPages={totalPages}
+        selectedTagNames={effectiveTagNames}
+        sort={sort}
         onLikeToggle={handleLikeToggle}
         onPageChange={goToPage}
         onClearFilters={clearAllFilters}

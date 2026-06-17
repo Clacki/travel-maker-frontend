@@ -5,7 +5,7 @@ export const ITEMS_PER_PAGE = 12
 export type SortKey = 'popular' | 'bookmarks' | 'reviews' | 'recommended'
 
 export const SORT_LABELS: Record<SortKey, string> = {
-  popular: '인기순',
+  popular: '별점순',
   bookmarks: '북마크순',
   reviews: '리뷰순',
   recommended: '추천순',

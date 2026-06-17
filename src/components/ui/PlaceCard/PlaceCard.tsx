@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { Star, ImageIcon } from 'lucide-react'
+import { Star, ImageIcon, Heart, MessageCircle } from 'lucide-react'
 import { css, cva } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
 import { LikeButton } from './LikeButton'
@@ -13,6 +13,9 @@ export interface PlaceCardBaseProps {
   tags?: string[]
   rating?: number
   imageUrl?: string
+  highlightedTags?: string[]
+  hrefSuffix?: string
+  countBadge?: { type: 'review' | 'bookmark'; count: number }
 }
 
 export interface BookmarkPlaceCardProps extends PlaceCardBaseProps {
@@ -110,14 +113,33 @@ const contentStyle = css({
   color: 'inherit',
 })
 
+const titleRowStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+})
+
 const titleStyle = css({
   fontSize: 'md',
   fontWeight: 'semibold',
   color: 'text.primary',
   lineHeight: 'tight',
   overflow: 'hidden',
-  display: '-webkit-box',
-  WebkitLineClamp: '1',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+  flex: '1',
+  minWidth: '0',
+})
+
+const countBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  fontSize: 'xs',
+  color: 'text.secondary',
+  fontWeight: 'medium',
+  flexShrink: '0',
+  whiteSpace: 'nowrap',
 })
 
 const tagRowStyle = css({
@@ -139,6 +161,22 @@ const tagStyle = css({
   lineHeight: 'tight',
 })
 
+const tagHighlightedStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  px: '2',
+  py: '1',
+  borderRadius: 'pill',
+  color: 'primary',
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+  lineHeight: 'tight',
+  backgroundImage:
+    'linear-gradient(90deg, #A8DCF0 0%, #A8DCF0 30%, rgba(255,255,255,0.85) 50%, #A8DCF0 70%, #A8DCF0 100%)',
+  backgroundSize: '300% 100%',
+  animation: 'tagShimmer 2.5s linear infinite',
+})
+
 const descriptionStyle = css({
   fontSize: 'xs',
   color: 'text.secondary',
@@ -157,6 +195,9 @@ export function PlaceCard(props: PlaceCardProps) {
     rating,
     imageUrl,
     variant,
+    highlightedTags,
+    hrefSuffix,
+    countBadge,
   } = props
 
   return (
@@ -205,18 +246,35 @@ export function PlaceCard(props: PlaceCardProps) {
         )}
 
       <Link
-        href={ROUTES.DETAIL(String(placeId))}
+        href={ROUTES.DETAIL(String(placeId)) + (hrefSuffix ?? '')}
         className={contentStyle}
         aria-label={`${placeName} 상세 페이지로 이동`}
       >
-        <h3 className={titleStyle} style={{ WebkitBoxOrient: 'vertical' }}>
-          {placeName}
-        </h3>
+        <div className={titleRowStyle}>
+          <h3 className={titleStyle}>{placeName}</h3>
+          {countBadge && (
+            <span className={countBadgeStyle}>
+              {countBadge.type === 'bookmark' ? (
+                <Heart size={11} fill="#E5484D" color="#E5484D" />
+              ) : (
+                <MessageCircle size={11} />
+              )}
+              {countBadge.count > 999 ? '999+' : countBadge.count}
+            </span>
+          )}
+        </div>
 
         {tags.length > 0 && (
           <div className={tagRowStyle}>
             {tags.slice(0, 3).map((tag) => (
-              <span key={tag} className={tagStyle}>
+              <span
+                key={tag}
+                className={
+                  highlightedTags?.includes(tag)
+                    ? tagHighlightedStyle
+                    : tagStyle
+                }
+              >
                 {tag}
               </span>
             ))}

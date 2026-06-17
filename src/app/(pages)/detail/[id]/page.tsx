@@ -8,9 +8,16 @@ import DetailLoading from './loading'
 
 interface DetailPageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ highlight?: string }>
 }
 
-async function TravelDetailContent({ id }: { id: string }) {
+async function TravelDetailContent({
+  id,
+  highlightedTags,
+}: {
+  id: string
+  highlightedTags: string[]
+}) {
   let detail
   try {
     detail = await getTravelDetail(id)
@@ -23,15 +30,20 @@ async function TravelDetailContent({ id }: { id: string }) {
     throw error
   }
 
-  return <TravelDetailPage detail={detail} />
+  return <TravelDetailPage detail={detail} highlightedTags={highlightedTags} />
 }
 
-export default async function DetailPage({ params }: DetailPageProps) {
+export default async function DetailPage({
+  params,
+  searchParams,
+}: DetailPageProps) {
   const { id } = await params
+  const { highlight } = await searchParams
+  const highlightedTags = highlight ? highlight.split(',') : []
 
   return (
     <Suspense fallback={<DetailLoading />}>
-      <TravelDetailContent id={id} />
+      <TravelDetailContent id={id} highlightedTags={highlightedTags} />
     </Suspense>
   )
 }

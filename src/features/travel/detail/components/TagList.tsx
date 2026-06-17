@@ -4,6 +4,7 @@ import type { Tag } from '../types/travelDetail.types'
 
 interface TagListProps {
   tags: Tag[]
+  highlightedTags?: string[]
 }
 
 const tagListStyle = css({
@@ -12,11 +13,17 @@ const tagListStyle = css({
   gap: '2',
 })
 
-export default function TagList({ tags }: TagListProps) {
+export default function TagList({ tags, highlightedTags }: TagListProps) {
+  const highlightedSet = new Set(highlightedTags ?? [])
   return (
     <div className={tagListStyle}>
       {tags.map((tag) => (
-        <KeywordTag key={tag.id} label={tag.tag_name} variant="result" />
+        <KeywordTag
+          key={tag.id}
+          label={tag.tag_name}
+          variant="result"
+          highlighted={highlightedSet.has(tag.tag_name)}
+        />
       ))}
     </div>
   )

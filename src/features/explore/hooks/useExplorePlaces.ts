@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { getPlaces, getPlacesFilter, getPlacesSearch } from '../api/placesApi'
+import {
+  getPlaces,
+  getPlacesFilter,
+  getPlacesRecommend,
+  getPlacesSearch,
+} from '../api/placesApi'
 import { getTags } from '../api/tagsApi'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
 import {
@@ -79,17 +84,14 @@ export function useExplorePlaces({
         })
         .filter((id): id is number => id !== undefined)
 
-      getPlacesFilter({
-        ...(recommendTagIds.length > 0
-          ? { tags: recommendTagIds }
-          : { sort: 'rating', order: 'desc' }),
-        page: currentPage,
-        page_size: ITEMS_PER_PAGE,
+      getPlacesRecommend({
+        ...(recommendTagIds.length > 0 ? { tags: recommendTagIds } : {}),
+        limit: ITEMS_PER_PAGE,
       })
         .then((data) => {
           if (cancelled) return
-          setPlaces(data.results)
-          setTotalCount(data.count)
+          setPlaces(data)
+          setTotalCount(data.length)
           setFetchedKey(currentKey)
         })
         .catch(() => {
