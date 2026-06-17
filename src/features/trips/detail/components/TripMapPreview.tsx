@@ -3,88 +3,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import type { TripCourseDetail, TripPlace } from '../types/tripDetail'
+import type {
+  KakaoLatLng,
+  KakaoOverlay,
+  KakaoPolyline,
+  KakaoMapInstance,
+} from '@/features/trips/types/kakao.types'
+import {
+  PRIMARY_COLOR,
+  INVERSE_COLOR,
+  createMarkerOverlay,
+} from '@/features/trips/utils/createKakaoMarker'
+import { loadKakaoSdk } from '@/features/trips/utils/loadKakaoSdk'
 import { css } from '@/styled-system/css'
 
-// 카카오맵 SDK 공식 타입 미제공 → 최소 필요 인터페이스 정의
-interface KakaoLatLng {
-  getLat: () => number
-  getLng: () => number
-}
-interface KakaoLatLngBounds {
-  extend: (latlng: KakaoLatLng) => void
-}
-interface KakaoOverlay {
-  setMap: (map: KakaoMapInstance | null) => void
-}
-interface KakaoPolyline {
-  setMap: (map: KakaoMapInstance | null) => void
-}
-interface KakaoMapInstance {
-  setBounds: (bounds: KakaoLatLngBounds) => void
-  panTo: (latlng: KakaoLatLng) => void
-}
-
-const PRIMARY_COLOR = '#2CA6BE'
-
 const APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
-
-function createMarkerOverlay(
-  label: string,
-  color: string
-): { el: HTMLDivElement; tailInner: HTMLDivElement } {
-  const el = document.createElement('div')
-  el.style.cssText = [
-    'position:relative',
-    'display:inline-flex',
-    'align-items:center',
-    'justify-content:center',
-    'min-width:28px',
-    'height:28px',
-    'padding:0 8px',
-    `background:${color}`,
-    'color:#fff',
-    'font-size:12px',
-    'font-weight:bold',
-    'border-radius:12px',
-    'border:none',
-    'box-shadow:0 2px 6px rgba(0,0,0,0.25)',
-    'cursor:pointer',
-    'white-space:nowrap',
-    'transition:all 0.2s ease',
-  ].join(';')
-
-  const tailOuter = document.createElement('div')
-  tailOuter.style.cssText = [
-    'position:absolute',
-    'bottom:-10px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'width:0',
-    'height:0',
-    'border-left:8px solid transparent',
-    'border-right:8px solid transparent',
-    `border-top:10px solid ${color}`,
-  ].join(';')
-
-  const tailInner = document.createElement('div')
-  tailInner.style.cssText = [
-    'position:absolute',
-    'bottom:-7px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'width:0',
-    'height:0',
-    'border-left:6px solid transparent',
-    'border-right:6px solid transparent',
-    `border-top:8px solid ${color}`,
-  ].join(';')
-
-  el.textContent = label
-  el.appendChild(tailOuter)
-  el.appendChild(tailInner)
-
-  return { el, tailInner }
-}
 
 const sectionStyle = css({
   display: 'grid',
@@ -211,7 +144,12 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
   const overlaysRef = useRef<KakaoOverlay[]>([])
   const polylineRef = useRef<KakaoPolyline | null>(null)
   const overlayContentsRef = useRef<
-    Array<{ id: number; el: HTMLDivElement; tailInner: HTMLDivElement }>
+    Array<{
+      id: number
+      el: HTMLDivElement
+      tailInner: HTMLDivElement
+      cleanup: () => void
+    }>
   >([])
 
   const places = useMemo<TripPlace[]>(() => {
@@ -236,25 +174,22 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
 
   // 카카오맵 SDK 로드
   useEffect(() => {
-    if (typeof window === 'undefined' || !APP_KEY) return
-
-    if (window.kakao?.maps) {
-      window.kakao.maps.load(initMap)
+    if (typeof window === 'undefined' || !APP_KEY) {
       return
     }
-
-    const script = document.createElement('script')
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${APP_KEY}&autoload=false`
-    script.onload = () => window.kakao.maps.load(initMap)
-    document.head.appendChild(script)
+    loadKakaoSdk(APP_KEY).then(initMap)
   }, [initMap])
 
   // 일차 변경 시 마커·폴리라인 갱신
   useEffect(() => {
     const map = mapInstanceRef.current
-    if (!map || !window.kakao?.maps) return
+    if (!map || !window.kakao?.maps) {
+      return
+    }
 
-    // 기존 오버레이·폴리라인 제거
+    // 기존 오버레이·폴리라인 제거 (이벤트 리스너 cleanup 포함)
+    overlayContentsRef.current.forEach(({ cleanup }) => cleanup())
+    overlayContentsRef.current = []
     overlaysRef.current.forEach((o) => o.setMap(null))
     overlaysRef.current = []
     if (polylineRef.current) {
@@ -263,7 +198,9 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
     }
 
     const coordPlaces = places.filter((p) => p.latitude && p.longitude)
-    if (coordPlaces.length === 0) return
+    if (coordPlaces.length === 0) {
+      return
+    }
 
     const path: KakaoLatLng[] = []
     overlayContentsRef.current = []
@@ -280,9 +217,14 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
         PRIMARY_COLOR
       )
 
-      overlayContentsRef.current.push({ id: place.id, el, tailInner })
-
-      el.addEventListener('click', () => setSelectedPlaceId(place.id))
+      const handleClick = () => setSelectedPlaceId(place.id)
+      el.addEventListener('click', handleClick)
+      overlayContentsRef.current.push({
+        id: place.id,
+        el,
+        tailInner,
+        cleanup: () => el.removeEventListener('click', handleClick),
+      })
 
       const overlay = new window.kakao.maps.CustomOverlay({
         position,
@@ -316,8 +258,8 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
 
     overlayContentsRef.current.forEach(({ id, el, tailInner }) => {
       const isSelected = id === selectedPlace?.id
-      const bgColor = isSelected ? '#fff' : PRIMARY_COLOR
-      const textColor = isSelected ? PRIMARY_COLOR : '#fff'
+      const bgColor = isSelected ? INVERSE_COLOR : PRIMARY_COLOR
+      const textColor = isSelected ? PRIMARY_COLOR : INVERSE_COLOR
       el.style.background = bgColor
       el.style.color = textColor
       el.style.border = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
@@ -326,7 +268,9 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
       tailInner.style.borderTopColor = bgColor
     })
 
-    if (!selectedPlace?.latitude || !selectedPlace?.longitude) return
+    if (!selectedPlace?.latitude || !selectedPlace?.longitude) {
+      return
+    }
     mapInstanceRef.current.panTo(
       new window.kakao.maps.LatLng(
         selectedPlace.latitude,

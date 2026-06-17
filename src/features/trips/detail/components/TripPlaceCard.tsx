@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { css } from '@/styled-system/css'
-import { Clock, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import type { TripPlace } from '../types/tripDetail'
 
@@ -103,13 +103,6 @@ const metaItemStyle = css({
   gap: '1',
 })
 
-const memoStyle = css({
-  mt: '4',
-  color: 'text.primary',
-  fontSize: 'sm',
-  lineHeight: 'relaxed',
-})
-
 const mapButtonStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
@@ -162,22 +155,14 @@ export function TripPlaceCard({ place }: TripPlaceCardProps) {
           <span className={orderStyle}>{place.order}</span>
           <div className={titleGroupStyle}>
             <h3 className={titleStyle}>{place.name}</h3>
-            {place.category ? (
+            {place.description ? (
               <div>
                 <p
-                  className={categoryStyle}
-                  style={
-                    isExpanded
-                      ? undefined
-                      : {
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }
-                  }
+                  className={`${categoryStyle} ${
+                    isExpanded ? '' : css({ lineClamp: '2' })
+                  }`}
                 >
-                  {place.category}
+                  {place.description}
                 </p>
                 <button
                   type="button"
@@ -196,15 +181,7 @@ export function TripPlaceCard({ place }: TripPlaceCardProps) {
             <MapPin size={15} aria-hidden="true" />
             {place.address}
           </span>
-          {place.stayTime ? (
-            <span className={metaItemStyle}>
-              <Clock size={15} aria-hidden="true" />
-              {place.stayTime}
-            </span>
-          ) : null}
         </div>
-
-        {place.memo ? <p className={memoStyle}>{place.memo}</p> : null}
 
         {place.latitude && place.longitude ? (
           <a

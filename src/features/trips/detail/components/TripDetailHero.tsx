@@ -117,13 +117,24 @@ const imageCaptionStyle = css({
   boxShadow: 'sm',
 })
 
+const privateBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  minH: '8',
+  px: '3',
+  borderRadius: 'pill',
+  bg: 'bg.muted',
+  color: 'text.primary',
+  fontSize: 'xs',
+  fontWeight: 'bold',
+})
+
 interface TripDetailHeroProps {
   trip: TripCourseDetail
 }
 
 export function TripDetailHero({ trip }: TripDetailHeroProps) {
-  const placeCount = trip.days.reduce((sum, day) => sum + day.places.length, 0)
-
   return (
     <section className={cardStyle} aria-labelledby="trip-detail-title">
       <div className={contentStyle}>
@@ -131,20 +142,7 @@ export function TripDetailHero({ trip }: TripDetailHeroProps) {
           <span className={eyebrowStyle}>TRAVEL COURSE</span>
           <OwnerBadge authorId={trip.author.id} />
           {!trip.isPublic ? (
-            <span
-              className={css({
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '1',
-                minH: '8',
-                px: '3',
-                borderRadius: 'pill',
-                bg: 'bg.muted',
-                color: 'text.primary',
-                fontSize: 'xs',
-                fontWeight: 'bold',
-              })}
-            >
+            <span className={privateBadgeStyle}>
               <Lock size={13} aria-hidden="true" />
               비공개
             </span>
@@ -175,7 +173,7 @@ export function TripDetailHero({ trip }: TripDetailHeroProps) {
             {trip.durationLabel} · Day {trip.days.length}
           </span>
           <span className={metaItemStyle}>
-            장소 {placeCount}개 · {trip.createdAt} 생성
+            장소 {trip.placeCount}개 · {trip.createdAt} 생성
           </span>
         </div>
       </div>

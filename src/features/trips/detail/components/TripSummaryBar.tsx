@@ -25,11 +25,9 @@ interface TripSummaryBarProps {
 }
 
 export function TripSummaryBar({ trip }: TripSummaryBarProps) {
-  const placeCount = trip.days.reduce((sum, day) => sum + day.places.length, 0)
-
   return (
     <div className={summaryStyle} aria-label="코스 요약">
-      <span>장소 {placeCount}개</span>
+      <span>장소 {trip.placeCount}개</span>
       <span className={dividerStyle}>|</span>
       <span>{trip.region}</span>
       <span className={dividerStyle}>|</span>

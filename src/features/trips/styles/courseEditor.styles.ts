@@ -24,6 +24,52 @@ export const pageSubtitleStyle = css({
   color: 'text.secondary',
 })
 
+export const pageBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  px: '2.5',
+  py: '1',
+  bg: 'primary.soft',
+  color: 'primary',
+  borderRadius: 'pill',
+  fontSize: 'xs',
+  fontWeight: 'medium',
+  mb: '3',
+})
+
+export const pageTitleStyle = css({
+  fontSize: '3xl',
+  fontWeight: 'bold',
+  color: 'text.primary',
+  lineHeight: 'tight',
+  mb: '2',
+})
+
+export const leftPanelStyle = css({
+  flex: '0 0 44%',
+  minW: 0,
+  pr: '3',
+  py: '4',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '3',
+})
+
+export const rightPanelStyle = css({
+  flex: '0 0 56%',
+  minW: 0,
+  pl: '3',
+  py: '4',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '3',
+})
+
+export const searchWrapperStyle = css({
+  flexShrink: 0,
+})
+
 export const bodyStyle = css({
   display: 'flex',
   alignItems: 'flex-start',

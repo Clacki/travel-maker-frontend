@@ -15,19 +15,13 @@ import { css } from '@/styled-system/css'
 
 import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
-import {
-  getTravelTypeResult,
-  normalizeTravelTypeResult,
-} from '../../api/travelTypeResultApi'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
 import { useMyReviews } from '../../hooks/useMyReviews'
+import { useMyTravelTypeResult } from '../../hooks/useMyTravelTypeResult'
 import { MyBookmarksSection } from '../MyBookmarksSection'
 import { MyReviewsSection } from '../MyReviewsSection'
-import {
-  MyTravelTypeResult,
-  type TravelTypeResultState,
-} from '../MyTravelTypeResult'
+import { MyTravelTypeResult } from '../MyTravelTypeResult'
 import { MyTripsSection } from '../MyTripsSection'
 import { ProfileCard } from '../ProfileCard'
 import type { TabType } from '../ProfileTabs'
@@ -123,35 +117,11 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     targetUserId: isOwner ? undefined : user.id,
   })
 
-  const [travelTypeResultState, setTravelTypeResultState] =
-    useState<TravelTypeResultState>({ status: 'loading' })
-
-  useEffect(() => {
-    if (!isAuthInitialized || !isLoggedIn || activeTab !== 'test') return
-    // 이미 로드된 경우 재요청하지 않음
-    if (travelTypeResultState.status !== 'loading') return
-
-    getTravelTypeResult()
-      .then((response) => {
-        const normalized = normalizeTravelTypeResult(response)
-        if (!normalized) {
-          setTravelTypeResultState({ status: 'empty' })
-        } else {
-          setTravelTypeResultState({ status: 'success', data: normalized })
-        }
-      })
-      .catch((error: unknown) => {
-        const status = isAxiosError(error) ? error.response?.status : undefined
-        if (status === 404) {
-          setTravelTypeResultState({ status: 'empty' })
-        } else {
-          setTravelTypeResultState({
-            status: 'error',
-            message: '성향 테스트 결과를 불러오지 못했어요.',
-          })
-        }
-      })
-  }, [isAuthInitialized, isLoggedIn, activeTab, travelTypeResultState.status])
+  const travelTypeResultState = useMyTravelTypeResult({
+    isAuthInitialized,
+    isLoggedIn,
+    isTabActive: activeTab === 'test',
+  })
 
   useEffect(() => {
     if (!isAuthInitialized) {

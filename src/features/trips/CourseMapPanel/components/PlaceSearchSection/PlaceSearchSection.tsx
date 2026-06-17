@@ -1,12 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
-import { getPlacesSearch } from '@/lib/placesApi'
+import { getPlacesFilter } from '@/lib/placesApi'
 import type { Place } from '@/types/place.types'
+import type { Tag } from '@/types/tag.types'
 import { useCourseStore } from '@/store/tripsStore'
+import { getCachedRegionAndThemeTags } from '@/features/trips/api/tagsApi'
 
 import { css } from '@/styled-system/css'
 
@@ -110,8 +112,37 @@ const pageInfoStyle = css({
   textAlign: 'center',
 })
 
+const headerTitleRowStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+})
+
+const regionBadgeStyle = css({
+  px: '2',
+  py: '0.5',
+  bg: 'primary.soft',
+  color: 'primary',
+  borderRadius: 'pill',
+  fontSize: 'xs',
+  fontWeight: 'medium',
+})
+
+const headerSubtitleStyle = css({
+  fontSize: 'xs',
+  color: 'text.secondary',
+  mt: '0.5',
+})
+
+const tagLoadErrorStyle = css({
+  fontSize: 'xs',
+  color: 'warning',
+  mt: '-1',
+})
+
 export function PlaceSearchSection() {
   const selectedDay = useCourseStore((s) => s.selectedDay)
+  const selectedRegion = useCourseStore((s) => s.selectedRegion)
   const addPlace = useCourseStore((s) => s.addPlace)
   const places = useCourseStore((s) => s.places)
   const setFocusLocation = useCourseStore((s) => s.setFocusLocation)
@@ -122,8 +153,16 @@ export function PlaceSearchSection() {
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+  // 마지막 검색이 완료된 시점의 지역 — selectedRegion과 다르면 결과를 숨김
+  const [lastSearchedRegion, setLastSearchedRegion] = useState<string | null>(
+    null
+  )
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mountedRef = useRef(true)
+  const [tagLoadError, setTagLoadError] = useState<string | null>(null)
+  // 태그 목록은 렌더링과 무관하게 fetch 결과만 참조 → ref로 관리
+  const regionTagsRef = useRef<Tag[]>([])
+  const themeTagsRef = useRef<Tag[]>([])
 
   // 언마운트 시 타이머 정리 + mounted 플래그 해제
   useEffect(() => {
@@ -136,58 +175,98 @@ export function PlaceSearchSection() {
     }
   }, [])
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
+  // 지역/테마 태그 로드 (tag ID 기반 필터링에 사용)
+  useEffect(() => {
+    getCachedRegionAndThemeTags()
+      .then(([regions, themes]) => {
+        regionTagsRef.current = regions
+        themeTagsRef.current = themes
+      })
+      .catch(() => {
+        setTagLoadError(
+          '지역/테마 정보를 불러오지 못했습니다. 카테고리 필터가 동작하지 않을 수 있습니다.'
+        )
+      })
+  }, [])
 
-  const fetchResults = useCallback(
-    (searchKeyword: string, category: string, nextPage: number) => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current)
-      }
+  // fetchResults를 일반 함수로 선언 (React Compiler가 자동 최적화)
+  const fetchResults = (
+    searchKeyword: string,
+    category: string,
+    nextPage: number,
+    region: string | null
+  ) => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current)
+    }
 
-      if (!searchKeyword.trim() && category === '전체') {
-        setResults([])
-        setTotalCount(0)
-        setIsLoading(false)
+    if (!searchKeyword.trim() && category === '전체') {
+      setResults([])
+      setTotalCount(0)
+      setIsLoading(false)
+      return
+    }
+
+    // setIsLoading을 setTimeout 내부에서 호출해 debounce 취소 시 로딩 고착 방지
+    debounceRef.current = setTimeout(async () => {
+      if (!mountedRef.current) {
         return
       }
+      setIsLoading(true)
+      try {
+        // 지역/카테고리는 tag ID로 필터링 (keyword 조합 방식은 무관한 결과 반환)
+        const tagIds: number[] = []
 
-      // setIsLoading을 setTimeout 내부에서 호출해 debounce 취소 시 로딩 고착 방지
-      debounceRef.current = setTimeout(async () => {
+        if (region) {
+          const regionTag = regionTagsRef.current.find(
+            (t) => t.tag_name === region
+          )
+          if (regionTag) tagIds.push(regionTag.id)
+        }
+
+        // 카테고리 탭이 테마 태그와 일치하면 tag ID 사용, 아니면 keyword 앞에 붙임
+        let categoryKeyword = ''
+        if (category !== '전체') {
+          const themeTag = themeTagsRef.current.find(
+            (t) => t.tag_name === category
+          )
+          if (themeTag) {
+            tagIds.push(themeTag.id)
+          } else {
+            categoryKeyword = category
+          }
+        }
+
+        const combinedKeyword = [categoryKeyword, searchKeyword]
+          .filter(Boolean)
+          .join(' ')
+          .trim()
+
+        const response = await getPlacesFilter({
+          keyword: combinedKeyword || undefined,
+          tags: tagIds.length > 0 ? tagIds : undefined,
+          page: nextPage,
+          page_size: PAGE_SIZE,
+        })
         if (!mountedRef.current) {
           return
         }
-        setIsLoading(true)
-        try {
-          const combinedKeyword =
-            category !== '전체'
-              ? `${category} ${searchKeyword}`.trim()
-              : searchKeyword.trim()
-
-          const response = await getPlacesSearch({
-            keyword: combinedKeyword,
-            page: nextPage,
-            page_size: PAGE_SIZE,
-          })
-          if (!mountedRef.current) {
-            return
-          }
-          setResults(response.results)
-          setTotalCount(response.count)
-        } catch {
-          if (!mountedRef.current) {
-            return
-          }
-          setResults([])
-          setTotalCount(0)
-        } finally {
-          if (mountedRef.current) {
-            setIsLoading(false)
-          }
+        setResults(response.results)
+        setTotalCount(response.count)
+        setLastSearchedRegion(region)
+      } catch {
+        if (!mountedRef.current) {
+          return
         }
-      }, 300)
-    },
-    []
-  )
+        setResults([])
+        setTotalCount(0)
+      } finally {
+        if (mountedRef.current) {
+          setIsLoading(false)
+        }
+      }
+    }, 300)
+  }
 
   const handleKeywordChange = (value: string) => {
     setKeyword(value)
@@ -198,18 +277,23 @@ export function PlaceSearchSection() {
       setTotalCount(0)
       return
     }
-    fetchResults(value, activeCategory, 1)
+    fetchResults(value, activeCategory, 1, selectedRegion)
   }
 
   const handleCategoryChange = (category: string) => {
+    // 카테고리 변경 시 이전 결과 즉시 초기화 (debounce 중 stale 결과 노출 방지)
+    // 키워드도 초기화 — 카테고리 단독 검색이 의도이므로 이전 keyword와 혼합하지 않음
     setActiveCategory(category)
+    setKeyword('')
     setPage(1)
-    fetchResults(keyword, category, 1)
+    setResults([])
+    setTotalCount(0)
+    fetchResults('', category, 1, selectedRegion)
   }
 
   const handlePageChange = (nextPage: number) => {
     setPage(nextPage)
-    fetchResults(keyword, activeCategory, nextPage)
+    fetchResults(keyword, activeCategory, nextPage, selectedRegion)
   }
 
   const parseCoord = (val: string | null): number | undefined => {
@@ -238,6 +322,11 @@ export function PlaceSearchSection() {
 
   const isAdded = (place: Place) => places.some((p) => p.backendId === place.id)
 
+  // 지역이 변경됐으면 이전 검색 결과 숨김 (useEffect 없이 파생 상태로 처리)
+  const displayResults = lastSearchedRegion === selectedRegion ? results : []
+  const displayTotal = lastSearchedRegion === selectedRegion ? totalCount : 0
+  const totalPages = Math.ceil(displayTotal / PAGE_SIZE)
+
   const hasSearched = keyword.trim() !== '' || activeCategory !== '전체'
 
   return (
@@ -246,19 +335,23 @@ export function PlaceSearchSection() {
         {/* 헤더 */}
         <div className={headerStyle}>
           <div>
-            <span className={titleStyle}>장소 검색</span>
-            <p
-              className={css({
-                fontSize: 'xs',
-                color: 'text.secondary',
-                mt: '0.5',
-              })}
-            >
-              추가 버튼을 눌러 {selectedDay}일차 코스에 바로 담으세요
+            <div className={headerTitleRowStyle}>
+              <span className={titleStyle}>장소 검색</span>
+              {selectedRegion && (
+                <span className={regionBadgeStyle}>{selectedRegion}</span>
+              )}
+            </div>
+            <p className={headerSubtitleStyle}>
+              {selectedRegion
+                ? `${selectedRegion} 지역 장소만 검색됩니다 · ${selectedDay}일차`
+                : `추가 버튼을 눌러 ${selectedDay}일차 코스에 바로 담으세요`}
             </p>
           </div>
           <Search size={16} className={searchIconStyle} />
         </div>
+
+        {/* 태그 로드 에러 */}
+        {tagLoadError && <p className={tagLoadErrorStyle}>{tagLoadError}</p>}
 
         {/* 검색 입력 */}
         <PlaceSearchInput value={keyword} onChange={handleKeywordChange} />
@@ -274,10 +367,10 @@ export function PlaceSearchSection() {
           <>
             {isLoading ? (
               <p className={loadingStyle}>검색 중...</p>
-            ) : results.length > 0 ? (
+            ) : displayResults.length > 0 ? (
               <>
                 <div className={resultListStyle}>
-                  {results.map((place) => (
+                  {displayResults.map((place) => (
                     <PlaceSearchResultCard
                       key={place.id}
                       place={place}

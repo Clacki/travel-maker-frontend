@@ -6,10 +6,7 @@ import {
   CourseInfoCard,
   CoursePlaceCard,
 } from '@/features/trips/CourseSidePanel/CourseSidePanel'
-import {
-  ScheduleCard,
-  TimelineCard,
-} from '@/features/trips/SchedulePanel/SchedulePanel'
+import { ScheduleCard } from '@/features/trips/SchedulePanel/SchedulePanel'
 import CourseMapPanel from '@/features/trips/CourseMapPanel'
 import { PlaceSearchSection } from '@/features/trips/CourseMapPanel/components/PlaceSearchSection'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
@@ -21,62 +18,19 @@ import {
   badgeDotStyle,
   pageSubtitleStyle,
   bodyStyle,
+  pageBadgeStyle,
+  pageTitleStyle,
+  leftPanelStyle,
+  rightPanelStyle,
+  searchWrapperStyle,
 } from '@/features/trips/styles/courseEditor.styles'
 
 import type { RouteDetail } from '@/features/trips/types/route.types'
 import type { CoursePlace } from '@/features/trips/types/course.types'
 
-import { css } from '@/styled-system/css'
-
 interface TripCourseEditPageProps {
   route: RouteDetail
 }
-
-const badgeStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  px: '2.5',
-  py: '1',
-  bg: 'primary.soft',
-  color: 'primary',
-  borderRadius: 'pill',
-  fontSize: 'xs',
-  fontWeight: 'medium',
-  mb: '3',
-})
-
-const pageTitleStyle = css({
-  fontSize: '3xl',
-  fontWeight: 'bold',
-  color: 'text.primary',
-  lineHeight: 'tight',
-  mb: '2',
-})
-
-const leftStyle = css({
-  flex: '0 0 44%',
-  minW: 0,
-  pr: '3',
-  py: '4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '3',
-})
-
-const rightStyle = css({
-  flex: '0 0 56%',
-  minW: 0,
-  pl: '3',
-  py: '4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '3',
-})
-
-const searchWrapperStyle = css({
-  flexShrink: 0,
-})
 
 export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
   const initCourse = useCourseStore((state) => state.initCourse)
@@ -118,7 +72,7 @@ export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
     <div className={pageStyle}>
       <LayoutContainer>
         <div className={headerStyle}>
-          <div className={badgeStyle}>
+          <div className={pageBadgeStyle}>
             <span className={badgeDotStyle} />
             코스 에디터
           </div>
@@ -129,13 +83,12 @@ export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
         </div>
 
         <div className={bodyStyle}>
-          <div className={leftStyle}>
+          <div className={leftPanelStyle}>
             <CourseInfoCard />
             <ScheduleCard />
             <CoursePlaceCard />
-            <TimelineCard />
           </div>
-          <div className={rightStyle}>
+          <div className={rightPanelStyle}>
             <CourseMapPanel mode="edit" tripId={route.route_id.toString()} />
             <div className={searchWrapperStyle}>
               <PlaceSearchSection />

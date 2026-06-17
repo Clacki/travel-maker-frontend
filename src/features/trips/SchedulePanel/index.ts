@@ -1,1 +1,1 @@
-export { ScheduleCard, TimelineCard } from './SchedulePanel'
+export { ScheduleCard } from './SchedulePanel'

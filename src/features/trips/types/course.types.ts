@@ -7,10 +7,6 @@ export type CoursePlace = {
   lng?: number
   dayIndex: number
   category?: string
-  stayMinutes?: number
-  travelMinutes?: number
-  memo?: string
-  transportMode?: 'walk' | 'transit' | 'car'
 }
 
 // explore 필터 region 섹션 tag_name 기준 (API tag_name과 일치)
@@ -50,13 +46,6 @@ export type CourseDateRange = {
   to: Date | undefined
 }
 
-export type DepartureTime = {
-  period: 'am' | 'pm'
-  hour: number
-  minute: number
-}
-
 export const MIN_PLACES = 2
 export const MAX_PLACES_PER_DAY = 5
 export const MAX_TRIP_DAYS = 3
-export const DEFAULT_STAY_MINUTES = 60

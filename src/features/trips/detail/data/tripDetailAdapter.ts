@@ -44,13 +44,15 @@ export function toTripCourseDetail(
       id: p.place_id,
       order: p.order,
       name: p.place_name,
-      category: p.description,
+      description: p.description,
       address: [p.address_primary, p.address_detail].filter(Boolean).join(' '),
       latitude: p.latitude,
       longitude: p.longitude,
       imageUrl: p.image_url ?? undefined,
     })),
   }))
+
+  const placeCount = days.reduce((sum, day) => sum + day.places.length, 0)
 
   return {
     id: route.route_id,
@@ -64,8 +66,11 @@ export function toTripCourseDetail(
     author: { id: route.user_id, nickname: route.user_nickname },
     createdAt: route.created_at.slice(0, 10),
     isOwner: currentUserId !== undefined && currentUserId === route.user_id,
+    // TODO: 백엔드 API에 is_public 필드 추가 시 route.is_public으로 교체
     isPublic: true,
+    placeCount,
     days,
+    // TODO: 유사 코스 API 연동 시 실제 데이터로 교체
     similarCourses: [],
   }
 }

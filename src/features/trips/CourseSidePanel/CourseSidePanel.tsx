@@ -89,7 +89,7 @@ export function CoursePlaceCard() {
         <div>
           <h2 className={cardTitleStyle}>선택한 코스 · {selectedDay}일차</h2>
           <p className={cardDescStyle}>
-            머무는 시간과 이동 시간을 바로 수정하세요
+            장소를 드래그하여 순서를 변경하거나 삭제할 수 있어요
           </p>
         </div>
         <span className={badgeStyle}>{dayPlaces.length}곳</span>

@@ -37,7 +37,7 @@ export type CreateRouteRequest = {
   title: string
   description?: string
   region_tag_id: number
-  theme_tag_ids?: number[]
+  theme_tag_ids: number[]
   start_date: string
   end_date: string
   days: Array<{ day_index: number; place_ids: number[] }>
