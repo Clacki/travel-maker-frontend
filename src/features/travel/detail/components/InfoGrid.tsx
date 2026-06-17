@@ -38,12 +38,14 @@ const valueClampedStyle = css({
   fontSize: 'sm',
   color: 'text.primary',
   fontWeight: 'medium',
+  whiteSpace: 'pre-line',
 })
 
 const valueExpandedStyle = css({
   fontSize: 'sm',
   color: 'text.primary',
   fontWeight: 'medium',
+  whiteSpace: 'pre-line',
 })
 
 const toggleButtonStyle = css({

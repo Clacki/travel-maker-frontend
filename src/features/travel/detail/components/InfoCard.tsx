@@ -9,6 +9,7 @@ import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
 import { getTravelDetail } from '../api/travelDetailApi'
+import { formatDetailText } from '../utils/formatDetailText'
 
 import type { TravelDetail } from '../types/travelDetail.types'
 
@@ -338,19 +339,27 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
             address_primary
               ? {
                   label: '위치',
-                  value: address_detail
-                    ? `${address_primary} ${address_detail}`
-                    : address_primary,
+                  value: formatDetailText(
+                    address_detail
+                      ? `${address_primary} ${address_detail}`
+                      : address_primary
+                  ),
                 }
               : null,
             info?.operating_hours
-              ? { label: '운영', value: info.operating_hours }
+              ? {
+                  label: '운영',
+                  value: formatDetailText(info.operating_hours),
+                }
               : null,
             info?.closed_days
-              ? { label: '휴무일', value: info.closed_days }
+              ? { label: '휴무일', value: formatDetailText(info.closed_days) }
               : null,
             info?.admission_fee
-              ? { label: '입장료', value: info.admission_fee }
+              ? {
+                  label: '입장료',
+                  value: formatDetailText(info.admission_fee),
+                }
               : null,
             info?.parking !== null && info?.parking !== undefined
               ? { label: '주차', value: info.parking ? '가능' : '불가' }
