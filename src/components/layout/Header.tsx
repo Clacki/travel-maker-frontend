@@ -8,7 +8,9 @@ import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { css, cx } from '@/styled-system/css'
 import Link from 'next/link'
-import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { type MouseEvent, useState } from 'react'
+import { isSameInternalHref } from './navigationUtils'
 
 const navigationItems = [
   { href: ROUTES.TEST, label: 'Travel Style' },
@@ -96,24 +98,59 @@ interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const pathname = usePathname()
+  const origin =
+    typeof window === 'undefined' ? 'http://localhost' : window.location.origin
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
 
   const openLoginModal = () => setIsLoginModalOpen(true)
   const closeLoginModal = () => setIsLoginModalOpen(false)
+  const isSameHref = (href: string) =>
+    isSameInternalHref({
+      href,
+      origin,
+      currentPathname: pathname,
+      currentSearchParams: '',
+    })
+  const preventSameHrefNavigation =
+    (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+      if (
+        typeof window !== 'undefined' &&
+        isSameInternalHref({
+          href,
+          origin: window.location.origin,
+          currentPathname: window.location.pathname,
+          currentSearchParams: window.location.search,
+        })
+      ) {
+        event.preventDefault()
+      }
+    }
 
   return (
     <>
       <header className={cx(headerStyle, className)}>
         <LayoutContainer className={headerInnerStyle}>
-          <Link href={ROUTES.HOME} className={logoStyle}>
+          <Link
+            href={ROUTES.HOME}
+            className={logoStyle}
+            aria-current={isSameHref(ROUTES.HOME) ? 'page' : undefined}
+            onClick={preventSameHrefNavigation(ROUTES.HOME)}
+          >
             TravelMaker
           </Link>
 
           <div className={headerActionsStyle}>
             <nav aria-label="주요 메뉴" className={navStyle}>
               {navigationItems.map((item) => (
-                <Link key={item.href} href={item.href} className={navLinkStyle}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={navLinkStyle}
+                  aria-current={isSameHref(item.href) ? 'page' : undefined}
+                  onClick={preventSameHrefNavigation(item.href)}
+                >
                   {item.label}
                 </Link>
               ))}
