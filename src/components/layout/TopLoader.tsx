@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { isSameInternalHref } from './navigationUtils'
 
 function TopLoaderBar() {
   const pathname = usePathname()
@@ -64,6 +65,17 @@ function TopLoaderBar() {
       if (!link) return
       const href = link.getAttribute('href')
       if (!href || !href.startsWith('/')) return
+      if (
+        isSameInternalHref({
+          href,
+          origin: window.location.origin,
+          currentPathname: window.location.pathname,
+          currentSearchParams: window.location.search,
+        })
+      ) {
+        return
+      }
+
       start()
     }
 

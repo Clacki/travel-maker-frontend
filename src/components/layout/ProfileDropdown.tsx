@@ -4,11 +4,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { LogOut, User } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { useLogout } from '@/features/auth/hooks/useLogout'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { css, cx } from '@/styled-system/css'
+import { isSameInternalHref } from './navigationUtils'
 
 const profileMenuWrapperStyle = css({
   position: 'relative',
@@ -120,6 +122,9 @@ export function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const [hasAvatarError, setHasAvatarError] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const pathname = usePathname()
+  const origin =
+    typeof window === 'undefined' ? 'http://localhost' : window.location.origin
   const userProfile = useUserProfileStore((state) => state.userProfile)
   const { isLoggingOut, logout } = useLogout()
 
@@ -136,6 +141,13 @@ export function ProfileDropdown() {
     await logout()
     closeMenu()
   }
+
+  const isCurrentProfileHref = isSameInternalHref({
+    href: profileHref,
+    origin,
+    currentPathname: pathname,
+    currentSearchParams: '',
+  })
 
   useEffect(() => {
     if (!isOpen) {
@@ -194,7 +206,22 @@ export function ProfileDropdown() {
             href={profileHref}
             className={profileMenuItemStyle}
             role="menuitem"
-            onClick={closeMenu}
+            aria-current={isCurrentProfileHref ? 'page' : undefined}
+            onClick={(event) => {
+              if (
+                typeof window !== 'undefined' &&
+                isSameInternalHref({
+                  href: profileHref,
+                  origin: window.location.origin,
+                  currentPathname: window.location.pathname,
+                  currentSearchParams: window.location.search,
+                })
+              ) {
+                event.preventDefault()
+              }
+
+              closeMenu()
+            }}
           >
             <User size={16} />
             마이페이지
