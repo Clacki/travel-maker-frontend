@@ -95,5 +95,13 @@ export const useQuizStore = create<QuizStore>((set) => ({
     set({ resultVector: vector, typeKey: key })
   },
 
-  setApiResult: (result) => set({ apiResult: result }),
+  setApiResult: (result) => {
+    try {
+      sessionStorage.setItem(
+        `quiz_api_result_${result.type_key}`,
+        JSON.stringify(result)
+      )
+    } catch {}
+    set({ apiResult: result })
+  },
 }))

@@ -10,7 +10,7 @@ export interface ResultCardProps {
   thumbnailSrc?: string
   thumbnailAlt?: string
   title: string
-  description: string
+  description?: string
   keywords: string[]
   /** 매칭도 (0~100 숫자, "64" → "64%" 로 표시). API에서 제공되지 않으면 미표시 */
   matchScore?: number
@@ -157,7 +157,7 @@ export function ResultCard({
       {/* Title section */}
       <div className={titleSectionStyle}>
         <h3 className={titleStyle}>{title}</h3>
-        <p className={descriptionStyle}>{description}</p>
+        {description && <p className={descriptionStyle}>{description}</p>}
       </div>
 
       {/* Divider */}

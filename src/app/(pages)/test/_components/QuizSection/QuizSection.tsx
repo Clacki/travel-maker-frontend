@@ -104,16 +104,21 @@ export function QuizSection() {
         setApiResult(response)
         setIsLoading(false)
         goNext(question.id, TOTAL_QUESTIONS)
-        router.push(ROUTES.TEST_RESULT)
+        router.push(`${ROUTES.TEST_RESULT}?type=${response.type_key}`)
       } catch (error) {
         console.error('퀴즈 제출 API 실패, 로컬 결과로 진행:', error)
         setIsLoading(false)
         setSubmitError(
           '결과 저장에 실패했어요. 잠시 후 결과 페이지로 이동합니다.'
         )
+        const fallbackTypeKey = useQuizStore.getState().typeKey
         setTimeout(() => {
           goNext(question.id, TOTAL_QUESTIONS)
-          router.push(ROUTES.TEST_RESULT)
+          router.push(
+            fallbackTypeKey
+              ? `${ROUTES.TEST_RESULT}?type=${fallbackTypeKey}`
+              : ROUTES.TEST_RESULT
+          )
         }, 2000)
       }
       return

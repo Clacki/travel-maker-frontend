@@ -4,8 +4,6 @@ import type { CompassAxis } from '@/features/result/result.types'
 
 interface RadarChartProps {
   axes: CompassAxis[]
-  centerImageSrc: string
-  centerLabel: string
 }
 
 /**
@@ -33,7 +31,7 @@ const CX = S / 2 // 290
 const CY = S / 2 // 290
 const MAX_R = 175 // 최외곽 육각형 반지름
 const LEVELS = 4 // 동심 육각형 단계 수
-const CTR_R = 40 // 중앙 원 반지름
+const CTR_R = 40 // 수치 라벨 최소 반경 기준
 
 const svgStyle = css({
   display: 'block',
@@ -96,24 +94,12 @@ function getLabelLayout(i: number) {
   return { lx, ly, anchor, catY, badgeTopY }
 }
 
-export function RadarChart({
-  axes,
-  centerImageSrc,
-  centerLabel,
-}: RadarChartProps) {
+export function RadarChart({ axes }: RadarChartProps) {
   const dataPoints = axes.map((axis, i) => {
     const r = (axis.value / 100) * MAX_R
     return { x: px(ANGLES[i], r), y: py(ANGLES[i], r) }
   })
   const dataPolyStr = dataPoints.map((p) => `${f(p.x)},${f(p.y)}`).join(' ')
-
-  // 중앙 필 라벨 크기 (한글 1자 ≈ 13px)
-  const pillW = centerLabel.length * 12.5 + 22
-  const pillH = 26
-  const pillX = CX - pillW / 2
-  // 원 하단(CY - 6 + CTR_R)에서 10px 간격
-  const circleCY = CY - 6
-  const pillY = circleCY + CTR_R + 10
 
   return (
     <svg
@@ -123,15 +109,6 @@ export function RadarChart({
       aria-label="여행 성향 나침반 레이더 차트"
       className={svgStyle}
     >
-      <defs>
-        <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor={C.gradOuter} />
-          <stop offset="100%" stopColor={C.gradInner} />
-        </radialGradient>
-        <clipPath id="centerClip">
-          <circle cx={CX} cy={circleCY} r={CTR_R - 2} />
-        </clipPath>
-      </defs>
       {/* ── 동심 육각형 그리드 ── */}
       {Array.from({ length: LEVELS }, (_, lvl) => (
         <polygon
@@ -165,10 +142,32 @@ export function RadarChart({
         strokeLinejoin="round"
       />
 
-      {/* ── 데이터 포인트 ── */}
-      {dataPoints.map((p, i) => (
-        <circle key={i} cx={f(p.x)} cy={f(p.y)} r={5.5} fill={C.primary} />
-      ))}
+      {/* ── 데이터 포인트 + 축 수치 ── */}
+      {axes.map((axis, i) => {
+        const r = (axis.value / 100) * MAX_R
+        const a = ANGLES[i]
+        const dotX = px(a, r)
+        const dotY = py(a, r)
+        // 수치는 데이터 포인트에서 축 방향 외곽으로 18px 오프셋
+        const numR = Math.max(r + 18, CTR_R + 22)
+        const numX = px(a, numR)
+        const numY = py(a, numR)
+        return (
+          <g key={i}>
+            <circle cx={f(dotX)} cy={f(dotY)} r={5.5} fill={C.primary} />
+            <text
+              x={f(numX)}
+              y={f(numY + 4)}
+              textAnchor="middle"
+              fontSize={11}
+              fill={C.primary}
+              fontWeight="700"
+            >
+              {axis.value}
+            </text>
+          </g>
+        )
+      })}
 
       {/* ── 꼭짓점 축 라벨 (카테고리 + 배지) ── */}
       {axes.map((axis, i) => {
@@ -180,7 +179,6 @@ export function RadarChart({
 
         return (
           <g key={i}>
-            {/* 카테고리명 */}
             <text
               x={lx}
               y={catY}
@@ -191,7 +189,6 @@ export function RadarChart({
             >
               {axis.subject}
             </text>
-            {/* 배지 배경 */}
             <rect
               x={badgeX}
               y={badgeTopY}
@@ -200,7 +197,6 @@ export function RadarChart({
               rx={11}
               fill={C.primary}
             />
-            {/* 배지 텍스트 */}
             <text
               x={badgeX + badgeW / 2}
               y={badgeTopY + 15}
@@ -214,40 +210,6 @@ export function RadarChart({
           </g>
         )
       })}
-
-      {/* ── 중앙 원 (방사형 그라데이션) ── */}
-      <circle cx={CX} cy={circleCY} r={CTR_R} fill="url(#centerGrad)" />
-
-      {/* ── 중앙 타입 이미지 ── */}
-      <image
-        href={centerImageSrc}
-        x={CX - CTR_R + 4}
-        y={circleCY - CTR_R + 4}
-        width={CTR_R * 2 - 8}
-        height={CTR_R * 2 - 8}
-        preserveAspectRatio="xMidYMid meet"
-        clipPath="url(#centerClip)"
-      />
-
-      {/* ── 타입명 필 라벨 ── */}
-      <rect
-        x={pillX}
-        y={pillY}
-        width={pillW}
-        height={pillH}
-        rx={13}
-        fill="url(#centerGrad)"
-      />
-      <text
-        x={CX}
-        y={pillY + pillH / 2 + 4.5}
-        textAnchor="middle"
-        fontSize={11}
-        fill={C.primary}
-        fontWeight="700"
-      >
-        {centerLabel}
-      </text>
     </svg>
   )
 }

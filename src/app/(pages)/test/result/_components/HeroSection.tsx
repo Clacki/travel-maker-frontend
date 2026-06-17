@@ -259,7 +259,6 @@ export function HeroSection({ result, typeKey }: HeroSectionProps) {
               typeName={result.typeNameEn}
               thumbnailSrc={result.thumbnailSrc}
               title={result.typeName}
-              description={result.description}
               keywords={result.keywords}
               matchScore={result.matchScore}
               typeRank={result.typeRank}

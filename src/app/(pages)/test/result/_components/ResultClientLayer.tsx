@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { css } from '@/styled-system/css'
@@ -32,6 +32,33 @@ const TRAIT_FALLBACK_ICONS = ['🌟', '📍', '💡', '🎯']
 
 interface ResultClientLayerProps {
   sharedTypeKey?: string
+}
+
+// useSyncExternalStore snapshot 안정성을 위한 모듈 레벨 캐시
+// 같은 key에 대해 동일한 참조를 반환해 불필요한 리렌더를 방지
+const _sessionCache = new Map<
+  string,
+  import('@/features/result/quizSubmit.types').QuizSubmitResponse | null
+>()
+
+function readSessionCache(
+  key: string
+): import('@/features/result/quizSubmit.types').QuizSubmitResponse | null {
+  if (!key) return null
+  if (_sessionCache.has(key)) return _sessionCache.get(key)!
+  try {
+    const raw = sessionStorage.getItem(`quiz_api_result_${key}`)
+    const result = raw
+      ? (JSON.parse(
+          raw
+        ) as import('@/features/result/quizSubmit.types').QuizSubmitResponse)
+      : null
+    _sessionCache.set(key, result)
+    return result
+  } catch {
+    _sessionCache.set(key, null)
+    return null
+  }
 }
 
 function isValidTypeKey(key: string): key is TypeKey {
@@ -176,8 +203,24 @@ function buildResultViewModel(
 }
 
 export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
-  const { resultVector, typeKey: storeTypeKey, apiResult } = useQuizStore()
+  const {
+    resultVector,
+    typeKey: storeTypeKey,
+    apiResult: storeApiResult,
+  } = useQuizStore()
   const router = useRouter()
+
+  // sessionStorage에서 이 타입의 결과를 복원 (store가 비어있을 때 사용)
+  // useSyncExternalStore: server snapshot = null(hydration mismatch 방지),
+  // client snapshot = sessionStorage 읽기
+  const sessionKey = sharedTypeKey ?? storeTypeKey ?? ''
+  const cachedApiResult = useSyncExternalStore(
+    () => () => {},
+    () => readSessionCache(sessionKey),
+    () => null
+  )
+
+  const apiResult = storeApiResult ?? cachedApiResult
 
   // type_key: API 우선 → 로컬 계산 → sharedTypeKey 순으로 폴백
   const effectiveTypeKey =
