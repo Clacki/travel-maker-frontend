@@ -4,11 +4,8 @@ export type TripCourse = {
   description: string
   region: string
   themes: string[]
-  authorName: string
   imageUrl: string
   placeCount: number
-  saveCount: number
-  viewCount: number
   createdAt: string
   isFeatured?: boolean
 }
@@ -36,11 +33,8 @@ export function toTripCourse(item: RouteListItem): TripCourse {
     description: item.description ?? '',
     region: item.region_tag ?? '',
     themes: item.theme_tags,
-    authorName: '',
     imageUrl: item.image_url ?? FALLBACK_IMAGE,
     placeCount: item.place_count,
-    saveCount: item.like_count,
-    viewCount: 0,
     createdAt: item.created_at.slice(0, 10),
   }
 }

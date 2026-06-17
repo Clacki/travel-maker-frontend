@@ -1,6 +1,7 @@
 import Image from 'next/image'
-import { CalendarDays, Eye, Heart, Lock, UserRound } from 'lucide-react'
+import { CalendarDays, Lock, UserRound } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
+import { OwnerBadge } from './OwnerBadge'
 import type { TripCourseDetail } from '../types/tripDetail'
 import { css } from '@/styled-system/css'
 
@@ -37,19 +38,6 @@ const eyebrowStyle = css({
   borderRadius: 'pill',
   bg: 'primary.soft',
   color: 'primary',
-  fontSize: 'xs',
-  fontWeight: 'bold',
-})
-
-const ownerBadgeStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  minH: '8',
-  px: '3',
-  borderRadius: 'pill',
-  bg: 'bg.muted',
-  color: 'text.primary',
   fontSize: 'xs',
   fontWeight: 'bold',
 })
@@ -129,23 +117,32 @@ const imageCaptionStyle = css({
   boxShadow: 'sm',
 })
 
+const privateBadgeStyle = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  minH: '8',
+  px: '3',
+  borderRadius: 'pill',
+  bg: 'bg.muted',
+  color: 'text.primary',
+  fontSize: 'xs',
+  fontWeight: 'bold',
+})
+
 interface TripDetailHeroProps {
   trip: TripCourseDetail
 }
 
 export function TripDetailHero({ trip }: TripDetailHeroProps) {
-  const placeCount = trip.days.reduce((sum, day) => sum + day.places.length, 0)
-
   return (
     <section className={cardStyle} aria-labelledby="trip-detail-title">
       <div className={contentStyle}>
         <div className={labelRowStyle}>
           <span className={eyebrowStyle}>TRAVEL COURSE</span>
-          {trip.isOwner ? (
-            <span className={ownerBadgeStyle}>내가 만든 코스</span>
-          ) : null}
+          <OwnerBadge authorId={trip.author.id} />
           {!trip.isPublic ? (
-            <span className={ownerBadgeStyle}>
+            <span className={privateBadgeStyle}>
               <Lock size={13} aria-hidden="true" />
               비공개
             </span>
@@ -176,13 +173,7 @@ export function TripDetailHero({ trip }: TripDetailHeroProps) {
             {trip.durationLabel} · Day {trip.days.length}
           </span>
           <span className={metaItemStyle}>
-            장소 {placeCount}개 · {trip.createdAt} 생성
-          </span>
-          <span className={metaItemStyle}>
-            <Eye size={16} aria-hidden="true" />
-            조회 {trip.viewCount.toLocaleString('ko-KR')} ·
-            <Heart size={16} aria-hidden="true" /> 좋아요 {trip.likeCount} ·
-            저장 {trip.bookmarkCount}
+            장소 {trip.placeCount}개 · {trip.createdAt} 생성
           </span>
         </div>
       </div>

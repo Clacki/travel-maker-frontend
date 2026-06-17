@@ -1,12 +1,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Eye, Heart, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
 import type { TripCourse } from '../types/trip'
 import { css } from '@/styled-system/css'
 
 const cardStyle = css({
+  display: 'block',
   overflow: 'hidden',
   bg: 'bg.surface',
   borderWidth: '1px',
@@ -20,6 +21,10 @@ const cardStyle = css({
     borderColor: 'border',
     boxShadow: 'md',
     transform: 'translateY(-2px)',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
   },
 })
 
@@ -72,42 +77,17 @@ const descriptionStyle = css({
 })
 
 const metaRowStyle = css({
-  display: 'flex',
+  display: 'inline-flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '3',
+  gap: '1',
   mt: '6',
   color: 'text.secondary',
   fontSize: 'xs',
 })
 
-const authorStyle = css({
-  minW: 0,
-  color: 'text.primary',
-  fontWeight: 'semibold',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
-
-const statsStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '3',
-  flexShrink: 0,
-})
-
-const statStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-})
-
 const footerStyle = css({
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '3',
   mt: '5',
   pt: '4',
   borderTopWidth: '1px',
@@ -120,26 +100,17 @@ const dateStyle = css({
   fontWeight: 'semibold',
 })
 
-const detailLinkStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  flexShrink: 0,
-  color: 'text.primary',
-  fontSize: 'xs',
-  fontWeight: 'bold',
-  borderRadius: 'sm',
-  _hover: { color: 'primary' },
-  _focusVisible: { outline: 'none', boxShadow: 'focus' },
-})
-
 interface TripCourseCardProps {
   course: TripCourse
 }
 
 export function TripCourseCard({ course }: TripCourseCardProps) {
   return (
-    <article className={cardStyle}>
+    <Link
+      href={ROUTES.TRIP_DETAIL(String(course.id))}
+      className={cardStyle}
+      aria-label={`${course.title} 상세 보기`}
+    >
       <div className={imageWrapStyle}>
         <Image
           src={course.imageUrl}
@@ -164,38 +135,14 @@ export function TripCourseCard({ course }: TripCourseCardProps) {
         <p className={descriptionStyle}>{course.description}</p>
 
         <div className={metaRowStyle}>
-          {course.authorName && (
-            <span className={authorStyle}>{course.authorName}</span>
-          )}
-          <span className={statsStyle}>
-            <span className={statStyle}>
-              <MapPin size={13} aria-hidden="true" />
-              장소 {course.placeCount}개
-            </span>
-            <span className={statStyle}>
-              <Heart size={13} aria-hidden="true" />
-              {course.saveCount}
-            </span>
-            {course.viewCount > 0 && (
-              <span className={statStyle}>
-                <Eye size={13} aria-hidden="true" />
-                {course.viewCount}
-              </span>
-            )}
-          </span>
+          <MapPin size={13} aria-hidden="true" />
+          장소 {course.placeCount}개
         </div>
 
         <div className={footerStyle}>
           <time className={dateStyle}>{course.createdAt}</time>
-          <Link
-            href={ROUTES.TRIP_DETAIL(String(course.id))}
-            className={detailLinkStyle}
-          >
-            자세히 보기
-            <ArrowRight size={13} aria-hidden="true" />
-          </Link>
         </div>
       </div>
-    </article>
+    </Link>
   )
 }

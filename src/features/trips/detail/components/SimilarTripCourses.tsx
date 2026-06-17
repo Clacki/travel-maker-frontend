@@ -100,6 +100,8 @@ interface SimilarTripCoursesProps {
 }
 
 export function SimilarTripCourses({ trip }: SimilarTripCoursesProps) {
+  if (trip.similarCourses.length === 0) return null
+
   return (
     <section className={sectionStyle} aria-labelledby="similar-trips-title">
       <div className={headerStyle}>

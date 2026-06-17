@@ -67,8 +67,7 @@ export function TripDetailPage({ trip }: TripDetailPageProps) {
                 지도 미리보기
               </h2>
               <p className={sectionDescriptionStyle}>
-                실제 지도 연동 전까지 장소 순서와 이동 흐름을 확인할 수 있는
-                미리보기 영역입니다.
+                장소 순서와 이동 흐름을 지도에서 확인하세요.
               </p>
             </div>
             <TripMapPreview trip={trip} />

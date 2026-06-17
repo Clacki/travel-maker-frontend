@@ -1,7 +1,12 @@
+'use client'
+
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Pencil, Share2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Check, Pencil, Share2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/common/button'
 import { ROUTES } from '@/constants/routes'
+import { deleteRoute } from '@/features/trips/api/routesApi'
 import type { TripCourseDetail } from '../types/tripDetail'
 import { css } from '@/styled-system/css'
 
@@ -91,6 +96,65 @@ interface TripDetailActionsProps {
 }
 
 export function TripDetailActions({ trip }: TripDetailActionsProps) {
+  const router = useRouter()
+  const isOwner = trip.isOwner
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'failed'>(
+    'idle'
+  )
+  const shareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (shareTimerRef.current) {
+        clearTimeout(shareTimerRef.current)
+      }
+    }
+  }, [])
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: trip.title, url })
+        return
+      } catch {
+        // 사용자 취소 또는 미지원 시 클립보드 복사로 폴백
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareStatus('copied')
+      if (shareTimerRef.current) {
+        clearTimeout(shareTimerRef.current)
+      }
+      shareTimerRef.current = setTimeout(() => setShareStatus('idle'), 1500)
+    } catch {
+      setShareStatus('failed')
+      if (shareTimerRef.current) {
+        clearTimeout(shareTimerRef.current)
+      }
+      shareTimerRef.current = setTimeout(() => setShareStatus('idle'), 2000)
+    }
+  }, [trip.title])
+
+  const handleDelete = async () => {
+    const confirmed = window.confirm(
+      '정말로 이 코스를 삭제하시겠습니까? 삭제된 코스는 복구할 수 없습니다.'
+    )
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await deleteRoute(trip.id)
+      router.push(ROUTES.TRIPS)
+    } catch {
+      alert('코스 삭제에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
   return (
     <section className={actionsStyle} aria-label="코스 상세 작업">
       <Link href={ROUTES.TRIPS} className={linkButtonStyle}>
@@ -99,11 +163,21 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
       </Link>
 
       <div className={groupStyle}>
-        <Button variant="neutral">
-          <Share2 size={17} aria-hidden="true" />
-          공유하기
+        <Button
+          variant="neutral"
+          onClick={handleShare}
+          disabled={shareStatus !== 'idle'}
+        >
+          {shareStatus === 'copied' ? (
+            <Check size={17} aria-hidden="true" />
+          ) : (
+            <Share2 size={17} aria-hidden="true" />
+          )}
+          {shareStatus === 'idle' && '공유하기'}
+          {shareStatus === 'copied' && '링크 복사됨!'}
+          {shareStatus === 'failed' && 'URL을 직접 복사해주세요'}
         </Button>
-        {trip.isOwner ? (
+        {isOwner ? (
           <>
             <Link
               href={ROUTES.TRIP_EDIT(String(trip.id))}
@@ -112,7 +186,11 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
               <Pencil size={17} aria-hidden="true" />
               수정하기
             </Link>
-            <Button variant="neutral" className={dangerButtonStyle}>
+            <Button
+              variant="neutral"
+              className={dangerButtonStyle}
+              onClick={handleDelete}
+            >
               <Trash2 size={17} aria-hidden="true" />
               삭제하기
             </Button>

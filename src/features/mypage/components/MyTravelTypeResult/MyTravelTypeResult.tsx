@@ -372,7 +372,12 @@ function formatDate(value?: string) {
     .replace(/\.$/, '')
 }
 
-function ResultImage({ src, alt }: { src: string; alt: string }) {
+interface ResultImageProps {
+  src: string
+  alt: string
+}
+
+function ResultImage({ src, alt }: ResultImageProps) {
   const [hasError, setHasError] = useState(false)
 
   if (!src || hasError) {
@@ -394,13 +399,12 @@ function ResultImage({ src, alt }: { src: string; alt: string }) {
   )
 }
 
-function TravelTypeHeroCard({
-  result,
-  onRetryTest,
-}: {
+interface TravelTypeHeroCardProps {
   result: TravelTypeResult
   onRetryTest: () => void
-}) {
+}
+
+function TravelTypeHeroCard({ result, onRetryTest }: TravelTypeHeroCardProps) {
   return (
     <article className={heroCardStyle}>
       <div className={heroContentStyle}>
@@ -431,7 +435,14 @@ function TravelTypeHeroCard({
             <RotateCcw aria-hidden="true" size={16} />
             다시 테스트
           </Button>
-          <Button className={shareButtonStyle} shape="pill" variant="outline">
+          <Button
+            className={shareButtonStyle}
+            shape="pill"
+            variant="outline"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href)
+            }}
+          >
             <Share2 aria-hidden="true" size={16} />
             결과 공유
           </Button>
@@ -447,7 +458,11 @@ function TravelTypeHeroCard({
   )
 }
 
-function TravelTypeInfoCard({ result }: { result: TravelTypeResult }) {
+interface TravelTypeInfoCardProps {
+  result: TravelTypeResult
+}
+
+function TravelTypeInfoCard({ result }: TravelTypeInfoCardProps) {
   const updatedAt = formatDate(result.updated_at)
 
   return (
@@ -488,7 +503,11 @@ function TravelTypeInfoCard({ result }: { result: TravelTypeResult }) {
   )
 }
 
-function TravelTypeVectorCard({ vectors }: { vectors: VectorItem[] }) {
+interface TravelTypeVectorCardProps {
+  vectors: VectorItem[]
+}
+
+function TravelTypeVectorCard({ vectors }: TravelTypeVectorCardProps) {
   return (
     <article className={cardStyle}>
       <div className={cardHeaderStyle}>
@@ -532,11 +551,13 @@ function TravelTypeVectorCard({ vectors }: { vectors: VectorItem[] }) {
   )
 }
 
+interface RecommendedDestinationCardProps {
+  destinations: RecommendedDestination[]
+}
+
 function RecommendedDestinationCard({
   destinations,
-}: {
-  destinations: RecommendedDestination[]
-}) {
+}: RecommendedDestinationCardProps) {
   return (
     <aside className={destinationCardStyle}>
       <div className={cardHeaderStyle}>

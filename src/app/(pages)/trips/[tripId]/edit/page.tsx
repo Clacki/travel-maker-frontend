@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 
-import { getTripDetail } from '@/features/trips/api/tripsApi'
+import { getRouteDetail } from '@/features/trips/api/routesApi'
 import { TripCourseEditPage } from '@/features/trips/edit/TripCourseEditPage'
 
 import type { Metadata } from 'next'
@@ -15,11 +15,18 @@ interface TripEditPageProps {
 
 export default async function TripEditPage({ params }: TripEditPageProps) {
   const { tripId } = await params
-  const trip = await getTripDetail(tripId)
+  const routeId = Number(tripId)
 
-  if (!trip) {
+  if (!Number.isInteger(routeId) || routeId <= 0) {
     notFound()
   }
 
-  return <TripCourseEditPage trip={trip} />
+  let route
+  try {
+    route = await getRouteDetail(routeId)
+  } catch {
+    notFound()
+  }
+
+  return <TripCourseEditPage route={route} />
 }

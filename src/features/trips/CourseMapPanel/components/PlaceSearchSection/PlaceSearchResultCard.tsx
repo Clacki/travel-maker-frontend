@@ -3,7 +3,7 @@
 import { Check, Clock, Plus, ScanEye } from 'lucide-react'
 
 import { css, cx } from '@/styled-system/css'
-import type { Place } from '@/features/explore/types/places.types'
+import type { Place } from '@/types/place.types'
 
 interface PlaceSearchResultCardProps {
   place: Place

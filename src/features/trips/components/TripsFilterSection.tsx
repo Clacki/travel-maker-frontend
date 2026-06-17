@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import { EmptyState } from '@/components/common/status'
 import { FilterTag } from '@/components/common/tag'
@@ -148,8 +148,14 @@ export function TripsFilterSection({
   const isInitialState = useRef(true)
   const requestId = useRef(0)
 
-  const regionTagMap = new Map(regionTags.map((tag) => [tag.tag_name, tag.id]))
-  const themeTagMap = new Map(themeTags.map((tag) => [tag.tag_name, tag.id]))
+  const regionTagMap = useMemo(
+    () => new Map(regionTags.map((tag) => [tag.tag_name, tag.id])),
+    [regionTags]
+  )
+  const themeTagMap = useMemo(
+    () => new Map(themeTags.map((tag) => [tag.tag_name, tag.id])),
+    [themeTags]
+  )
 
   useEffect(() => {
     if (isInitialState.current) {
@@ -172,22 +178,26 @@ export function TripsFilterSection({
       theme_tag_ids: themeTagId !== undefined ? [themeTagId] : undefined,
     })
       .then((result) => {
-        if (id !== requestId.current) return
+        if (id !== requestId.current) {
+          return
+        }
         setCourses(result.items.map(toTripCourse))
         setTotalCount(result.totalCount)
       })
       .catch(() => {
-        if (id !== requestId.current) return
+        if (id !== requestId.current) {
+          return
+        }
         setCourses([])
         setTotalCount(0)
       })
       .finally(() => {
-        if (id !== requestId.current) return
+        if (id !== requestId.current) {
+          return
+        }
         setIsLoading(false)
       })
-    // regionTagMap/themeTagMap은 props 기반으로 안정적이라 의존성에서 제외한다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [region, theme, sort, currentPage, pageSize])
+  }, [region, theme, sort, currentPage, pageSize, regionTagMap, themeTagMap])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 

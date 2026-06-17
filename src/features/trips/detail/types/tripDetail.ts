@@ -15,12 +15,10 @@ export type TripPlace = {
   id: number
   order: number
   name: string
-  category: string
+  description: string
   address: string
   latitude?: number
   longitude?: number
-  stayTime?: string
-  memo?: string
   imageUrl?: string
 }
 
@@ -48,11 +46,9 @@ export type TripCourseDetail = {
   thumbnailUrl: string
   author: TripAuthor
   createdAt: string
-  viewCount: number
-  likeCount: number
-  bookmarkCount: number
   isOwner: boolean
   isPublic: boolean
+  placeCount: number
   days: TripDay[]
   similarCourses: SimilarTripCourse[]
 }

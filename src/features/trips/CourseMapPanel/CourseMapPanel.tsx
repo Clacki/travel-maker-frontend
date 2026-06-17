@@ -13,96 +13,27 @@ import {
   patchRoute,
   type CreateRouteRequest,
 } from '@/features/trips/api/routesApi'
-import { getRegionTags, getThemeTags } from '@/features/trips/api/tagsApi'
+import { getCachedRegionAndThemeTags } from '@/features/trips/api/tagsApi'
 import type { Tag } from '@/types/tag.types'
 import { ROUTES } from '@/constants/routes'
+import type {
+  KakaoLatLng,
+  KakaoOverlay,
+  KakaoPolyline,
+  KakaoMapInstance,
+} from '@/features/trips/types/kakao.types'
+import {
+  PRIMARY_COLOR,
+  INVERSE_COLOR,
+  createMarkerOverlay,
+} from '@/features/trips/utils/createKakaoMarker'
+import { loadKakaoSdk } from '@/features/trips/utils/loadKakaoSdk'
 
 import { css, cx } from '@/styled-system/css'
 
 interface CourseMapPanelProps {
   mode?: 'create' | 'edit'
   tripId?: string
-}
-
-// 카카오맵 SDK 공식 타입 미제공 → 최소 필요 인터페이스 정의
-interface KakaoLatLng {
-  getLat: () => number
-  getLng: () => number
-}
-interface KakaoLatLngBounds {
-  extend: (latlng: KakaoLatLng) => void
-}
-interface KakaoOverlay {
-  setMap: (map: KakaoMapInstance | null) => void
-}
-interface KakaoPolyline {
-  setMap: (map: KakaoMapInstance | null) => void
-}
-interface KakaoMapInstance {
-  setBounds: (bounds: KakaoLatLngBounds) => void
-  panTo: (latlng: KakaoLatLng) => void
-}
-
-// 디자인 토큰 raw 값 (카카오맵 DOM API는 Panda CSS 토큰 미지원)
-const PRIMARY_COLOR = '#2CA6BE' // semantic token 'primary'
-
-// 카카오맵 CustomOverlay DOM 생성 유틸 (컴포넌트 외부 순수 함수)
-function createMarkerOverlay(
-  label: string,
-  color: string
-): { el: HTMLDivElement; tailInner: HTMLDivElement } {
-  const el = document.createElement('div')
-  el.style.cssText = [
-    'position:relative',
-    'display:inline-flex',
-    'align-items:center',
-    'justify-content:center',
-    'min-width:28px',
-    'height:28px',
-    'padding:0 8px',
-    `background:${color}`,
-    'color:#fff',
-    'font-size:12px',
-    'font-weight:bold',
-    'border-radius:12px',
-    'border:none',
-    'box-shadow:0 2px 6px rgba(0,0,0,0.25)',
-    'cursor:default',
-    'white-space:nowrap',
-    'transition:all 0.2s ease',
-  ].join(';')
-
-  const tailOuter = document.createElement('div')
-  tailOuter.style.cssText = [
-    'position:absolute',
-    'bottom:-10px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'width:0',
-    'height:0',
-    'border-left:8px solid transparent',
-    'border-right:8px solid transparent',
-    `border-top:10px solid ${color}`,
-  ].join(';')
-
-  const tailInner = document.createElement('div')
-  tailInner.style.cssText = [
-    'position:absolute',
-    'bottom:-7px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'width:0',
-    'height:0',
-    'border-left:6px solid transparent',
-    'border-right:6px solid transparent',
-    `border-top:8px solid ${color}`,
-  ].join(';')
-
-  el.textContent = label
-  el.appendChild(tailOuter)
-  el.appendChild(tailInner)
-
-  return { el, tailInner }
 }
 
 const panelStyle = css({
@@ -276,8 +207,6 @@ export function CourseMapPanel({
   const selectedPlaceId = useCourseStore((s) => s.selectedPlaceId)
   const dateRange = useCourseStore((s) => s.dateRange)
   const places = useCourseStore((s) => s.places)
-  const estimatedHours = useCourseStore((s) => s.estimatedHours)
-  const estimatedMinutes = useCourseStore((s) => s.estimatedMinutes)
   const isDirty = useCourseStore((s) => s.isDirty)
   const resetCourse = useCourseStore((s) => s.resetCourse)
   const focusLocation = useCourseStore((s) => s.focusLocation)
@@ -293,7 +222,7 @@ export function CourseMapPanel({
 
   // 지역/테마 태그 분리 조회
   useEffect(() => {
-    Promise.all([getRegionTags(), getThemeTags()])
+    getCachedRegionAndThemeTags()
       .then(([regions, themes]) => {
         setRegionTags(regions)
         setThemeTags(themes)
@@ -333,22 +262,10 @@ export function CourseMapPanel({
   }, [])
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || !APP_KEY) {
       return
     }
-    if (!APP_KEY) {
-      return
-    }
-
-    if (window.kakao?.maps) {
-      window.kakao.maps.load(initMap)
-      return
-    }
-
-    const script = document.createElement('script')
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${APP_KEY}&autoload=false`
-    script.onload = () => window.kakao.maps.load(initMap)
-    document.head.appendChild(script)
+    loadKakaoSdk(APP_KEY).then(initMap)
   }, [initMap])
 
   const dayPlaces = useMemo(
@@ -409,7 +326,7 @@ export function CourseMapPanel({
       polylineRef.current = polyline
     }
 
-    if (coordPlaces.length > 0) {
+    if (path.length > 0) {
       const bounds = new window.kakao.maps.LatLngBounds()
       path.forEach((p) => bounds.extend(p))
       map.setBounds(bounds)
@@ -425,8 +342,8 @@ export function CourseMapPanel({
 
     overlayContentsRef.current.forEach(({ id, el, tailInner }) => {
       const isSelected = id === selectedPlaceId
-      const bgColor = isSelected ? '#fff' : PRIMARY_COLOR
-      const textColor = isSelected ? PRIMARY_COLOR : '#fff'
+      const bgColor = isSelected ? INVERSE_COLOR : PRIMARY_COLOR
+      const textColor = isSelected ? PRIMARY_COLOR : INVERSE_COLOR
       el.style.background = bgColor
       el.style.color = textColor
       el.style.border = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
@@ -449,6 +366,7 @@ export function CourseMapPanel({
   }, [selectedPlaceId, places])
 
   // day별 place_ids 빌드 — backendId 없는 장소 제외, 빈 day 제외
+  // places 배열 순서가 곧 API 전송 순서 — reorderPlaces가 순서를 보장함
   const buildDays = () => {
     const dayMap = new Map<number, number[]>()
     places.forEach((p) => {
@@ -500,7 +418,7 @@ export function CourseMapPanel({
       title,
       description: description || undefined,
       region_tag_id: regionTag.id,
-      theme_tag_ids: themeTagIds.length > 0 ? themeTagIds : undefined,
+      theme_tag_ids: themeTagIds,
       start_date: dateRange.from.toISOString().split('T')[0],
       end_date: (dateRange?.to ?? dateRange.from).toISOString().split('T')[0],
       days,

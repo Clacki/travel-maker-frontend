@@ -1,5 +1,8 @@
+'use client'
+
+import { useState } from 'react'
 import { css } from '@/styled-system/css'
-import { Clock, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import type { TripPlace } from '../types/tripDetail'
 
@@ -66,9 +69,23 @@ const titleStyle = css({
 })
 
 const categoryStyle = css({
-  color: 'primary',
+  color: 'text.secondary',
   fontSize: 'sm',
+  lineHeight: 'relaxed',
+})
+
+const moreButtonStyle = css({
+  mt: '1',
+  color: 'primary',
+  fontSize: 'xs',
   fontWeight: 'semibold',
+  bg: 'transparent',
+  border: 'none',
+  p: '0',
+  cursor: 'pointer',
+  _hover: {
+    textDecoration: 'underline',
+  },
 })
 
 const metaStyle = css({
@@ -84,13 +101,6 @@ const metaItemStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
-})
-
-const memoStyle = css({
-  mt: '4',
-  color: 'text.primary',
-  fontSize: 'sm',
-  lineHeight: 'relaxed',
 })
 
 const mapButtonStyle = css({
@@ -124,6 +134,8 @@ interface TripPlaceCardProps {
 }
 
 export function TripPlaceCard({ place }: TripPlaceCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
   return (
     <article className={cardStyle}>
       <div className={imageWrapStyle}>
@@ -143,7 +155,24 @@ export function TripPlaceCard({ place }: TripPlaceCardProps) {
           <span className={orderStyle}>{place.order}</span>
           <div className={titleGroupStyle}>
             <h3 className={titleStyle}>{place.name}</h3>
-            <span className={categoryStyle}>{place.category}</span>
+            {place.description ? (
+              <div>
+                <p
+                  className={`${categoryStyle} ${
+                    isExpanded ? '' : css({ lineClamp: '2' })
+                  }`}
+                >
+                  {place.description}
+                </p>
+                <button
+                  type="button"
+                  className={moreButtonStyle}
+                  onClick={() => setIsExpanded((prev) => !prev)}
+                >
+                  {isExpanded ? '접기' : '더보기'}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -152,20 +181,19 @@ export function TripPlaceCard({ place }: TripPlaceCardProps) {
             <MapPin size={15} aria-hidden="true" />
             {place.address}
           </span>
-          {place.stayTime ? (
-            <span className={metaItemStyle}>
-              <Clock size={15} aria-hidden="true" />
-              {place.stayTime}
-            </span>
-          ) : null}
         </div>
 
-        {place.memo ? <p className={memoStyle}>{place.memo}</p> : null}
-
-        <button type="button" className={mapButtonStyle}>
-          <MapPin size={15} aria-hidden="true" />
-          여행지 보기
-        </button>
+        {place.latitude && place.longitude ? (
+          <a
+            href={`https://map.kakao.com/link/map/${encodeURIComponent(place.name)},${place.latitude},${place.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={mapButtonStyle}
+          >
+            <MapPin size={15} aria-hidden="true" />
+            여행지 보기
+          </a>
+        ) : null}
       </div>
     </article>
   )
