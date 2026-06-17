@@ -23,51 +23,74 @@ export function useMyPageOwner(userId: string) {
     state.getProfile(userId, fallbackProfile)
   )
 
-  const isOwner = Boolean(
-    currentUserProfile && (userId === currentUserProfile.id || userId === 'me')
-  )
-
   const numericId = useMemo(() => Number(userId), [userId])
+  const currentUserId = currentUserProfile?.id
+  const isCurrentUserRoute = Boolean(
+    currentUserId && (userId === currentUserId || userId === 'me')
+  )
+  const shouldWaitForCurrentUser =
+    !isAuthInitialized && isLoggedIn && !currentUserProfile && userId === 'me'
+  const isOwner = Boolean(currentUserProfile && isCurrentUserRoute)
 
-  const [publicProfile, setPublicProfile] = useState<PublicUserProfile | null>(
-    null
-  )
-  const [isProfileLoading, setIsProfileLoading] = useState(
-    !isOwner && !!numericId
-  )
-  const [profileError, setProfileError] = useState<
-    'not_found' | 'error' | null
-  >(!isOwner && !numericId ? 'not_found' : null)
+  const [publicProfileResult, setPublicProfileResult] = useState<{
+    userId: number
+    data: PublicUserProfile | null
+    error: 'not_found' | 'error' | null
+  } | null>(null)
+
+  const shouldFetchPublicProfile =
+    isAuthInitialized &&
+    isLoggedIn &&
+    !isOwner &&
+    !shouldWaitForCurrentUser &&
+    Boolean(numericId)
+
+  const publicProfile =
+    shouldFetchPublicProfile && publicProfileResult?.userId === numericId
+      ? publicProfileResult.data
+      : null
+  const isProfileLoading =
+    shouldWaitForCurrentUser ||
+    (shouldFetchPublicProfile && publicProfileResult?.userId !== numericId)
+  const profileError =
+    !isAuthInitialized || !isLoggedIn || isOwner || shouldWaitForCurrentUser
+      ? null
+      : !numericId
+        ? 'not_found'
+        : publicProfileResult?.userId === numericId
+          ? publicProfileResult.error
+          : null
 
   useEffect(() => {
-    if (isOwner) return
-    if (!isAuthInitialized || !isLoggedIn) return
-    if (!numericId) return
+    if (!shouldFetchPublicProfile) {
+      return
+    }
 
     let cancelled = false
 
     getPublicProfile(numericId)
       .then((data) => {
-        if (!cancelled) setPublicProfile(data)
+        if (!cancelled) {
+          setPublicProfileResult({ userId: numericId, data, error: null })
+        }
       })
       .catch((error) => {
         if (!cancelled) {
-          setPublicProfile(null)
-          setProfileError(
-            isAxiosError(error) && error.response?.status === 404
-              ? 'not_found'
-              : 'error'
-          )
+          setPublicProfileResult({
+            userId: numericId,
+            data: null,
+            error:
+              isAxiosError(error) && error.response?.status === 404
+                ? 'not_found'
+                : 'error',
+          })
         }
-      })
-      .finally(() => {
-        if (!cancelled) setIsProfileLoading(false)
       })
 
     return () => {
       cancelled = true
     }
-  }, [isAuthInitialized, isLoggedIn, isOwner, numericId])
+  }, [numericId, shouldFetchPublicProfile])
 
   const user = useMemo<MyPageUser>(() => {
     if (!isOwner && publicProfile) {

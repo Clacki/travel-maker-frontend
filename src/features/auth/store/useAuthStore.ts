@@ -4,11 +4,17 @@ import {
   clearLegacyStoredAccessToken,
 } from '@/features/auth/utils/tokenStorage'
 
+type AuthStatus = 'initializing' | 'authenticated' | 'unauthenticated'
+
 type AuthState = {
   accessToken: string | null
   isLoggedIn: boolean
   isAuthInitialized: boolean
-  setAccessToken: (accessToken: string) => void
+  authStatus: AuthStatus
+  setAccessToken: (
+    accessToken: string,
+    options?: { isAuthInitialized?: boolean }
+  ) => void
   clearAuth: () => void
   setAuthInitialized: (isAuthInitialized: boolean) => void
 }
@@ -17,13 +23,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   isLoggedIn: false,
   isAuthInitialized: false,
-  setAccessToken: (accessToken) => {
+  authStatus: 'initializing',
+  setAccessToken: (accessToken, options) => {
+    const isAuthInitialized = options?.isAuthInitialized ?? true
+
     clearAuthLoggedOut()
     clearLegacyStoredAccessToken()
     set({
       accessToken,
       isLoggedIn: true,
-      isAuthInitialized: true,
+      isAuthInitialized,
+      authStatus: isAuthInitialized ? 'authenticated' : 'initializing',
     })
   },
   clearAuth: () => {
@@ -32,9 +42,17 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken: null,
       isLoggedIn: false,
       isAuthInitialized: true,
+      authStatus: 'unauthenticated',
     })
   },
   setAuthInitialized: (isAuthInitialized) => {
-    set({ isAuthInitialized })
+    set((state) => ({
+      isAuthInitialized,
+      authStatus: isAuthInitialized
+        ? state.isLoggedIn
+          ? 'authenticated'
+          : 'unauthenticated'
+        : 'initializing',
+    }))
   },
 }))

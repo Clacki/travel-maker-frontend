@@ -50,7 +50,7 @@ export const useInitializeAuth = () => {
       try {
         const { access_token: accessToken } = await refreshAccessToken()
         clearAuthLoggedOut()
-        setAccessToken(accessToken)
+        setAccessToken(accessToken, { isAuthInitialized: false })
         try {
           await loadCurrentUserProfile()
         } catch (error) {

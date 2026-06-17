@@ -3,7 +3,6 @@ import type { RecommendedDestination } from '@/features/result/result.types'
 
 /** GET /api/v1/users/quiz/result 응답 스키마 */
 export type TravelTypeResultResponse = {
-  type_key: string
   name: string
   description: string
   image_url: string
@@ -31,7 +30,6 @@ export type VectorItem = {
 }
 
 export type TravelTypeResult = {
-  type_key: string
   name: string
   description: string
   image_url: string
@@ -114,12 +112,11 @@ function parseDestinations(raw: unknown): RecommendedDestination[] {
 export function normalizeTravelTypeResult(
   response: TravelTypeResultResponse | null | undefined
 ): TravelTypeResult | null {
-  if (!response?.name || !response.type_key) {
+  if (!response?.name) {
     return null
   }
 
   return {
-    type_key: response.type_key,
     name: response.name,
     description: response.description,
     image_url: response.image_url ?? '',
