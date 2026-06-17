@@ -59,15 +59,28 @@ function TopLoaderBar() {
     }
 
     function onAnchorClick(e: MouseEvent) {
+      if (e.defaultPrevented) return
+      if (e.button !== 0) return
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+
       const link = (e.target as HTMLElement).closest(
         'a[href]'
       ) as HTMLAnchorElement | null
       if (!link) return
+
+      if (link.hasAttribute('download')) return
+      const target = link.getAttribute('target')
+      if (target && target !== '_self') return
+
       const href = link.getAttribute('href')
-      if (!href || !href.startsWith('/')) return
+      if (!href) return
+
+      const targetUrl = new URL(href, window.location.origin)
+      if (targetUrl.origin !== window.location.origin) return
+
       if (
         isSameInternalHref({
-          href,
+          href: targetUrl.href,
           origin: window.location.origin,
           currentPathname: window.location.pathname,
           currentSearchParams: window.location.search,
@@ -76,7 +89,11 @@ function TopLoaderBar() {
         return
       }
 
-      start()
+      window.setTimeout(() => {
+        if (!e.defaultPrevented) {
+          start()
+        }
+      }, 0)
     }
 
     window.addEventListener('navigate-start', onNavigateStart)

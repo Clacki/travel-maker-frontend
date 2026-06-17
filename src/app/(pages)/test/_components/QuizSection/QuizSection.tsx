@@ -125,42 +125,44 @@ export function QuizSection() {
   }
 
   return (
-    <div className={section}>
-      <ProgressBar current={currentIndex + 1} total={TOTAL_QUESTIONS} />
+    <>
+      <div className={section}>
+        <ProgressBar current={currentIndex + 1} total={TOTAL_QUESTIONS} />
 
-      <div className={questionArea}>
-        <h1 className={questionText}>{question.question}</h1>
-        <p className={subtitle}>마음에 더 끌리는 쪽을 선택해 주세요</p>
-      </div>
-
-      <div className={cardsRow}>
-        <div className={css({ w: '50%', maxW: '472px' })}>
-          <QuizCard
-            choice={question.choiceA}
-            side="A"
-            isSelected={selectedChoice === 'A'}
-            priority={currentIndex === 0}
-            onClick={() => selectChoice('A')}
-          />
+        <div className={questionArea}>
+          <h1 className={questionText}>{question.question}</h1>
+          <p className={subtitle}>마음에 더 끌리는 쪽을 선택해 주세요</p>
         </div>
-        <div className={css({ w: '50%', maxW: '472px' })}>
-          <QuizCard
-            choice={question.choiceB}
-            side="B"
-            isSelected={selectedChoice === 'B'}
-            priority={currentIndex === 0}
-            onClick={() => selectChoice('B')}
-          />
-        </div>
-      </div>
 
-      <QuizNavigation
-        currentIndex={currentIndex}
-        canGoNext={selectedChoice !== null && !isNavigating}
-        isLast={isLast}
-        onPrev={goPrev}
-        onNext={handleNext}
-      />
-    </div>
+        <div className={cardsRow}>
+          <div className={css({ w: '50%', maxW: '472px' })}>
+            <QuizCard
+              choice={question.choiceA}
+              side="A"
+              isSelected={selectedChoice === 'A'}
+              priority={currentIndex === 0}
+              onClick={() => selectChoice('A')}
+            />
+          </div>
+          <div className={css({ w: '50%', maxW: '472px' })}>
+            <QuizCard
+              choice={question.choiceB}
+              side="B"
+              isSelected={selectedChoice === 'B'}
+              priority={currentIndex === 0}
+              onClick={() => selectChoice('B')}
+            />
+          </div>
+        </div>
+
+        <QuizNavigation
+          currentIndex={currentIndex}
+          canGoNext={selectedChoice !== null && !isNavigating}
+          isLast={isLast}
+          onPrev={goPrev}
+          onNext={handleNext}
+        />
+      </div>
+    </>
   )
 }

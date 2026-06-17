@@ -115,6 +115,23 @@ export function Header({ className }: HeaderProps) {
     })
   const preventSameHrefNavigation =
     (href: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+      if (event.defaultPrevented) {
+        return
+      }
+
+      if (href === ROUTES.TEST) {
+        if (!isAuthInitialized) {
+          event.preventDefault()
+          return
+        }
+
+        if (!isLoggedIn) {
+          event.preventDefault()
+          openLoginModal()
+          return
+        }
+      }
+
       if (
         typeof window !== 'undefined' &&
         isSameInternalHref({
@@ -149,6 +166,7 @@ export function Header({ className }: HeaderProps) {
                   href={item.href}
                   className={navLinkStyle}
                   aria-current={isSameHref(item.href) ? 'page' : undefined}
+                  onClickCapture={preventSameHrefNavigation(item.href)}
                   onClick={preventSameHrefNavigation(item.href)}
                 >
                   {item.label}
