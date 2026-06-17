@@ -396,6 +396,7 @@ export function ReviewModal({
   const textareaId = useId()
   const imageInputId = useId()
   const fileObjectUrlRef = useRef<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const ratingPanelRef = useRef<HTMLElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [rating, setRating] = useState(initialRating)
@@ -493,6 +494,10 @@ export function ReviewModal({
     if (fileObjectUrlRef.current) {
       URL.revokeObjectURL(fileObjectUrlRef.current)
       fileObjectUrlRef.current = null
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
 
     setImageFile(undefined)
@@ -621,6 +626,7 @@ export function ReviewModal({
           </div>
           <div className={imageActionRowStyle}>
             <input
+              ref={fileInputRef}
               accept="image/*"
               className={imageInputStyle}
               id={imageInputId}
