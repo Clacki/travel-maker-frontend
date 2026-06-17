@@ -52,7 +52,7 @@ export default function TravelDetailPage({ detail }: TravelDetailPageProps) {
           </div>
         </div>
 
-        <ReviewsSection placeId={detail.id} reviewCount={detail.review_count} />
+        <ReviewsSection placeId={detail.id} />
       </div>
     </PageLayout>
   )

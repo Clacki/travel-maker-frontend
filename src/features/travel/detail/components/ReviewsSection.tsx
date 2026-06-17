@@ -12,7 +12,6 @@ import ReviewCard from './ReviewCard'
 import ReviewWriteButton from './ReviewWriteButton'
 
 interface ReviewsSectionProps {
-  reviewCount: number
   placeId: number
 }
 
@@ -40,10 +39,19 @@ const reviewListStyle = css({
   gap: '3',
 })
 
-const moreButtonWrapperStyle = css({
+const paginationStyle = css({
   display: 'flex',
+  alignItems: 'center',
   justifyContent: 'center',
+  gap: '3',
   mt: '2',
+})
+
+const pageInfoStyle = css({
+  fontSize: 'sm',
+  color: 'text.secondary',
+  minW: '12',
+  textAlign: 'center',
 })
 
 function ReviewSkeleton() {
@@ -69,34 +77,60 @@ function ReviewSkeleton() {
   )
 }
 
-export default function ReviewsSection({
-  reviewCount,
-  placeId,
-}: ReviewsSectionProps) {
+const PAGE_SIZE = 4
+
+export default function ReviewsSection({ placeId }: ReviewsSectionProps) {
   const [reviews, setReviews] = useState<Review[] | undefined>(undefined)
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [isPaging, setIsPaging] = useState(false)
   const isLoading = reviews === undefined
+  const totalPages = Math.ceil(total / PAGE_SIZE)
+
+  const loadPage = useCallback(
+    (targetPage: number) => {
+      return getPlaceReviews(placeId, { page: targetPage, pageSize: PAGE_SIZE })
+        .then(({ reviews: list, total: count }) => {
+          setReviews(list)
+          setTotal(count)
+        })
+        .catch(() => {
+          setReviews([])
+          setTotal(0)
+        })
+    },
+    [placeId]
+  )
 
   const fetchReviews = useCallback(() => {
     setReviews(undefined)
-    getPlaceReviews(placeId)
-      .then(setReviews)
-      .catch(() => setReviews([]))
-  }, [placeId])
+    setPage(1)
+    loadPage(1)
+  }, [loadPage])
 
   useEffect(() => {
-    getPlaceReviews(placeId)
-      .then(setReviews)
-      .catch(() => setReviews([]))
-  }, [placeId])
+    loadPage(1)
+  }, [loadPage])
+
+  const handlePageChange = async (targetPage: number) => {
+    if (isPaging || targetPage < 1 || targetPage > totalPages) return
+    setIsPaging(true)
+    await loadPage(targetPage)
+    setPage(targetPage)
+    setIsPaging(false)
+  }
 
   const handleDeleted = (reviewId: number) => {
     setReviews((prev) => prev?.filter((r) => r.id !== reviewId))
+    setTotal((prev) => Math.max(0, prev - 1))
   }
 
   return (
     <section aria-label="리뷰" className={sectionStyle}>
       <div className={headerStyle}>
-        <h2 className={headingStyle}>리뷰</h2>
+        <h2 className={headingStyle}>
+          리뷰{!isLoading && total > 0 && ` (${total.toLocaleString()}개)`}
+        </h2>
         <ReviewWriteButton placeId={placeId} onSuccess={fetchReviews} />
       </div>
 
@@ -123,11 +157,24 @@ export default function ReviewsSection({
         </div>
       )}
 
-      {!isLoading && reviewCount > reviews.length && (
-        <div className={moreButtonWrapperStyle}>
-          {/* TODO: 리뷰 더보기 페이지네이션 또는 무한스크롤 연결 */}
-          <Button variant="secondary" disabled>
-            리뷰 더보기 ({reviewCount.toLocaleString()}개)
+      {!isLoading && totalPages > 1 && (
+        <div className={paginationStyle}>
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(page - 1)}
+            disabled={isPaging || page <= 1}
+          >
+            &lt; 이전
+          </Button>
+          <span className={pageInfoStyle}>
+            {page} / {totalPages}
+          </span>
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(page + 1)}
+            disabled={isPaging || page >= totalPages}
+          >
+            다음 &gt;
           </Button>
         </div>
       )}

@@ -19,6 +19,8 @@ export type PlaceReviewItem = {
 export type PlaceReviewsResponse = {
   count: number
   avg_rating: number
+  next: string | null
+  previous: string | null
   results: PlaceReviewItem[]
 }
 
