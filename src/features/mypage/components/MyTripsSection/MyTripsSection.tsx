@@ -11,6 +11,7 @@ interface MyTripsSectionProps {
   trips: MyTripCourse[]
   canManage: boolean
   onCreateTrip: () => void
+  onDeleteTrip?: (routeId: number) => void
 }
 
 const sectionStyle = css({
@@ -42,6 +43,7 @@ export function MyTripsSection({
   trips,
   canManage,
   onCreateTrip,
+  onDeleteTrip,
 }: MyTripsSectionProps) {
   if (trips.length === 0) {
     return (
@@ -78,6 +80,7 @@ export function MyTripsSection({
             key={trip.routeId}
             course={trip}
             canManage={canManage}
+            onDeleteTrip={onDeleteTrip}
           />
         ))}
       </div>

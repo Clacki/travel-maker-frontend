@@ -9,6 +9,7 @@ import {
   MapPin,
   Pencil,
   PlusCircle,
+  Trash2,
 } from 'lucide-react'
 
 import { IconButton } from '@/components/common/button'
@@ -21,6 +22,7 @@ import type { MyTripCourse } from '../../types/mypage'
 interface MyTripCourseCardProps {
   course: MyTripCourse
   canManage: boolean
+  onDeleteTrip?: (routeId: number) => void
 }
 
 const cardStyle = css({
@@ -159,9 +161,23 @@ const actionsStyle = css({
   p: { base: '0 4 4', md: '5' },
 })
 
+const actionsInnerStyle = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+})
+
 const editButtonStyle = css({
   borderRadius: 'pill',
   color: 'text.secondary',
+})
+
+const deleteButtonStyle = css({
+  borderRadius: 'pill',
+  color: 'text.secondary',
+  _hover: {
+    color: 'red.500',
+  },
 })
 
 function formatDate(date?: string) {
@@ -183,7 +199,11 @@ function formatDateRange(startDate?: string, endDate?: string) {
   return start ?? end ?? '일정 미정'
 }
 
-export function MyTripCourseCard({ course, canManage }: MyTripCourseCardProps) {
+export function MyTripCourseCard({
+  course,
+  canManage,
+  onDeleteTrip,
+}: MyTripCourseCardProps) {
   const router = useRouter()
 
   const detailHref = ROUTES.TRIP_DETAIL(String(course.routeId))
@@ -203,6 +223,11 @@ export function MyTripCourseCard({ course, canManage }: MyTripCourseCardProps) {
   const handleEditClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
     router.push(editHref)
+  }
+
+  const handleDeleteClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    onDeleteTrip?.(course.routeId)
   }
 
   return (
@@ -275,14 +300,24 @@ export function MyTripCourseCard({ course, canManage }: MyTripCourseCardProps) {
 
       {canManage ? (
         <div className={actionsStyle}>
-          <IconButton
-            aria-label={`${course.title} 수정`}
-            size="sm"
-            className={editButtonStyle}
-            onClick={handleEditClick}
-          >
-            <Pencil size={15} aria-hidden="true" />
-          </IconButton>
+          <div className={actionsInnerStyle}>
+            <IconButton
+              aria-label={`${course.title} 수정`}
+              size="sm"
+              className={editButtonStyle}
+              onClick={handleEditClick}
+            >
+              <Pencil size={15} aria-hidden="true" />
+            </IconButton>
+            <IconButton
+              aria-label={`${course.title} 삭제`}
+              size="sm"
+              className={deleteButtonStyle}
+              onClick={handleDeleteClick}
+            >
+              <Trash2 size={15} aria-hidden="true" />
+            </IconButton>
+          </div>
         </div>
       ) : null}
     </article>
