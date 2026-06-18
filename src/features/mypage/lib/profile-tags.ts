@@ -6,7 +6,7 @@ export const PROFILE_TAG_LIMIT = 3
 export const profileInterestTags =
   travelFilterSections.find((section) => section.id === 'theme')?.tags ?? []
 
-const DEFAULT_PROFILE_TAG_IDS = ['cafe', 'camping', 'nature-eco']
+const DEFAULT_PROFILE_TAG_IDS: string[] = []
 
 function normalizeTagIds(tagIds: string[]) {
   const validTagIds = new Set(profileInterestTags.map((tag) => tag.id))

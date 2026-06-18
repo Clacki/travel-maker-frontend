@@ -370,8 +370,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     submitStatus === 'submitting' ||
     nicknameStatus === 'checking' ||
     isNicknameCheckRequired ||
-    !nextNickname ||
-    selectedTags.length === 0
+    !nextNickname
 
   useEffect(() => {
     if (!isAuthInitialized) {
