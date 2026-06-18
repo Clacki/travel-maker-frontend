@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { isAxiosError } from 'axios'
+
+import { deleteRoute } from '@/features/trips/api/routesApi'
 
 import {
   getMyTrips,
@@ -48,6 +51,30 @@ interface UseMyTripsOptions {
   nickname: string
 }
 
+function getDeleteTripErrorMessage(error: unknown) {
+  if (isAxiosError(error)) {
+    const status = error.response?.status
+
+    if (status === 401) {
+      return '로그인이 만료되었습니다. 다시 로그인해주세요.'
+    }
+
+    if (status === 403) {
+      return '코스를 삭제할 권한이 없습니다.'
+    }
+
+    if (status === 404) {
+      return '이미 삭제되었거나 찾을 수 없는 코스입니다.'
+    }
+
+    if (status && status >= 500) {
+      return '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'
+    }
+  }
+
+  return '코스 삭제에 실패했습니다. 다시 시도해주세요.'
+}
+
 export function useMyTrips({
   enabled,
   isAuthInitialized,
@@ -61,6 +88,9 @@ export function useMyTrips({
   const [tripPrevious, setTripPrevious] = useState<string | null>(null)
   const [isTripLoading, setIsTripLoading] = useState(false)
   const [tripError, setTripError] = useState<string | null>(null)
+  const [deletingTripId, setDeletingTripId] = useState<number | null>(null)
+  const [isTripDeleting, setIsTripDeleting] = useState(false)
+  const [tripDeleteError, setTripDeleteError] = useState<string | null>(null)
 
   const fetchMyTrips = useCallback(
     async (page: number) => {
@@ -114,6 +144,47 @@ export function useMyTrips({
     [tripCount, tripNext, tripPage, tripPrevious]
   )
 
+  const handleTripDeleteRequest = useCallback((routeId: number) => {
+    setTripDeleteError(null)
+    setDeletingTripId(routeId)
+  }, [])
+
+  const handleTripDeleteCancel = useCallback(() => {
+    if (isTripDeleting) {
+      return
+    }
+
+    setTripDeleteError(null)
+    setDeletingTripId(null)
+  }, [isTripDeleting])
+
+  const handleTripDeleteConfirm = useCallback(async () => {
+    if (isTripDeleting || deletingTripId === null) {
+      return
+    }
+
+    setIsTripDeleting(true)
+    setTripDeleteError(null)
+
+    try {
+      await deleteRoute(deletingTripId)
+      setDeletingTripId(null)
+
+      const nextPage =
+        trips.length === 1 && tripPage > 1 ? tripPage - 1 : tripPage
+
+      if (nextPage !== tripPage) {
+        setTripPage(nextPage)
+      } else {
+        await fetchMyTrips(nextPage)
+      }
+    } catch (error) {
+      setTripDeleteError(getDeleteTripErrorMessage(error))
+    } finally {
+      setIsTripDeleting(false)
+    }
+  }, [deletingTripId, fetchMyTrips, isTripDeleting, tripPage, trips.length])
+
   return {
     trips,
     tripCount,
@@ -121,7 +192,13 @@ export function useMyTrips({
     tripTotalPages,
     isTripLoading,
     tripError,
+    deletingTripId,
+    isTripDeleting,
+    tripDeleteError,
     setTripPage,
     fetchMyTrips,
+    handleTripDeleteRequest,
+    handleTripDeleteCancel,
+    handleTripDeleteConfirm,
   }
 }

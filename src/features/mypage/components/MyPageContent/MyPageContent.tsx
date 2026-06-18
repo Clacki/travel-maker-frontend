@@ -7,6 +7,8 @@ import { isAxiosError } from 'axios'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
+import { Modal } from '@/components/common/modal/Modal'
+import { Button } from '@/components/common/button'
 import { ErrorState } from '@/components/common/status'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
@@ -120,7 +122,16 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     targetUserId: isOwner ? undefined : user.id,
   })
 
-  const { trips, tripCount } = useMyTrips({
+  const {
+    trips,
+    tripCount,
+    deletingTripId,
+    isTripDeleting,
+    tripDeleteError,
+    handleTripDeleteRequest,
+    handleTripDeleteCancel,
+    handleTripDeleteConfirm,
+  } = useMyTrips({
     enabled: activeTab === 'trip',
     isAuthInitialized,
     isLoggedIn,
@@ -279,6 +290,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
             trips={trips}
             canManage={isOwner}
             onCreateTrip={() => router.push(ROUTES.TRIP_CREATE)}
+            onDeleteTrip={isOwner ? handleTripDeleteRequest : undefined}
           />
         )}
 
@@ -321,6 +333,49 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         onSubmit={handleReviewSubmit}
         onDelete={handleReviewDeleteConfirm}
       />
+
+      <Modal
+        isOpen={deletingTripId !== null}
+        onClose={handleTripDeleteCancel}
+        title="여행 코스 삭제"
+        size="sm"
+        closeOnOverlayClick={!isTripDeleting}
+        footer={
+          <div className={css({ display: 'flex', gap: '2' })}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTripDeleteCancel}
+              disabled={isTripDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => void handleTripDeleteConfirm()}
+              disabled={isTripDeleting}
+            >
+              {isTripDeleting ? '삭제 중...' : '삭제'}
+            </Button>
+          </div>
+        }
+      >
+        <p className={css({ color: 'text.primary', fontSize: 'sm' })}>
+          이 여행 코스를 삭제하면 복구할 수 없습니다. 정말 삭제하시겠어요?
+        </p>
+        {tripDeleteError ? (
+          <p
+            className={css({
+              mt: '3',
+              color: 'red.500',
+              fontSize: 'sm',
+            })}
+          >
+            {tripDeleteError}
+          </p>
+        ) : null}
+      </Modal>
     </div>
   )
 }
