@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -17,6 +18,7 @@ interface CategoryCardProps {
   category: TravelCategory
   index: number
   style: CardPositionStyle
+  mdStyle?: CardPositionStyle
 }
 
 const CATEGORY_TO_STYLE: Record<string, string> = {
@@ -29,15 +31,34 @@ const CATEGORY_TO_STYLE: Record<string, string> = {
   romantic: 'romantic',
 }
 
-export function CategoryCard({ category, index, style }: CategoryCardProps) {
+export function CategoryCard({
+  category,
+  index,
+  style,
+  mdStyle,
+}: CategoryCardProps) {
   const styleId = CATEGORY_TO_STYLE[category.id] ?? category.id
+  const [activeStyle, setActiveStyle] = useState(style)
+
+  useEffect(() => {
+    if (!mdStyle) return
+
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1023px)')
+    const update = (matches: boolean) =>
+      setActiveStyle(matches ? mdStyle : style)
+
+    update(mql.matches)
+    const handler = (e: MediaQueryListEvent) => update(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [style, mdStyle])
 
   return (
     <motion.div
       style={{
-        left: style.left,
-        top: style.top,
-        zIndex: style.zIndex,
+        left: activeStyle.left,
+        top: activeStyle.top,
+        zIndex: activeStyle.zIndex,
         position: 'absolute',
       }}
       initial={{ opacity: 0, scale: 0.8, rotate: style.rotate }}
