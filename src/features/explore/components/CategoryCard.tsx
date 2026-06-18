@@ -71,8 +71,8 @@ export function CategoryCard({
         zIndex: activeStyle.zIndex,
         position: 'absolute',
       }}
-      initial={{ opacity: 0, scale: 0.8, rotate: style.rotate }}
-      animate={{ opacity: 1, scale: 1, rotate: style.rotate }}
+      initial={{ opacity: 0, scale: 0.8, rotate: activeStyle.rotate }}
+      animate={{ opacity: 1, scale: 1, rotate: activeStyle.rotate }}
       transition={{
         duration: 0.6,
         delay: index * 0.1,
