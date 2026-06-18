@@ -112,7 +112,7 @@ function EllipseCard({
           flexDir: 'column',
           w: '140px',
           h: '196px',
-          rounded: '2xl',
+          rounded: 'lg',
           bg: 'bg.surface',
           pt: '8px',
           px: '8px',
@@ -133,7 +133,7 @@ function EllipseCard({
             position: 'relative',
             flex: '0 0 80%',
             overflow: 'hidden',
-            rounded: '2xl',
+            rounded: 'lg',
           })}
         >
           <Image
