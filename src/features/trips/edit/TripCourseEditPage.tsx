@@ -89,7 +89,11 @@ export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
             <CoursePlaceCard />
           </div>
           <div className={rightPanelStyle}>
-            <CourseMapPanel mode="edit" tripId={route.route_id.toString()} />
+            <CourseMapPanel
+              mode="edit"
+              tripId={route.route_id.toString()}
+              ownerId={route.user_id}
+            />
             <div className={searchWrapperStyle}>
               <PlaceSearchSection />
             </div>

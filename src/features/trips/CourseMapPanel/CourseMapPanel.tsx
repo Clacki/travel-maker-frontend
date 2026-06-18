@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation'
 import { isAxiosError } from 'axios'
 
 import { useCourseStore } from '@/store/tripsStore'
+import { LoginModal } from '@/components/auth/LoginModal'
 import { Button } from '@/components/common/button/Button'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { MAX_PLACES_PER_DAY } from '@/features/trips/types/course.types'
 import {
   postRoute,
@@ -34,6 +37,7 @@ import { css, cx } from '@/styled-system/css'
 interface CourseMapPanelProps {
   mode?: 'create' | 'edit'
   tripId?: string
+  ownerId?: number
 }
 
 const panelStyle = css({
@@ -183,8 +187,12 @@ const APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
 export function CourseMapPanel({
   mode = 'create',
   tripId,
+  ownerId,
 }: CourseMapPanelProps) {
   const router = useRouter()
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const userProfile = useUserProfileStore((state) => state.userProfile)
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<KakaoMapInstance | null>(null)
   const overlaysRef = useRef<KakaoOverlay[]>([])
@@ -195,6 +203,7 @@ export function CourseMapPanel({
   const [tagLoadError, setTagLoadError] = useState<string | null>(null)
   const [regionTags, setRegionTags] = useState<Tag[]>([])
   const [themeTags, setThemeTags] = useState<Tag[]>([])
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
   const overlayContentsRef = useRef<
     Array<{ id: string; el: HTMLDivElement; tailInner: HTMLDivElement }>
   >([])
@@ -428,7 +437,7 @@ export function CourseMapPanel({
   const handleAxiosError = (error: unknown, defaultMsg: string) => {
     if (isAxiosError(error)) {
       if (error.response?.status === 401) {
-        router.push(ROUTES.LOGIN)
+        setIsLoginModalOpen(true)
         return
       }
       if (error.response?.status === 403) {
@@ -443,7 +452,41 @@ export function CourseMapPanel({
     setCreateError(defaultMsg)
   }
 
+  const isOwner =
+    ownerId === undefined ||
+    (userProfile !== null && Number(userProfile.id) === ownerId)
+  const permissionError =
+    mode === 'edit' &&
+    ownerId !== undefined &&
+    isAuthInitialized &&
+    isLoggedIn &&
+    !isOwner
+      ? '이 코스를 수정할 권한이 없습니다.'
+      : null
+
+  const ensureCanSave = () => {
+    if (!isAuthInitialized) {
+      return false
+    }
+
+    if (!isLoggedIn) {
+      setIsLoginModalOpen(true)
+      return false
+    }
+
+    if (!isOwner) {
+      setCreateError('이 코스를 수정할 권한이 없습니다.')
+      return false
+    }
+
+    return true
+  }
+
   const handleCreateTrip = async () => {
+    if (!ensureCanSave()) {
+      return
+    }
+
     setCreateError(null)
     const payload = buildRoutePayload()
     if (!payload) {
@@ -459,6 +502,10 @@ export function CourseMapPanel({
   }
 
   const handleUpdateTrip = async () => {
+    if (!ensureCanSave()) {
+      return
+    }
+
     if (!tripId) {
       return
     }
@@ -482,61 +529,71 @@ export function CourseMapPanel({
     places.length >= 2
 
   const isSaveEnabled = mode === 'edit' ? isDirty && isValid : isValid
+  const isSaveDisabled =
+    !isAuthInitialized || !isSaveEnabled || (isLoggedIn && !isOwner)
 
   const headerTitle = selectedRegion
     ? `${selectedRegion} · ${selectedDay}일차`
     : `${selectedDay}일차`
 
   return (
-    <div className={panelStyle}>
-      {/* 지도 헤더 */}
-      <div className={mapHeaderStyle}>
-        <div className={mapHeaderLeftStyle}>
-          <p className={mapTitleStyle}>지도 영역</p>
-          <p className={mapSubtitleStyle}>{headerTitle}</p>
+    <>
+      <div className={panelStyle}>
+        {/* 지도 헤더 */}
+        <div className={mapHeaderStyle}>
+          <div className={mapHeaderLeftStyle}>
+            <p className={mapTitleStyle}>지도 영역</p>
+            <p className={mapSubtitleStyle}>{headerTitle}</p>
+          </div>
+          <span className={mapBadgeStyle}>카카오맵</span>
         </div>
-        <span className={mapBadgeStyle}>카카오맵</span>
-      </div>
 
-      {/* 지도 영역 */}
-      <div className={mapAreaStyle}>
-        <div ref={mapRef} className={mapContainerStyle} />
-      </div>
+        {/* 지도 영역 */}
+        <div className={mapAreaStyle}>
+          <div ref={mapRef} className={mapContainerStyle} />
+        </div>
 
-      {/* 범례 */}
-      <div className={legendRowStyle}>
-        <div className={legendItemsStyle}>
-          <div className={legendItemStyle}>
-            <span className={legendDotPrimaryStyle} />
-            코스 경로
+        {/* 범례 */}
+        <div className={legendRowStyle}>
+          <div className={legendItemsStyle}>
+            <div className={legendItemStyle}>
+              <span className={legendDotPrimaryStyle} />
+              코스 경로
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 에러 메시지 */}
-      {tagLoadError && <p className={errorStyle}>{tagLoadError}</p>}
-      {createError && <p className={errorStyle}>{createError}</p>}
-      {/* 하단 상태 바 */}
-      <div className={bottomBarStyle}>
-        <span
-          className={cx(
-            statusChipStyle,
-            places.length >= 2 ? statusChipDoneStyle : statusChipPendingStyle
-          )}
-        >
-          {places.length >= 2 ? '✓' : '○'} 장소 {places.length}/2
-        </span>
-        <Button
-          variant="primary"
-          size="md"
-          shape="pill"
-          disabled={!isSaveEnabled}
-          onClick={mode === 'edit' ? handleUpdateTrip : handleCreateTrip}
-        >
-          {mode === 'edit' ? '코스 저장하기' : '코스 등록하기'}
-        </Button>
+        {/* 에러 메시지 */}
+        {tagLoadError && <p className={errorStyle}>{tagLoadError}</p>}
+        {(permissionError || createError) && (
+          <p className={errorStyle}>{permissionError || createError}</p>
+        )}
+        {/* 하단 상태 바 */}
+        <div className={bottomBarStyle}>
+          <span
+            className={cx(
+              statusChipStyle,
+              places.length >= 2 ? statusChipDoneStyle : statusChipPendingStyle
+            )}
+          >
+            {places.length >= 2 ? '✓' : '○'} 장소 {places.length}/2
+          </span>
+          <Button
+            variant="primary"
+            size="md"
+            shape="pill"
+            disabled={isSaveDisabled}
+            onClick={mode === 'edit' ? handleUpdateTrip : handleCreateTrip}
+          >
+            {mode === 'edit' ? '코스 저장하기' : '코스 등록하기'}
+          </Button>
+        </div>
       </div>
-    </div>
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
+    </>
   )
 }
 
