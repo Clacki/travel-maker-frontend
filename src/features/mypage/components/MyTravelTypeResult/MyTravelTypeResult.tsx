@@ -17,6 +17,7 @@ import {
   ErrorState,
   LoadingState,
 } from '@/components/common/status'
+import { Toast } from '@/components/common/Toast/Toast'
 import type { RecommendedDestination } from '@/features/result/result.types'
 import { css } from '@/styled-system/css'
 import type {
@@ -405,56 +406,68 @@ interface TravelTypeHeroCardProps {
 }
 
 function TravelTypeHeroCard({ result, onRetryTest }: TravelTypeHeroCardProps) {
+  const [toastVisible, setToastVisible] = useState(false)
+
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+    } catch {}
+
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 2000)
+  }
+
   return (
-    <article className={heroCardStyle}>
-      <div className={heroContentStyle}>
-        <span className={heroBadgeStyle}>
-          <Sparkles aria-hidden="true" size={14} />
-          나의 여행 성향
-        </span>
-        <div>
-          <h3 className={heroTitleStyle}>{result.name}</h3>
-          <p className={heroDescriptionStyle}>{result.description}</p>
-        </div>
-        {result.type_tags.length > 0 && (
-          <div className={tagListStyle}>
-            {result.type_tags.slice(0, 6).map((tag) => (
-              <span key={tag} className={heroTagStyle}>
-                #{tag}
-              </span>
-            ))}
+    <>
+      <article className={heroCardStyle}>
+        <div className={heroContentStyle}>
+          <span className={heroBadgeStyle}>
+            <Sparkles aria-hidden="true" size={14} />
+            나의 여행 성향
+          </span>
+          <div>
+            <h3 className={heroTitleStyle}>{result.name}</h3>
+            <p className={heroDescriptionStyle}>{result.description}</p>
           </div>
-        )}
-        <div className={heroActionsStyle}>
-          <Button
-            className={retryButtonStyle}
-            onClick={onRetryTest}
-            shape="pill"
-            variant="outline"
-          >
-            <RotateCcw aria-hidden="true" size={16} />
-            다시 테스트
-          </Button>
-          <Button
-            className={shareButtonStyle}
-            shape="pill"
-            variant="outline"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href)
-            }}
-          >
-            <Share2 aria-hidden="true" size={16} />
-            결과 공유
-          </Button>
+          {result.type_tags.length > 0 && (
+            <div className={tagListStyle}>
+              {result.type_tags.slice(0, 6).map((tag) => (
+                <span key={tag} className={heroTagStyle}>
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+          <div className={heroActionsStyle}>
+            <Button
+              className={retryButtonStyle}
+              onClick={onRetryTest}
+              shape="pill"
+              variant="outline"
+            >
+              <RotateCcw aria-hidden="true" size={16} />
+              다시 테스트
+            </Button>
+            <Button
+              className={shareButtonStyle}
+              shape="pill"
+              variant="outline"
+              onClick={handleShare}
+            >
+              <Share2 aria-hidden="true" size={16} />
+              결과 공유
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className={imageBoxStyle}>
-        <ResultImage
-          alt={`${result.name} 대표 이미지`}
-          src={result.image_url}
-        />
-      </div>
-    </article>
+        <div className={imageBoxStyle}>
+          <ResultImage
+            alt={`${result.name} 대표 이미지`}
+            src={result.image_url}
+          />
+        </div>
+      </article>
+      <Toast message="링크가 복사되었습니다" visible={toastVisible} />
+    </>
   )
 }
 

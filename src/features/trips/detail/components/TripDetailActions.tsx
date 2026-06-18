@@ -3,12 +3,13 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Check, Pencil, Share2, Trash2 } from 'lucide-react'
+import { ArrowLeft, Pencil, Share2, Trash2 } from 'lucide-react'
 import { isAxiosError } from 'axios'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Button } from '@/components/common/button'
 import { ROUTES } from '@/constants/routes'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import { Toast } from '@/components/common/Toast/Toast'
 import { deleteRoute } from '@/features/trips/api/routesApi'
 import type { TripCourseDetail } from '../types/tripDetail'
 import { css } from '@/styled-system/css'
@@ -105,46 +106,24 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
     trip.isOwner ||
     (userProfile !== null && Number(userProfile.id) === trip.author.id)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const [shareStatus, setShareStatus] = useState<'idle' | 'copied' | 'failed'>(
-    'idle'
-  )
-  const shareTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [toastVisible, setToastVisible] = useState(false)
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     return () => {
-      if (shareTimerRef.current) {
-        clearTimeout(shareTimerRef.current)
-      }
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
     }
   }, [])
 
   const handleShare = useCallback(async () => {
-    const url = window.location.href
-
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({ title: trip.title, url })
-        return
-      } catch {
-        // 사용자 취소 또는 미지원 시 클립보드 복사로 폴백
-      }
-    }
-
     try {
-      await navigator.clipboard.writeText(url)
-      setShareStatus('copied')
-      if (shareTimerRef.current) {
-        clearTimeout(shareTimerRef.current)
-      }
-      shareTimerRef.current = setTimeout(() => setShareStatus('idle'), 1500)
-    } catch {
-      setShareStatus('failed')
-      if (shareTimerRef.current) {
-        clearTimeout(shareTimerRef.current)
-      }
-      shareTimerRef.current = setTimeout(() => setShareStatus('idle'), 2000)
-    }
-  }, [trip.title])
+      await navigator.clipboard.writeText(window.location.href)
+    } catch {}
+
+    setToastVisible(true)
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    toastTimerRef.current = setTimeout(() => setToastVisible(false), 2000)
+  }, [])
 
   const handleDelete = async () => {
     const confirmed = window.confirm(
@@ -181,19 +160,9 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
         </Link>
 
         <div className={groupStyle}>
-          <Button
-            variant="neutral"
-            onClick={handleShare}
-            disabled={shareStatus !== 'idle'}
-          >
-            {shareStatus === 'copied' ? (
-              <Check size={17} aria-hidden="true" />
-            ) : (
-              <Share2 size={17} aria-hidden="true" />
-            )}
-            {shareStatus === 'idle' && '공유하기'}
-            {shareStatus === 'copied' && '링크 복사됨!'}
-            {shareStatus === 'failed' && 'URL을 직접 복사해주세요'}
+          <Button variant="neutral" onClick={handleShare}>
+            <Share2 size={17} aria-hidden="true" />
+            공유하기
           </Button>
           {isOwner ? (
             <>
@@ -220,6 +189,7 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+      <Toast message="링크가 복사되었습니다" visible={toastVisible} />
     </>
   )
 }
