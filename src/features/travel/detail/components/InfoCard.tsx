@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Toast } from '@/components/common/Toast/Toast'
@@ -60,6 +60,19 @@ const descriptionStyle = css({
   py: '1',
 })
 
+const toggleButtonStyle = css({
+  fontSize: 'xs',
+  color: 'primary',
+  cursor: 'pointer',
+  background: 'none',
+  border: 'none',
+  padding: '0',
+  mt: '1',
+  display: 'block',
+})
+
+const MAX_LINES = 7
+
 export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
   const {
     id,
@@ -74,6 +87,18 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
     is_bookmarked,
   } = detail
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+  const [isDescExpanded, setIsDescExpanded] = useState(false)
+  const [isDescOverflow, setIsDescOverflow] = useState(false)
+  const descRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    const el = descRef.current
+    if (!el) return
+    // lineHeight * MAX_LINES 로 실제 줄 수 초과 여부 판단
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight)
+    setIsDescOverflow(el.scrollHeight > lineHeight * MAX_LINES + 2)
+  }, [description])
+
   const { toastVisible, shareLink } = useShareLink()
   const {
     isAuthInitialized,
@@ -108,7 +133,33 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
           />
         </div>
 
-        <p className={descriptionStyle}>{description}</p>
+        <div>
+          <p
+            ref={descRef}
+            className={descriptionStyle}
+            style={
+              !isDescExpanded && isDescOverflow
+                ? {
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: MAX_LINES,
+                  }
+                : undefined
+            }
+          >
+            {description}
+          </p>
+          {isDescOverflow && (
+            <button
+              type="button"
+              className={toggleButtonStyle}
+              onClick={() => setIsDescExpanded((prev) => !prev)}
+            >
+              {isDescExpanded ? '접기 ▲' : '더보기 ▼'}
+            </button>
+          )}
+        </div>
 
         <TravelDetailInfoItems
           addressPrimary={address_primary}
