@@ -141,6 +141,8 @@ function EllipseCard({
             alt={category.name}
             fill
             sizes="140px"
+            draggable={false}
+            onDragStart={(e) => e.preventDefault()}
             className={cx(css({ objectFit: 'cover' }), 'card-img')}
           />
         </div>
@@ -275,6 +277,7 @@ export function CategoryCardSwiper({ categories }: CategoryCardSwiperProps) {
       onPointerUp={snap}
       onPointerLeave={snap}
       onPointerCancel={snap}
+      onDragStart={(e) => e.preventDefault()}
     >
       {categories.map((category, index) => (
         <EllipseCard
