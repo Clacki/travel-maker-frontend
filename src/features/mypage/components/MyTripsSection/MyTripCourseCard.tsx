@@ -15,7 +15,7 @@ import {
 import { IconButton } from '@/components/common/button'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
-import { css, cx } from '@/styled-system/css'
+import { css } from '@/styled-system/css'
 
 import type { MyTripCourse } from '../../types/mypage'
 
@@ -71,30 +71,6 @@ const fallbackStyle = css({
   color: 'text.secondary',
   bg: 'primary.soft',
   fontSize: 'sm',
-})
-
-const visibilityBadgeStyle = css({
-  position: 'absolute',
-  top: '3',
-  left: '3',
-  zIndex: 1,
-  display: 'inline-flex',
-  alignItems: 'center',
-  minH: '7',
-  px: '3',
-  borderRadius: 'pill',
-  color: 'text.inverse',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
-  boxShadow: 'sm',
-})
-
-const publicBadgeStyle = css({
-  bg: 'primary',
-})
-
-const privateBadgeStyle = css({
-  bg: 'text.secondary',
 })
 
 const contentStyle = css({
@@ -240,14 +216,6 @@ export function MyTripCourseCard({
       onKeyDown={handleKeyDown}
     >
       <div className={imageWrapStyle}>
-        <span
-          className={cx(
-            visibilityBadgeStyle,
-            course.isPublic ? publicBadgeStyle : privateBadgeStyle
-          )}
-        >
-          {course.isPublic ? '공개' : '비공개'}
-        </span>
         {course.imageUrl ? (
           <Image
             src={course.imageUrl}
