@@ -13,9 +13,9 @@ import { type MouseEvent, useState } from 'react'
 import { isSameInternalHref } from './navigationUtils'
 
 const navigationItems = [
-  { href: ROUTES.TEST, label: 'Travel Style' },
-  { href: ROUTES.EXPLORE, label: 'Explore' },
-  { href: ROUTES.TRIPS, label: 'Trips' },
+  { href: ROUTES.TEST, label: 'Travel Style', mobileLabel: '취향' },
+  { href: ROUTES.EXPLORE, label: 'Explore', mobileLabel: '탐색' },
+  { href: ROUTES.TRIPS, label: 'Trips', mobileLabel: '코스' },
 ] as const
 
 const headerStyle = css({
@@ -82,6 +82,14 @@ const navLinkStyle = css({
     outline: 'none',
     boxShadow: 'focus',
   },
+})
+
+const desktopNavLabelStyle = css({
+  display: { base: 'none', md: 'inline' },
+})
+
+const mobileNavLabelStyle = css({
+  display: { base: 'inline', md: 'none' },
 })
 
 const desktopLoginButtonStyle = css({
@@ -156,7 +164,10 @@ export function Header({ className }: HeaderProps) {
                   onClickCapture={preventSameHrefNavigation(item.href)}
                   onClick={preventSameHrefNavigation(item.href)}
                 >
-                  {item.label}
+                  <span className={desktopNavLabelStyle}>{item.label}</span>
+                  <span className={mobileNavLabelStyle}>
+                    {item.mobileLabel}
+                  </span>
                 </Link>
               ))}
             </nav>
