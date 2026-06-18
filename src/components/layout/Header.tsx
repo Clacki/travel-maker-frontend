@@ -119,19 +119,6 @@ export function Header({ className }: HeaderProps) {
         return
       }
 
-      if (href === ROUTES.TEST) {
-        if (!isAuthInitialized) {
-          event.preventDefault()
-          return
-        }
-
-        if (!isLoggedIn) {
-          event.preventDefault()
-          openLoginModal()
-          return
-        }
-      }
-
       if (
         typeof window !== 'undefined' &&
         isSameInternalHref({
