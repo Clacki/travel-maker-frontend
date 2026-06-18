@@ -15,6 +15,17 @@ const cardPositions = [
   { left: '78%', top: '58%', rotate: 23, zIndex: 3 }, // 가장 오른쪽 (잘림), 아래
 ]
 
+// md(768px~1023px): column 레이아웃에서 카드 섹션 500px 안에 수용되도록 top 값 조정
+const mdCardPositions = [
+  { left: '0%', top: '40%', rotate: -22, zIndex: 1 },
+  { left: '12%', top: '4%', rotate: -13, zIndex: 2 },
+  { left: '26%', top: '38%', rotate: -5, zIndex: 7 },
+  { left: '40%', top: '2%', rotate: 3, zIndex: 6 },
+  { left: '54%', top: '36%', rotate: 10, zIndex: 5 },
+  { left: '67%', top: '3%', rotate: 17, zIndex: 4 },
+  { left: '78%', top: '40%', rotate: 23, zIndex: 3 },
+]
+
 export default function Home() {
   return (
     <main
@@ -135,6 +146,7 @@ export default function Home() {
                 category={category}
                 index={index}
                 style={cardPositions[index]}
+                mdStyle={mdCardPositions[index]}
               />
             ))}
         </section>
