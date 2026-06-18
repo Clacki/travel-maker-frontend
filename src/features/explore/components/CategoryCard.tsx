@@ -19,6 +19,7 @@ interface CategoryCardProps {
   index: number
   style: CardPositionStyle
   mdStyle?: CardPositionStyle
+  smStyle?: CardPositionStyle
 }
 
 const CATEGORY_TO_STYLE: Record<string, string> = {
@@ -36,22 +37,31 @@ export function CategoryCard({
   index,
   style,
   mdStyle,
+  smStyle,
 }: CategoryCardProps) {
   const styleId = CATEGORY_TO_STYLE[category.id] ?? category.id
   const [activeStyle, setActiveStyle] = useState(style)
 
   useEffect(() => {
-    if (!mdStyle) return
+    const mqlMd = window.matchMedia(
+      '(min-width: 768px) and (max-width: 1023px)'
+    )
+    const mqlSm = window.matchMedia('(max-width: 767px)')
 
-    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1023px)')
-    const update = (matches: boolean) =>
-      setActiveStyle(matches ? mdStyle : style)
+    const update = () => {
+      if (mqlMd.matches && mdStyle) setActiveStyle(mdStyle)
+      else if (mqlSm.matches && smStyle) setActiveStyle(smStyle)
+      else setActiveStyle(style)
+    }
 
-    update(mql.matches)
-    const handler = (e: MediaQueryListEvent) => update(e.matches)
-    mql.addEventListener('change', handler)
-    return () => mql.removeEventListener('change', handler)
-  }, [style, mdStyle])
+    update()
+    mqlMd.addEventListener('change', update)
+    mqlSm.addEventListener('change', update)
+    return () => {
+      mqlMd.removeEventListener('change', update)
+      mqlSm.removeEventListener('change', update)
+    }
+  }, [style, mdStyle, smStyle])
 
   return (
     <motion.div
