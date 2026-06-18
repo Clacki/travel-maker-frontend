@@ -12,7 +12,7 @@ type WithdrawReason = '서비스 불만족' | '개인정보 우려' | '기타'
 export interface WithdrawModalProps {
   isOpen: boolean
   onClose: () => void
-  onWithdraw: (reason: WithdrawReason) => void
+  onWithdraw: (reason: WithdrawReason) => Promise<void>
 }
 
 // ─── Styles ────────────────────────────────────────────────
@@ -111,16 +111,26 @@ export function WithdrawModal({
 }: WithdrawModalProps) {
   const [step, setStep] = useState<1 | 2>(1)
   const [reason, setReason] = useState<WithdrawReason>('서비스 불만족')
+  const [isWithdrawing, setIsWithdrawing] = useState(false)
+  const [withdrawError, setWithdrawError] = useState<string | null>(null)
 
   const handleClose = () => {
+    if (isWithdrawing) return
     setStep(1)
     setReason('서비스 불만족')
+    setWithdrawError(null)
     onClose()
   }
 
-  const handleWithdraw = () => {
-    onWithdraw(reason)
-    handleClose()
+  const handleWithdraw = async () => {
+    setIsWithdrawing(true)
+    setWithdrawError(null)
+    try {
+      await onWithdraw(reason)
+    } catch {
+      setWithdrawError('탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.')
+      setIsWithdrawing(false)
+    }
   }
 
   if (step === 1) {
@@ -190,9 +200,10 @@ export function WithdrawModal({
           <button
             type="button"
             className={withdrawButtonStyle}
-            onClick={handleWithdraw}
+            onClick={() => void handleWithdraw()}
+            disabled={isWithdrawing}
           >
-            탈퇴하기
+            {isWithdrawing ? '처리 중...' : '탈퇴하기'}
           </button>
         </div>
       }
@@ -201,6 +212,18 @@ export function WithdrawModal({
       <p className={cautionTextStyle}>
         14일 이내 재로그인 시 계정을 복구할 수 있습니다.
       </p>
+      {withdrawError && (
+        <p
+          className={css({
+            fontSize: 'sm',
+            color: 'warning',
+            textAlign: 'center',
+            mt: '3',
+          })}
+        >
+          {withdrawError}
+        </p>
+      )}
     </Modal>
   )
 }

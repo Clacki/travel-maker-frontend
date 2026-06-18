@@ -39,6 +39,10 @@ export const logout = async () => {
   await api.post(LOGOUT_PATH)
 }
 
+export const withdrawUser = async (reason: string): Promise<void> => {
+  await api.delete('/auth/withdraw', { data: { reason } })
+}
+
 export type AvatarUpdateResponse = {
   updated: boolean
 }
