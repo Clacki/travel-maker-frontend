@@ -19,7 +19,7 @@ const titleInfoStyle = css({
 })
 
 const titleStyle = css({
-  fontSize: '2xl',
+  fontSize: { base: 'xl', md: '2xl' },
   fontWeight: 'bold',
   color: 'text.primary',
 })

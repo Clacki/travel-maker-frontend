@@ -44,10 +44,10 @@ const cardStyle = css({
 
 const headerStyle = css({
   display: 'flex',
-  flexDirection: 'row',
+  flexDirection: { base: 'column', md: 'row' },
   justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  gap: '2',
+  alignItems: { base: 'flex-start', md: 'flex-start' },
+  gap: '3',
 })
 
 const descriptionStyle = css({

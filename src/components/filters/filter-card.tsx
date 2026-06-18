@@ -51,7 +51,8 @@ const cardWrapperStyle = css({
 const tabBarStyle = cva({
   base: {
     display: 'flex',
-    alignItems: 'center',
+    flexDir: { base: 'column', md: 'row' },
+    alignItems: { base: 'stretch', md: 'center' },
     justifyContent: 'space-between',
     gap: '2',
     px: '4',
@@ -179,6 +180,7 @@ const resultCountStyle = css({
 const buttonGroupStyle = css({
   display: 'flex',
   gap: '2',
+  justifyContent: { base: 'flex-end', md: 'flex-start' },
 })
 
 export function FilterCard({
@@ -360,7 +362,7 @@ export function FilterCard({
           placeholder={
             selectedItems.length > 0
               ? '검색어를 추가해보세요'
-              : '태그를 선택하거나 검색어를 입력해 여행지를 찾아보세요 ✈️'
+              : '태그 선택 또는 검색어 입력 ✈️'
           }
           className={css({
             flex: 1,
