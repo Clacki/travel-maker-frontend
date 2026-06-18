@@ -13,6 +13,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
+import { withdrawUser } from '@/features/auth/api/authApi'
 import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
@@ -53,6 +54,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const router = useRouter()
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const clearAuth = useAuthStore((state) => state.clearAuth)
   const {
     user,
     isOwner,
@@ -190,8 +192,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     router.push(`/profile/${userId}/edit`)
   }
 
-  const handleWithdraw = (_reason: string) => {
-    // TODO: 회원 탈퇴 API 연동
+  const handleWithdraw = async (reason: string) => {
+    await withdrawUser(reason)
+    clearAuth()
+    router.replace('/')
   }
 
   const handleTabChange = (tab: TabType) => {

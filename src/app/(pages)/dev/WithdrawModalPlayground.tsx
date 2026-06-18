@@ -16,7 +16,7 @@ export function WithdrawModalPlayground() {
       <WithdrawModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        onWithdraw={(reason) => console.log('withdraw', reason)}
+        onWithdraw={async (reason) => console.log('withdraw', reason)}
       />
     </>
   )
