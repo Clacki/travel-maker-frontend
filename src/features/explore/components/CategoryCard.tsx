@@ -113,7 +113,7 @@ export function CategoryCard({
             position: 'relative',
             flex: '0 0 80%',
             overflow: 'hidden',
-            rounded: 'lg',
+            rounded: '2xl',
           })}
         >
           <Image
