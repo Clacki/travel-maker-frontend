@@ -19,11 +19,8 @@ import {
   FILTER_TAG_TO_TAG_NAME,
 } from './constants'
 import { parseParams, getFilterChips } from './utils'
-import {
-  useExplorePlaces,
-  useTags,
-  getSelectedTagIds,
-} from './hooks/useExplorePlaces'
+import { useExplorePlaces } from './hooks/useExplorePlaces'
+import { useTags, getSelectedTagIds } from './hooks/useTags'
 import { useExploreSort } from './hooks/useExploreSort'
 import { useExploreHero } from './hooks/useExploreHero'
 import { ExploreHero } from './components/ExploreHero'
