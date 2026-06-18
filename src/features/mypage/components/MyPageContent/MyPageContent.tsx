@@ -132,7 +132,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     handleTripDeleteCancel,
     handleTripDeleteConfirm,
   } = useMyTrips({
-    enabled: isAuthInitialized && isLoggedIn,
+    enabled: isOwner && isAuthInitialized && isLoggedIn,
     isAuthInitialized,
     isLoggedIn,
     nickname: user.nickname,
