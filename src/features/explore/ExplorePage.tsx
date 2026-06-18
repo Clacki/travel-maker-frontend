@@ -126,7 +126,6 @@ function ExploreContent() {
     sort,
     keyword,
     categoryId,
-    selected,
     tags,
     pendingTag,
     isAuthInitialized,

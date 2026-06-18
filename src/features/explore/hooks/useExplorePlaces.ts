@@ -30,7 +30,6 @@ interface UseExplorePlacesParams {
   sort: SortKey
   keyword: string
   categoryId: string | null
-  selected: Record<string, string[]>
   tags: Tag[] | null
   pendingTag: string
   isAuthInitialized: boolean
@@ -43,7 +42,6 @@ export function useExplorePlaces({
   sort,
   keyword,
   categoryId,
-  selected,
   tags,
   pendingTag,
   isAuthInitialized,
