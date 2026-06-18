@@ -26,6 +26,7 @@ export function TravelCardImage({ src, alt }: TravelCardImageProps) {
       src={imgSrc}
       alt={alt}
       fill
+      sizes="(max-width: 768px) 100vw, 33vw"
       className={imageStyle}
       onError={() => setImgSrc(DEFAULT_IMAGE)}
     />

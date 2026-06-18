@@ -7,6 +7,7 @@ import { css, cx } from '@/styled-system/css'
 import { buttonRecipe } from '@/components/common/button/Button'
 import { patchUserAvatar } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 
 interface AvatarButtonProps {
   travelTypeId: number
@@ -39,7 +40,12 @@ export function AvatarButton({ travelTypeId }: AvatarButtonProps) {
 
     try {
       const result = await patchUserAvatar(travelTypeId)
-      setStatus(result.updated ? 'success' : 'error')
+      if (result.updated) {
+        await loadCurrentUserProfile()
+        setStatus('success')
+      } else {
+        setStatus('error')
+      }
       setTimeout(() => setStatus('idle'), 2000)
     } catch (error) {
       console.error('프로필 이미지 지정 실패:', error)

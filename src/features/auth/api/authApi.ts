@@ -50,7 +50,7 @@ export type AvatarUpdateResponse = {
 export const patchUserAvatar = async (
   travelTypeId: number
 ): Promise<AvatarUpdateResponse> => {
-  const response = await api.patch<AvatarUpdateResponse>('/users/avatar/', {
+  const response = await api.patch<AvatarUpdateResponse>('/users/avatar', {
     travel_type_id: travelTypeId,
   })
   return response.data
