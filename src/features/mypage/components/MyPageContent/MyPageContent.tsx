@@ -19,6 +19,7 @@ import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
 import { useMyReviews } from '../../hooks/useMyReviews'
+import { useMyTrips } from '../../hooks/useMyTrips'
 import { useMyTravelTypeResult } from '../../hooks/useMyTravelTypeResult'
 import { MyBookmarksSection } from '../MyBookmarksSection'
 import { MyReviewsSection } from '../MyReviewsSection'
@@ -117,6 +118,13 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     isAuthInitialized,
     isLoggedIn,
     targetUserId: isOwner ? undefined : user.id,
+  })
+
+  const { trips, tripCount } = useMyTrips({
+    enabled: activeTab === 'trip',
+    isAuthInitialized,
+    isLoggedIn,
+    nickname: user.nickname,
   })
 
   const travelTypeResultState = useMyTravelTypeResult({
@@ -233,7 +241,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           isMyProfile={isOwner}
           bookmarkCount={bookmarkCount}
           reviewCount={displayedReviewCount}
-          tripCount={0}
+          tripCount={tripCount}
           activeTab={activeTab}
           onTabChange={handleTabChange}
         />
@@ -268,7 +276,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
         {activeTab === 'trip' && (
           <MyTripsSection
-            trips={[]}
+            trips={trips}
             canManage={isOwner}
             onCreateTrip={() => router.push(ROUTES.TRIP_CREATE)}
           />
