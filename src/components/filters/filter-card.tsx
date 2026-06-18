@@ -51,10 +51,9 @@ const cardWrapperStyle = css({
 const tabBarStyle = cva({
   base: {
     display: 'flex',
-    flexDir: { base: 'column', md: 'row' },
-    alignItems: { base: 'stretch', md: 'center' },
-    justifyContent: 'space-between',
-    gap: '2',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: { base: '1', sm: '2' },
     px: '4',
     py: '3',
     bg: 'bg.canvas',
@@ -79,13 +78,14 @@ const tabButtonStyle = cva({
     display: 'flex',
     alignItems: 'center',
     gap: '1',
-    px: '4',
+    px: { base: '2', sm: '4' },
     py: '2',
     borderRadius: 'sm',
-    fontSize: 'sm',
+    fontSize: { base: 'xs', sm: 'sm' },
     fontWeight: 'semibold',
     cursor: 'pointer',
     border: 'none',
+    flexShrink: 0,
     transitionProperty: 'background-color, color',
     transitionDuration: '150ms',
     _focusVisible: { outline: 'none', boxShadow: 'focus' },
@@ -177,10 +177,11 @@ const resultCountStyle = css({
   fontWeight: 'bold',
 })
 
-const buttonGroupStyle = css({
+const actionGroupStyle = css({
   display: 'flex',
   gap: '2',
-  justifyContent: { base: 'flex-end', md: 'flex-start' },
+  marginLeft: 'auto',
+  flexShrink: 0,
 })
 
 export function FilterCard({
@@ -329,7 +330,7 @@ export function FilterCard({
               px: '3',
               py: '1',
               borderRadius: 'pill',
-              display: 'flex',
+              display: { base: 'none', sm: 'flex' },
               alignItems: 'center',
               gap: '1',
               flexShrink: 0,
@@ -400,31 +401,39 @@ export function FilterCard({
 
       <div className={css({ position: 'relative' })}>
         <div className={tabBarStyle({ isExpanded: !!activeSection })}>
-          <div className={css({ display: 'flex', flexWrap: 'wrap', gap: '2' })}>
-            {sections.map((section) => {
-              const isActive = activeSection === section.id
-              const sectionCount = (selected[section.id] || []).length
+          {sections.map((section) => {
+            const isActive = activeSection === section.id
+            const sectionCount = (selected[section.id] || []).length
+            const shortLabel = section.label.split(' ').at(-1) ?? section.label
 
-              return (
-                <button
-                  key={section.id}
-                  type="button"
-                  onClick={() => handleTabClick(section.id)}
-                  className={tabButtonStyle({ isActive })}
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => handleTabClick(section.id)}
+                className={tabButtonStyle({ isActive })}
+              >
+                <span>{section.icon}</span>
+                <span
+                  className={css({ display: { base: 'none', sm: 'inline' } })}
                 >
-                  <span>{section.icon}</span>
                   {section.label}
-                  {sectionCount > 0 && (
-                    <span className={badgeCountStyle({ isActive })}>
-                      {sectionCount}
-                    </span>
-                  )}
-                  {isActive && <ChevronDown size={12} />}
-                </button>
-              )
-            })}
-          </div>
-          <div className={buttonGroupStyle}>
+                </span>
+                <span
+                  className={css({ display: { base: 'inline', sm: 'none' } })}
+                >
+                  {shortLabel}
+                </span>
+                {sectionCount > 0 && (
+                  <span className={badgeCountStyle({ isActive })}>
+                    {sectionCount}
+                  </span>
+                )}
+                {isActive && <ChevronDown size={12} />}
+              </button>
+            )
+          })}
+          <div className={actionGroupStyle}>
             <Button variant="neutral" size="sm" onClick={handleReset}>
               초기화
             </Button>
