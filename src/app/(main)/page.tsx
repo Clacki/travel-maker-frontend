@@ -17,13 +17,24 @@ const cardPositions = [
 
 // md(768px~1023px): column 레이아웃에서 카드 섹션 500px 안에 수용되도록 top 값 조정
 const mdCardPositions = [
-  { left: '0%', top: '40%', rotate: -22, zIndex: 1 },
-  { left: '12%', top: '4%', rotate: -13, zIndex: 2 },
-  { left: '26%', top: '38%', rotate: -5, zIndex: 7 },
-  { left: '40%', top: '2%', rotate: 3, zIndex: 6 },
-  { left: '54%', top: '36%', rotate: 10, zIndex: 5 },
-  { left: '67%', top: '3%', rotate: 17, zIndex: 4 },
-  { left: '78%', top: '40%', rotate: 23, zIndex: 3 },
+  { left: '0%', top: '24%', rotate: -22, zIndex: 1 },
+  { left: '12%', top: '2%', rotate: -13, zIndex: 2 },
+  { left: '26%', top: '22%', rotate: -5, zIndex: 7 },
+  { left: '40%', top: '0%', rotate: 3, zIndex: 6 },
+  { left: '54%', top: '20%', rotate: 10, zIndex: 5 },
+  { left: '67%', top: '1%', rotate: 17, zIndex: 4 },
+  { left: '78%', top: '24%', rotate: 23, zIndex: 3 },
+]
+
+// sm(<768px): column 레이아웃에서 카드 섹션 400px 안에 수용되도록 top 값 조정
+const smCardPositions = [
+  { left: '0%', top: '36%', rotate: -22, zIndex: 1 },
+  { left: '12%', top: '8%', rotate: -13, zIndex: 2 },
+  { left: '26%', top: '34%', rotate: -5, zIndex: 7 },
+  { left: '40%', top: '6%', rotate: 3, zIndex: 6 },
+  { left: '54%', top: '32%', rotate: 10, zIndex: 5 },
+  { left: '67%', top: '7%', rotate: 17, zIndex: 4 },
+  { left: '78%', top: '36%', rotate: 23, zIndex: 3 },
 ]
 
 export default function Home() {
@@ -147,6 +158,7 @@ export default function Home() {
                 index={index}
                 style={cardPositions[index]}
                 mdStyle={mdCardPositions[index]}
+                smStyle={smCardPositions[index]}
               />
             ))}
         </section>
