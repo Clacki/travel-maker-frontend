@@ -8,7 +8,6 @@ import {
   getPlacesRecommend,
   getPlacesSearch,
 } from '../api/placesApi'
-import { getTags } from '../api/tagsApi'
 import { postBookmark, deleteBookmark } from '@/features/mypage/api/bookmarkApi'
 import {
   useProfileStore,
@@ -22,8 +21,6 @@ import {
   ITEMS_PER_PAGE,
   SORT_API_MAP,
   FILTER_TAG_TO_TAG_NAME,
-  STYLE_TO_CATEGORY,
-  CATEGORY_TO_TAG_NAME,
   type SortKey,
 } from '../constants'
 
@@ -33,7 +30,6 @@ interface UseExplorePlacesParams {
   sort: SortKey
   keyword: string
   categoryId: string | null
-  selected: Record<string, string[]>
   tags: Tag[] | null
   pendingTag: string
   isAuthInitialized: boolean
@@ -46,7 +42,6 @@ export function useExplorePlaces({
   sort,
   keyword,
   categoryId,
-  selected,
   tags,
   pendingTag,
   isAuthInitialized,
@@ -192,46 +187,4 @@ export function useExplorePlaces({
   }
 
   return { places, totalCount, isLoading, handleLikeToggle }
-}
-
-export function useTags() {
-  const [tags, setTags] = useState<Tag[] | null>(null)
-
-  useEffect(() => {
-    getTags()
-      .then(setTags)
-      .catch(() => setTags([]))
-  }, [])
-
-  return tags
-}
-
-export function getSelectedTagIds(
-  selected: Record<string, string[]>,
-  categoryId: string | null,
-  tags: Tag[] | null
-) {
-  const tagNameToId = new Map((tags ?? []).map((t) => [t.tag_name, t.id]))
-  const ids: number[] = []
-
-  const styleValues = (selected.style ?? []).filter((s) => s !== 'all')
-  for (const s of styleValues) {
-    const cat = STYLE_TO_CATEGORY[s] ?? s
-    const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[cat] ?? '')
-    if (id !== undefined) ids.push(id)
-  }
-
-  for (const section of ['theme', 'companion', 'region', 'facility']) {
-    for (const v of selected[section] ?? []) {
-      const id = tagNameToId.get(FILTER_TAG_TO_TAG_NAME[v] ?? '')
-      if (id !== undefined) ids.push(id)
-    }
-  }
-
-  if (ids.length === 0 && categoryId) {
-    const id = tagNameToId.get(CATEGORY_TO_TAG_NAME[categoryId] ?? '')
-    if (id !== undefined) return [id]
-  }
-
-  return ids
 }
