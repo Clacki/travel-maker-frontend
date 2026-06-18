@@ -67,9 +67,9 @@ export function QuizSection() {
     resetQuiz,
     setCalculatedResult,
     setApiResult,
+    setApiError,
   } = useQuizStore()
-  const [isLoading, setIsLoading] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [isNavigating, setIsNavigating] = useState(false)
 
   useEffect(() => {
     resetQuiz()
@@ -86,36 +86,39 @@ export function QuizSection() {
     }
   }, [currentIndex, isLast])
 
-  async function handleNext() {
-    if (selectedChoice === null) return
+  function handleNext() {
+    if (selectedChoice === null || isNavigating) {
+      return
+    }
     if (isLast) {
-      // goNext 호출 전에 finalAnswers를 직접 구성
-      // C1: 동일 질문에 대한 기존 답변을 필터링해 중복 제출 방지
       const currentAnswers = useQuizStore.getState().answers
       const finalAnswers: QuizAnswer[] = [
         ...currentAnswers.filter((a) => a.questionId !== question.id),
         { questionId: question.id, selected: selectedChoice },
       ]
-      setCalculatedResult(finalAnswers)
 
-      setIsLoading(true)
-      try {
-        const response = await postQuizSubmit(finalAnswers)
-        setApiResult(response)
-        setIsLoading(false)
-        goNext(question.id, TOTAL_QUESTIONS)
-        router.push(ROUTES.TEST_RESULT)
-      } catch (error) {
-        console.error('퀴즈 제출 API 실패, 로컬 결과로 진행:', error)
-        setIsLoading(false)
-        setSubmitError(
-          '결과 저장에 실패했어요. 잠시 후 결과 페이지로 이동합니다.'
-        )
-        setTimeout(() => {
-          goNext(question.id, TOTAL_QUESTIONS)
-          router.push(ROUTES.TEST_RESULT)
-        }, 2000)
-      }
+      // 1. 로컬에서 타입 즉시 계산
+      setCalculatedResult(finalAnswers)
+      const localTypeKey = useQuizStore.getState().typeKey
+
+      // 2. 결과 페이지로 즉시 이동 (API 응답 대기 없음)
+      setIsNavigating(true)
+      goNext(question.id, TOTAL_QUESTIONS)
+      router.push(
+        localTypeKey
+          ? `${ROUTES.TEST_RESULT}?type=${localTypeKey}`
+          : ROUTES.TEST_RESULT
+      )
+
+      // 3. API는 백그라운드에서 호출 → 스토어 업데이트 → 결과 페이지 자동 갱신
+      postQuizSubmit(finalAnswers)
+        .then((response) => {
+          setApiResult(response)
+        })
+        .catch(() => {
+          setApiError()
+        })
+
       return
     }
     goNext(question.id, TOTAL_QUESTIONS)
@@ -151,23 +154,9 @@ export function QuizSection() {
         </div>
       </div>
 
-      {submitError && (
-        <p
-          className={css({
-            fontSize: 'sm',
-            color: 'text.secondary',
-            textAlign: 'center',
-          })}
-        >
-          {submitError}
-        </p>
-      )}
-
       <QuizNavigation
         currentIndex={currentIndex}
-        canGoNext={
-          selectedChoice !== null && !isLoading && submitError === null
-        }
+        canGoNext={selectedChoice !== null && !isNavigating}
         isLast={isLast}
         onPrev={goPrev}
         onNext={handleNext}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { css } from '@/styled-system/css'
@@ -9,14 +9,28 @@ import { ROUTES } from '@/constants/routes'
 import {
   TRAVEL_TYPE_MAP,
   TYPE_KEY_ORDER,
+  COMPASS_AXES_CONFIG,
 } from '@/features/result/result.constants'
 import {
   buildCompassAxes,
   buildDescription,
 } from '@/features/result/quizCalculator'
 import type { TypeKey } from '@/features/result/quizCalculator'
-import type { RelatedTravelType } from '@/features/result/result.types'
+import type {
+  CompassAxis,
+  RelatedTravelType,
+} from '@/features/result/result.types'
+import type {
+  QuizSubmitResponse,
+  ResultVectorItem,
+} from '@/features/result/quizSubmit.types'
+import {
+  readSessionResultCache,
+  subscribeSessionResultCache,
+} from '@/features/result/sessionResultCache'
 import { useQuizStore } from '@/store/quizStore'
+
+import { ErrorState } from '@/components/common/status/ErrorState'
 
 import { CompassSection } from './CompassSection'
 import { CtaSection } from './CtaSection'
@@ -41,7 +55,9 @@ function isValidTypeKey(key: string): key is TypeKey {
 function normalizeRelatedType(
   type: RelatedTravelType | null
 ): TypeCompatibilityCardData | null {
-  if (!type) return null
+  if (!type) {
+    return null
+  }
   return {
     id: type.travel_type_id,
     typeKey: type.type_key,
@@ -52,22 +68,47 @@ function normalizeRelatedType(
   }
 }
 
-/** W8: API result_vector JSON 문자열을 숫자 배열로 파싱 */
-function parseApiResultVector(raw: string | undefined | null): number[] | null {
-  if (!raw) return null
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    return Array.isArray(parsed) ? (parsed as number[]) : null
-  } catch {
+/**
+ * submit API의 result_vector({ label, value }[])를 RadarChart용 CompassAxis[]로 변환.
+ * COMPASS_AXES_CONFIG 꼭짓점 순서에 맞게 정렬해 반환한다.
+ * label이 하나라도 매핑 안 되면 null 반환 → buildDefaultCompassAxes 폴백.
+ */
+function buildCompassAxesFromApiVector(
+  items: ResultVectorItem[] | null | undefined
+): CompassAxis[] | null {
+  if (!items?.length) {
     return null
   }
+
+  // badge → config 역방향 맵 (label은 string이므로 Map 키를 string으로 선언)
+  const badgeToConfig = new Map<string, (typeof COMPASS_AXES_CONFIG)[number]>(
+    COMPASS_AXES_CONFIG.flatMap((cfg) => [
+      [cfg.trueBadge, cfg],
+      [cfg.falseBadge, cfg],
+    ])
+  )
+
+  const subjectToAxis = new Map<string, CompassAxis>()
+  for (const item of items) {
+    const cfg = badgeToConfig.get(item.label)
+    if (cfg) {
+      subjectToAxis.set(cfg.subject, {
+        subject: cfg.subject,
+        badge: item.label,
+        value: item.value,
+      })
+    }
+  }
+
+  // COMPASS_AXES_CONFIG 순서(꼭짓점 배치 순서)로 정렬
+  const axes = COMPASS_AXES_CONFIG.map((cfg) =>
+    subjectToAxis.get(cfg.subject)
+  ).filter((a): a is CompassAxis => a !== undefined)
+
+  return axes.length === COMPASS_AXES_CONFIG.length ? axes : null
 }
 
-function buildRecommendedDestinations(
-  apiResult:
-    | import('@/features/result/quizSubmit.types').QuizSubmitResponse
-    | null
-) {
+function buildRecommendedDestinations(apiResult: QuizSubmitResponse | null) {
   return (apiResult?.destinations ?? []).map((d) => ({
     id: String(d.place_id),
     imageSrc: d.image_url ?? undefined,
@@ -78,27 +119,25 @@ function buildRecommendedDestinations(
   }))
 }
 
-/** W9: 컴포넌트 바깥에서 결과 뷰모델을 순수 함수로 계산 */
 function buildResultViewModel(
-  apiResult:
-    | import('@/features/result/quizSubmit.types').QuizSubmitResponse
-    | null,
+  apiResult: QuizSubmitResponse | null,
   storeTypeKey: TypeKey | null,
   resultVector: number[] | null,
   effectiveTypeKey: TypeKey
 ) {
   const typeData = TRAVEL_TYPE_MAP[effectiveTypeKey]
 
-  const parsedApiVector = parseApiResultVector(apiResult?.result_vector)
-  const effectiveVector =
-    parsedApiVector ?? resultVector ?? buildDefaultVector(effectiveTypeKey)
+  // submit API result_vector({ label, value }[]) → CompassAxis[] 변환
+  // 실패 시 buildDefaultVector 폴백
+  const compassAxes =
+    buildCompassAxesFromApiVector(apiResult?.result_vector) ??
+    buildCompassAxes(buildDefaultVector(effectiveTypeKey))
 
   const description =
     apiResult?.description ??
     (resultVector
       ? buildDescription(resultVector)
       : typeData.traits[0].description)
-  const compassAxes = buildCompassAxes(effectiveVector)
   const typeIndex = TYPE_KEY_ORDER[effectiveTypeKey]
   const typeLabel = `TYPE · ${String(typeIndex).padStart(2, '0')} / 08`
 
@@ -106,10 +145,8 @@ function buildResultViewModel(
   // fallback인 typeIndex(1~8)는 TYPE_KEY_ORDER 순서와 백엔드 DB ID가 일치한다고 가정.
   const effectiveTravelTypeId = apiResult?.travel_type_id ?? typeIndex
 
-  // 퀴즈를 완료했으나 API 실패로 destinations를 받지 못한 경우
-  const isDestinationsFailed = storeTypeKey !== null && apiResult === null
-
-  const thumbnailSrc = apiResult?.image_url || typeData.imageSrc
+  // API image_url만 사용. 없으면 undefined → ResultCard에서 /thumbnail-default.svg 처리
+  const thumbnailSrc = apiResult?.image_url ?? undefined
   const keywords = apiResult?.type_tags ?? typeData.tags
   // name: API 우선 → TRAVEL_TYPE_MAP 폴백
   const typeName = apiResult?.name ?? typeData.name
@@ -148,7 +185,6 @@ function buildResultViewModel(
 
   return {
     effectiveTravelTypeId,
-    isDestinationsFailed,
     recommendedDestinations,
     compatibleCard,
     incompatibleCard,
@@ -163,10 +199,8 @@ function buildResultViewModel(
       matchScore: apiResult?.accuracy,
       typeRank: typeIndex,
       compassData: {
-        centerImageSrc: typeData.imageSrc,
-        centerLabel: typeName,
         axes: compassAxes,
-        reading: buildDescription(effectiveVector),
+        reading: description,
         traits,
       },
       allTypes,
@@ -176,8 +210,25 @@ function buildResultViewModel(
 }
 
 export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
-  const { resultVector, typeKey: storeTypeKey, apiResult } = useQuizStore()
+  const {
+    resultVector,
+    typeKey: storeTypeKey,
+    apiResult: storeApiResult,
+    apiError,
+  } = useQuizStore()
   const router = useRouter()
+
+  // sessionStorage에서 이 타입의 결과를 복원 (store가 비어있을 때 사용)
+  // server snapshot = null → hydration mismatch 방지
+  // subscribeSessionResultCache → writeSessionResultCache 호출 시 리렌더 트리거
+  const sessionKey = sharedTypeKey ?? storeTypeKey ?? ''
+  const cachedApiResult = useSyncExternalStore(
+    subscribeSessionResultCache,
+    () => readSessionResultCache(sessionKey),
+    () => null
+  )
+
+  const apiResult = storeApiResult ?? cachedApiResult
 
   // type_key: API 우선 → 로컬 계산 → sharedTypeKey 순으로 폴백
   const effectiveTypeKey =
@@ -199,7 +250,6 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
 
   const {
     effectiveTravelTypeId,
-    isDestinationsFailed,
     recommendedDestinations,
     compatibleCard,
     incompatibleCard,
@@ -220,23 +270,12 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
           destinations={recommendedDestinations}
           typeName={result.typeName}
         />
-      ) : isDestinationsFailed ? (
-        <div
-          className={css({
-            w: 'full',
-            py: '12',
-            display: 'flex',
-            justifyContent: 'center',
-          })}
-        >
-          <p
-            className={css({
-              fontSize: 'sm',
-              color: 'text.secondary',
-            })}
-          >
-            추천 여행지를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
-          </p>
+      ) : apiError ? (
+        <div className={css({ w: 'full', py: '12' })}>
+          <ErrorState
+            title="결과를 불러오지 못했어요"
+            description="추천 여행지와 궁합 정보를 가져오는 데 실패했습니다. 잠시 후 다시 시도해 주세요."
+          />
         </div>
       ) : null}
       <TypeCompatibilitySection

@@ -27,8 +27,10 @@ export function ShareButton({ typeKey }: ShareButtonProps) {
           url: shareUrl,
         })
         return
-      } catch {
-        // 사용자가 공유 취소하거나 미지원 시 클립보드 복사로 폴백
+      } catch (err) {
+        // 사용자가 직접 취소한 경우(AbortError)는 폴백 없이 조용히 종료
+        if (err instanceof DOMException && err.name === 'AbortError') return
+        // 그 외 오류(미지원, 권한 등)는 클립보드 복사로 폴백
       }
     }
 

@@ -1,5 +1,10 @@
 import type { RelatedTravelType } from '@/features/result/result.types'
 
+export type ResultVectorItem = {
+  label: string
+  value: number
+}
+
 export type QuizSubmitRequest = {
   answers: ('A' | 'B')[]
 }
@@ -26,8 +31,7 @@ export type QuizSubmitResponse = {
   description: string
   image_url: string
   type_tags: string[]
-  /** API에서 JSON 문자열로 반환됨. 사용 시 JSON.parse() 필요 */
-  result_vector: string
+  result_vector: ResultVectorItem[]
   accuracy: number
   detail_cards: QuizSubmitDetailCard[]
   destinations: QuizSubmitDestination[]

@@ -18,10 +18,6 @@ export type CompassData = {
   axes: CompassAxis[]
   reading: string
   traits: CompassTrait[]
-  /** 그래프 중앙 타입 이미지 경로 */
-  centerImageSrc: string
-  /** 그래프 중앙 하단 필 라벨 */
-  centerLabel: string
 }
 
 export type RecommendedDestination = {
@@ -59,7 +55,7 @@ export type TestResultResponse = {
   typeNameEn: string
   typeLabel: string
   description: string
-  thumbnailSrc: string
+  thumbnailSrc?: string
   keywords: string[]
   /** API에서 제공되지 않으므로 optional. 표시 시 조건부 렌더링 필요 */
   matchScore?: number

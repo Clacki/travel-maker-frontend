@@ -124,11 +124,7 @@ export function CompassSection({ compassData }: CompassSectionProps) {
         {/* Chart + Traits + Reading */}
         <div className={contentStyle}>
           <div className={chartAreaStyle}>
-            <RadarChart
-              axes={compassData.axes}
-              centerImageSrc={compassData.centerImageSrc}
-              centerLabel={compassData.centerLabel}
-            />
+            <RadarChart axes={compassData.axes} />
           </div>
 
           <div className={rightAreaStyle}>

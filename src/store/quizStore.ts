@@ -6,6 +6,10 @@ import {
   type TypeKey,
 } from '@/features/result/quizCalculator'
 import type { QuizSubmitResponse } from '@/features/result/quizSubmit.types'
+import {
+  writeSessionResultCache,
+  clearSessionResultCache,
+} from '@/features/result/sessionResultCache'
 import type { QuizAnswer } from '@/features/test/quiz.types'
 
 type QuizStore = {
@@ -18,6 +22,8 @@ type QuizStore = {
   typeKey: TypeKey | null
   /** API 응답 결과. 성공 시 저장됨 */
   apiResult: QuizSubmitResponse | null
+  /** 백그라운드 API 호출 실패 여부 */
+  apiError: boolean
   selectChoice: (choice: 'A' | 'B') => void
   goNext: (questionId: number, totalQuestions: number) => void
   goPrev: () => void
@@ -25,6 +31,7 @@ type QuizStore = {
   /** 퀴즈 완료 시 answers로 result_vector와 type_key를 계산해 저장한다 */
   setCalculatedResult: (answers: QuizAnswer[]) => void
   setApiResult: (result: QuizSubmitResponse) => void
+  setApiError: () => void
 }
 
 export const useQuizStore = create<QuizStore>((set) => ({
@@ -34,6 +41,7 @@ export const useQuizStore = create<QuizStore>((set) => ({
   resultVector: null,
   typeKey: null,
   apiResult: null,
+  apiError: false,
 
   selectChoice: (choice) => set({ selectedChoice: choice }),
 
@@ -79,7 +87,8 @@ export const useQuizStore = create<QuizStore>((set) => ({
       }
     }),
 
-  resetQuiz: () =>
+  resetQuiz: () => {
+    clearSessionResultCache()
     set({
       currentIndex: 0,
       answers: [],
@@ -87,7 +96,9 @@ export const useQuizStore = create<QuizStore>((set) => ({
       resultVector: null,
       typeKey: null,
       apiResult: null,
-    }),
+      apiError: false,
+    })
+  },
 
   setCalculatedResult: (answers) => {
     const vector = calculateResultVector(answers)
@@ -95,5 +106,10 @@ export const useQuizStore = create<QuizStore>((set) => ({
     set({ resultVector: vector, typeKey: key })
   },
 
-  setApiResult: (result) => set({ apiResult: result }),
+  setApiResult: (result) => {
+    writeSessionResultCache(result.type_key, result)
+    set({ apiResult: result })
+  },
+
+  setApiError: () => set({ apiError: true }),
 }))
