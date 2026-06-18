@@ -93,7 +93,7 @@ export function CategoryCard({
           flexDir: 'column',
           w: { base: '140px', md: '165px', lg: '180px' },
           h: { base: '196px', md: '231px', lg: '252px' },
-          rounded: 'lg',
+          rounded: '2xl',
           bg: 'bg.surface',
           pt: '8px',
           px: '8px',
