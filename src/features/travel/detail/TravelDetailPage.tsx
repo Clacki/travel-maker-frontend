@@ -1,3 +1,4 @@
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { PageLayout } from '@/components/layout/PageLayout'
 import Breadcrumb from './components/Breadcrumb'
 import GallerySectionContainer from './components/GallerySectionContainer'
@@ -18,7 +19,6 @@ const pageStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '8',
-  animation: 'blurIn 0.6s ease-out',
 })
 
 const contentGridStyle = css({
@@ -43,25 +43,30 @@ export default function TravelDetailPage({
   highlightedTags,
 }: TravelDetailPageProps) {
   return (
-    <PageLayout>
-      <div className={pageStyle}>
-        <Breadcrumb placeName={detail.place_name} />
+    <PageFadeIn>
+      <PageLayout>
+        <div className={pageStyle}>
+          <Breadcrumb placeName={detail.place_name} />
 
-        <div className={contentGridStyle}>
-          <GallerySectionContainer images={detail.images} placeId={detail.id} />
-
-          <div className={rightColumnStyle}>
-            <InfoCard detail={detail} highlightedTags={highlightedTags} />
-            <MapSectionClient
-              name={detail.place_name}
-              latitude={detail.latitude}
-              longitude={detail.longitude}
+          <div className={contentGridStyle}>
+            <GallerySectionContainer
+              images={detail.images}
+              placeId={detail.id}
             />
-          </div>
-        </div>
 
-        <ReviewsSection placeId={detail.id} />
-      </div>
-    </PageLayout>
+            <div className={rightColumnStyle}>
+              <InfoCard detail={detail} highlightedTags={highlightedTags} />
+              <MapSectionClient
+                name={detail.place_name}
+                latitude={detail.latitude}
+                longitude={detail.longitude}
+              />
+            </div>
+          </div>
+
+          <ReviewsSection placeId={detail.id} />
+        </div>
+      </PageLayout>
+    </PageFadeIn>
   )
 }

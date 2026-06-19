@@ -1,3 +1,4 @@
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { LayoutContainer } from '@/components/layout'
 import type { TripCourseDetail } from './types/tripDetail'
 import { SimilarTripCourses } from './components/SimilarTripCourses'
@@ -54,30 +55,32 @@ interface TripDetailPageProps {
 
 export function TripDetailPage({ trip }: TripDetailPageProps) {
   return (
-    <main className={pageStyle}>
-      <LayoutContainer>
-        <div className={stackStyle}>
-          <TripDetailHero trip={trip} />
-          <TripSummaryBar trip={trip} />
+    <PageFadeIn>
+      <main className={pageStyle}>
+        <LayoutContainer>
+          <div className={stackStyle}>
+            <TripDetailHero trip={trip} />
+            <TripSummaryBar trip={trip} />
 
-          <section className={contentBlockStyle} aria-labelledby="map-title">
-            <div className={sectionHeadingStyle}>
-              <span className={sectionEyebrowStyle}>COURSE MAP</span>
-              <h2 id="map-title" className={sectionTitleStyle}>
-                지도 미리보기
-              </h2>
-              <p className={sectionDescriptionStyle}>
-                장소 순서와 이동 흐름을 지도에서 확인하세요.
-              </p>
-            </div>
-            <TripMapPreview trip={trip} />
-          </section>
+            <section className={contentBlockStyle} aria-labelledby="map-title">
+              <div className={sectionHeadingStyle}>
+                <span className={sectionEyebrowStyle}>COURSE MAP</span>
+                <h2 id="map-title" className={sectionTitleStyle}>
+                  지도 미리보기
+                </h2>
+                <p className={sectionDescriptionStyle}>
+                  장소 순서와 이동 흐름을 지도에서 확인하세요.
+                </p>
+              </div>
+              <TripMapPreview trip={trip} />
+            </section>
 
-          <TripDayItinerary trip={trip} />
-          <TripDetailActions trip={trip} />
-          <SimilarTripCourses trip={trip} />
-        </div>
-      </LayoutContainer>
-    </main>
+            <TripDayItinerary trip={trip} />
+            <TripDetailActions trip={trip} />
+            <SimilarTripCourses trip={trip} />
+          </div>
+        </LayoutContainer>
+      </main>
+    </PageFadeIn>
   )
 }

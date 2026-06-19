@@ -13,6 +13,7 @@ import { useExploreSort } from './hooks/useExploreSort'
 import { useExploreHero } from './hooks/useExploreHero'
 import { useExploreParams } from './hooks/useExploreParams'
 import { useExploreTagNames } from './hooks/useExploreTagNames'
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { ExploreHero } from './components/ExploreHero'
 import { ExploreSortDropdown } from './components/ExploreSortDropdown'
 import { ExploreGrid } from './components/ExploreGrid'
@@ -96,66 +97,68 @@ function ExploreContent() {
   const hasFilter = filterChips.length > 0
 
   return (
-    <main className={css({ minH: '100vh', bg: 'bg.canvas' })}>
-      <ExploreHero
-        bgImage={bgImage}
-        heroTitle={heroTitle}
-        heroDesc={heroDesc}
-      />
+    <PageFadeIn>
+      <main className={css({ minH: '100vh', bg: 'bg.canvas' })}>
+        <ExploreHero
+          bgImage={bgImage}
+          heroTitle={heroTitle}
+          heroDesc={heroDesc}
+        />
 
-      <section
-        className={css({
-          px: 6,
-          py: 4,
-          borderBottom: '1px solid',
-          borderColor: 'border',
-          bg: 'bg.canvas',
-        })}
-      >
-        <div className={css({ maxW: '7xl', mx: 'auto' })}>
-          <FilterCard
-            key={filterKey}
-            sections={travelFilterSections}
-            initialSelected={filterInitialSelected}
-            resultCount={totalCount}
-            onApply={applyFilters}
-            onReset={clearAllFilters}
-            onChange={handleFilterChange}
-            searchValue={searchInput}
-            onSearchChange={setSearchInput}
-          />
-        </div>
-      </section>
+        <section
+          className={css({
+            px: 6,
+            py: 4,
+            borderBottom: '1px solid',
+            borderColor: 'border',
+            bg: 'bg.canvas',
+          })}
+        >
+          <div className={css({ maxW: '7xl', mx: 'auto' })}>
+            <FilterCard
+              key={filterKey}
+              sections={travelFilterSections}
+              initialSelected={filterInitialSelected}
+              resultCount={totalCount}
+              onApply={applyFilters}
+              onReset={clearAllFilters}
+              onChange={handleFilterChange}
+              searchValue={searchInput}
+              onSearchChange={setSearchInput}
+            />
+          </div>
+        </section>
 
-      <ExploreSortDropdown
-        sort={sort}
-        isOpen={isDropdownOpen}
-        isLoggedIn={isLoggedIn}
-        dropdownRef={dropdownRef}
-        onToggle={() => setIsDropdownOpen((prev) => !prev)}
-        onSelect={handleSortSelect}
-        totalCount={totalCount}
-        hasFilter={hasFilter}
-      />
+        <ExploreSortDropdown
+          sort={sort}
+          isOpen={isDropdownOpen}
+          isLoggedIn={isLoggedIn}
+          dropdownRef={dropdownRef}
+          onToggle={() => setIsDropdownOpen((prev) => !prev)}
+          onSelect={handleSortSelect}
+          totalCount={totalCount}
+          hasFilter={hasFilter}
+        />
 
-      <ExploreGrid
-        gridRef={gridRef}
-        places={places}
-        isLoading={isLoading}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        selectedTagNames={effectiveTagNames}
-        sort={sort}
-        onLikeToggle={handleLikeToggle}
-        onPageChange={goToPage}
-        onClearFilters={clearAllFilters}
-      />
+        <ExploreGrid
+          gridRef={gridRef}
+          places={places}
+          isLoading={isLoading}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          selectedTagNames={effectiveTagNames}
+          sort={sort}
+          onLikeToggle={handleLikeToggle}
+          onPageChange={goToPage}
+          onClearFilters={clearAllFilters}
+        />
 
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-      />
-    </main>
+        <LoginModal
+          isOpen={isLoginModalOpen}
+          onClose={() => setIsLoginModalOpen(false)}
+        />
+      </main>
+    </PageFadeIn>
   )
 }
 

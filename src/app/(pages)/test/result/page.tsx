@@ -1,3 +1,4 @@
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { ResultPage } from './_components/ResultPage'
 
 export const metadata = {
@@ -13,5 +14,9 @@ export default async function TestResultPage({
 }: TestResultPageProps) {
   const { type, type_key, vector } = await searchParams
   const effectiveTypeKey = type_key ?? type
-  return <ResultPage sharedTypeKey={effectiveTypeKey} sharedVector={vector} />
+  return (
+    <PageFadeIn>
+      <ResultPage sharedTypeKey={effectiveTypeKey} sharedVector={vector} />
+    </PageFadeIn>
+  )
 }
