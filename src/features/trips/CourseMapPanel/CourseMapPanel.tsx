@@ -10,7 +10,10 @@ import { LoginModal } from '@/components/auth/LoginModal'
 import { Button } from '@/components/common/button/Button'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import { MAX_PLACES_PER_DAY } from '@/features/trips/types/course.types'
+import {
+  MAX_PLACES_PER_DAY,
+  MAX_TRIP_DAYS,
+} from '@/features/trips/types/course.types'
 import {
   postRoute,
   patchRoute,
@@ -391,13 +394,32 @@ export function CourseMapPanel({
       .filter((d) => d.place_ids.length > 0)
   }
 
-  // 일차별 장소 수 제약 검증 (API: 1~5개)
+  // dateRange로부터 총 일수 계산
+  const calcTotalDays = (range: typeof dateRange): number => {
+    if (!range?.from) {
+      return 1
+    }
+    if (!range.to) {
+      return 1
+    }
+    const diff = Math.ceil(
+      (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
+    )
+    return Math.min(Math.max(1, diff + 1), MAX_TRIP_DAYS)
+  }
+
+  // 일차별 장소 필수 입력 + 최대 개수 검증
   const validateDays = (
-    days: { day_index: number; place_ids: number[] }[]
+    days: { day_index: number; place_ids: number[] }[],
+    totalDays: number
   ): string | null => {
-    for (const day of days) {
+    for (let i = 1; i <= totalDays; i++) {
+      const day = days.find((d) => d.day_index === i)
+      if (!day || day.place_ids.length === 0) {
+        return `${i}일차에 장소를 최소 1개 이상 추가해주세요.`
+      }
       if (day.place_ids.length > MAX_PLACES_PER_DAY) {
-        return `${day.day_index}일차 장소는 최대 ${MAX_PLACES_PER_DAY}개까지 등록할 수 있습니다.`
+        return `${i}일차 장소는 최대 ${MAX_PLACES_PER_DAY}개까지 등록할 수 있습니다.`
       }
     }
     return null
@@ -418,7 +440,7 @@ export function CourseMapPanel({
       .filter((id): id is number => id !== undefined)
 
     const days = buildDays()
-    const dayError = validateDays(days)
+    const dayError = validateDays(days, calcTotalDays(dateRange))
     if (dayError) {
       setCreateError(dayError)
       return null
@@ -522,11 +544,17 @@ export function CourseMapPanel({
     }
   }
 
+  const totalDays = calcTotalDays(dateRange)
+  const everyDayHasPlace = Array.from(
+    { length: totalDays },
+    (_, i) => i + 1
+  ).every((day) => places.some((p) => p.dayIndex === day))
   const isValid =
     title.trim().length > 0 &&
     selectedRegion !== null &&
     dateRange?.from !== undefined &&
-    places.length >= 2
+    places.length >= 2 &&
+    everyDayHasPlace
 
   const isSaveEnabled = mode === 'edit' ? isDirty && isValid : isValid
   const isSaveDisabled =
@@ -545,7 +573,7 @@ export function CourseMapPanel({
             <p className={mapTitleStyle}>지도 영역</p>
             <p className={mapSubtitleStyle}>{headerTitle}</p>
           </div>
-          <span className={mapBadgeStyle}>카카오맵</span>
+          <span className={mapBadgeStyle}>지도보기</span>
         </div>
 
         {/* 지도 영역 */}

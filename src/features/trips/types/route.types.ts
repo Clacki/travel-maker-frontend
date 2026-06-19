@@ -28,7 +28,6 @@ export type RouteDetail = {
   theme_tags: string[]
   start_date: string
   end_date: string
-  like_count: number
   created_at: string
   days: RouteDetailDay[]
 }
@@ -62,7 +61,7 @@ export type PatchRouteResponse = {
 }
 
 export type RouteListParams = {
-  ordering?: 'latest' | 'popular'
+  ordering?: 'latest'
   page?: number
   page_size?: number
   region_tag_id?: number

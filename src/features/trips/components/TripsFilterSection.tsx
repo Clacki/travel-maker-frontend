@@ -8,14 +8,9 @@ import { Pagination } from '@/components/ui/Pagination/Pagination'
 import { toTripCourse } from '../types/trip'
 import { getRoutes } from '../api/routesApi'
 import { TripCourseCard } from './TripCourseCard'
-import type { TripCourse, TripSortOption } from '../types/trip'
+import type { TripCourse } from '../types/trip'
 import type { Tag } from '@/types/tag.types'
 import { css } from '@/styled-system/css'
-
-const SORT_OPTIONS: { label: string; value: TripSortOption }[] = [
-  { label: '최신순', value: 'latest' },
-  { label: '인기순', value: 'popular' },
-]
 
 const ALL_FILTER = '전체'
 
@@ -58,38 +53,9 @@ const chipGroupStyle = css({
   gap: { base: '2', md: '3' },
 })
 
-const sortRowStyle = css({
-  display: 'flex',
-  alignItems: { base: 'flex-start', md: 'center' },
-  justifyContent: 'space-between',
-  flexDirection: { base: 'column', md: 'row' },
-  gap: '4',
-})
-
 const countTextStyle = css({
   color: 'text.secondary',
   fontSize: 'sm',
-})
-
-const sortSelectStyle = css({
-  minH: '9',
-  px: '4',
-  borderWidth: '1px',
-  borderColor: 'border.subtle',
-  borderRadius: 'pill',
-  bg: 'bg.surface',
-  color: 'text.primary',
-  fontSize: 'sm',
-  fontWeight: 'semibold',
-  transitionProperty: 'border-color, box-shadow',
-  transitionDuration: '150ms',
-  _hover: {
-    borderColor: 'primary',
-  },
-  _focusVisible: {
-    outline: 'none',
-    boxShadow: 'focus',
-  },
 })
 
 const gridStyle = css({
@@ -137,14 +103,13 @@ export function TripsFilterSection({
 }: TripsFilterSectionProps) {
   const [region, setRegion] = useState(ALL_FILTER)
   const [theme, setTheme] = useState(ALL_FILTER)
-  const [sort, setSort] = useState<TripSortOption>('latest')
   const [currentPage, setCurrentPage] = useState(1)
 
   const [courses, setCourses] = useState<TripCourse[]>(initialCourses)
   const [totalCount, setTotalCount] = useState(initialTotalCount)
   const [isLoading, setIsLoading] = useState(false)
 
-  // 초기 상태(필터 없음, 최신순, 1페이지)는 서버에서 받은 데이터를 그대로 쓴다.
+  // 초기 상태(필터 없음, 1페이지)는 서버에서 받은 데이터를 그대로 쓴다.
   const isInitialState = useRef(true)
   const requestId = useRef(0)
 
@@ -171,7 +136,7 @@ export function TripsFilterSection({
     const themeTagId = theme === ALL_FILTER ? undefined : themeTagMap.get(theme)
 
     getRoutes({
-      ordering: sort,
+      ordering: 'latest',
       page: currentPage,
       page_size: pageSize,
       region_tag_id: regionTagId,
@@ -197,7 +162,7 @@ export function TripsFilterSection({
         }
         setIsLoading(false)
       })
-  }, [region, theme, sort, currentPage, pageSize, regionTagMap, themeTagMap])
+  }, [region, theme, currentPage, pageSize, regionTagMap, themeTagMap])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
@@ -211,15 +176,9 @@ export function TripsFilterSection({
     setCurrentPage(1)
   }
 
-  const changeSort = (nextSort: TripSortOption) => {
-    setSort(nextSort)
-    setCurrentPage(1)
-  }
-
   const resetFilters = () => {
     setRegion(ALL_FILTER)
     setTheme(ALL_FILTER)
-    setSort('latest')
     setCurrentPage(1)
   }
 
@@ -265,23 +224,7 @@ export function TripsFilterSection({
           </div>
         </div>
 
-        <div className={sortRowStyle}>
-          <p className={countTextStyle}>총 {totalCount}개의 여행 코스</p>
-          <select
-            aria-label="정렬"
-            className={sortSelectStyle}
-            value={sort}
-            onChange={(event) =>
-              changeSort(event.target.value as TripSortOption)
-            }
-          >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <p className={countTextStyle}>총 {totalCount}개의 여행 코스</p>
       </div>
 
       {courses.length > 0 ? (

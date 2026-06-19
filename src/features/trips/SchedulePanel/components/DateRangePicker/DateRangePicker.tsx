@@ -353,7 +353,6 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
 
               setPendingFrom(null)
               onChange({ from, to })
-              setOpen(false)
             }}
             classNames={calendarClassNames}
           />

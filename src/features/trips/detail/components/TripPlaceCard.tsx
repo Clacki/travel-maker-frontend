@@ -21,6 +21,7 @@ const cardStyle = css({
 const imageWrapStyle = css({
   position: 'relative',
   minH: { base: '180px', md: '140px' },
+  maxH: { base: '180px', md: '140px' },
   overflow: 'hidden',
   borderRadius: 'md',
   bg: 'bg.muted',
