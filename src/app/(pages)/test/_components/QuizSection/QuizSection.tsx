@@ -86,15 +86,16 @@ export function QuizSection() {
     }
   }, [currentIndex, isLast])
 
-  function handleNext() {
-    if (selectedChoice === null || isNavigating) {
-      return
-    }
+  function handleCardClick(choice: 'A' | 'B') {
+    if (isNavigating) return
+
+    selectChoice(choice)
+
     if (isLast) {
       const currentAnswers = useQuizStore.getState().answers
       const finalAnswers: QuizAnswer[] = [
         ...currentAnswers.filter((a) => a.questionId !== question.id),
-        { questionId: question.id, selected: selectedChoice },
+        { questionId: question.id, selected: choice },
       ]
 
       // 1. 로컬에서 타입 즉시 계산
@@ -141,7 +142,7 @@ export function QuizSection() {
               side="A"
               isSelected={selectedChoice === 'A'}
               priority={currentIndex === 0}
-              onClick={() => selectChoice('A')}
+              onClick={() => handleCardClick('A')}
             />
           </div>
           <div className={css({ w: '50%', maxW: '472px' })}>
@@ -150,18 +151,12 @@ export function QuizSection() {
               side="B"
               isSelected={selectedChoice === 'B'}
               priority={currentIndex === 0}
-              onClick={() => selectChoice('B')}
+              onClick={() => handleCardClick('B')}
             />
           </div>
         </div>
 
-        <QuizNavigation
-          currentIndex={currentIndex}
-          canGoNext={selectedChoice !== null && !isNavigating}
-          isLast={isLast}
-          onPrev={goPrev}
-          onNext={handleNext}
-        />
+        <QuizNavigation currentIndex={currentIndex} onPrev={goPrev} />
       </div>
     </>
   )
