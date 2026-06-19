@@ -1,6 +1,6 @@
 import type {
-  BookmarkItem,
   ReviewItem,
+  UserBookmarkPlace,
   UserProfile,
 } from '@/types/mypage.types'
 
@@ -44,11 +44,12 @@ export const mockOtherProfile: UserProfile = {
   updated_at: '2026-01-01T00:00:00',
 }
 
-export const mockBookmarks: BookmarkItem[] = Array.from(
+export const mockBookmarks: UserBookmarkPlace[] = Array.from(
   { length: 100 },
   (_, i) => ({
     place_id: i + 1,
     place_name: '부산 광안리 야경',
+    description: '',
     image_url: '',
     rating: 4.5,
     created_at: '2026-05-22T12:00:00',
@@ -66,4 +67,4 @@ export const mockReviews: ReviewItem[] = Array.from({ length: 20 }, (_, i) => ({
   updated_at: '2026-05-22T12:00:00',
 }))
 
-export const mockEmptyBookmarks: BookmarkItem[] = []
+export const mockEmptyBookmarks: UserBookmarkPlace[] = []

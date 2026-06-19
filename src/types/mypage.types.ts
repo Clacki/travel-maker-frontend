@@ -21,12 +21,20 @@ export type PublicUserProfile = Omit<
   is_following: boolean
 }
 
-export type BookmarkItem = {
+export interface UserBookmarkPlace {
   place_id: number
   place_name: string
+  description: string
   image_url: string
   rating: number
   created_at: string
+}
+
+export interface UserBookmarksResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: UserBookmarkPlace[]
 }
 
 export type ReviewItem = {
