@@ -94,7 +94,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     bookmarkPage,
     bookmarkTotalPages,
     isBookmarkLoading,
-    paginatedBookmarks,
+    bookmarks,
     setBookmarkPage,
     handleLikeToggle,
   } = useMyBookmarks()
@@ -261,7 +261,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
           {activeTab === 'bookmark' && (
             <MyBookmarksSection
-              bookmarks={paginatedBookmarks}
+              bookmarks={bookmarks}
               currentPage={bookmarkPage}
               totalPages={bookmarkTotalPages}
               isLoading={isBookmarkLoading}

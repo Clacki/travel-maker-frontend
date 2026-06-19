@@ -1,9 +1,18 @@
 import api from '@/lib/api'
-import type { BookmarkItem } from '@/types/mypage.types'
+import type { UserBookmarksResponse } from '@/types/mypage.types'
 
 // 북마크 목록 조회
-export async function getBookmarks(): Promise<BookmarkItem[]> {
-  const response = await api.get<BookmarkItem[]>('/bookmarks/')
+export interface GetUserBookmarksParams {
+  page?: number
+  page_size?: number
+}
+
+export async function getUserBookmarks(
+  params: GetUserBookmarksParams = {}
+): Promise<UserBookmarksResponse> {
+  const response = await api.get<UserBookmarksResponse>('/users/bookmarks', {
+    params,
+  })
   return response.data
 }
 

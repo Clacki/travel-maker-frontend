@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
+import type { UserBookmarksResponse } from '@/types/mypage.types'
 
-import { deleteBookmark, getBookmarks } from '../api/bookmarkApi'
-import type { BookmarkResponseItem } from '../types/mypage'
+import { deleteBookmark, getUserBookmarks } from '../api/bookmarkApi'
 
 const BOOKMARK_PAGE_SIZE = 8
 
@@ -16,21 +16,21 @@ export function useMyBookmarks() {
 
   const [bookmarkResult, setBookmarkResult] = useState<{
     key: string
-    items: BookmarkResponseItem[]
+    data: UserBookmarksResponse
   } | null>(null)
   const [bookmarkPage, setBookmarkPage] = useState(1)
 
   const fetchKey = `${currentUserId ?? 'unknown'}:${accessToken ?? 'none'}`
+  const requestKey = `${fetchKey}:${bookmarkPage}`
   const canFetchBookmarks = isAuthInitialized && isLoggedIn && !!accessToken
-  const bookmarks = useMemo(
-    () =>
-      canFetchBookmarks && bookmarkResult?.key === fetchKey
-        ? bookmarkResult.items
-        : [],
-    [bookmarkResult, canFetchBookmarks, fetchKey]
-  )
+  const bookmarkData =
+    canFetchBookmarks && bookmarkResult?.key === requestKey
+      ? bookmarkResult.data
+      : null
+  const bookmarks = bookmarkData?.results ?? []
+  const bookmarkCount = bookmarkData?.count ?? 0
   const isBookmarkLoading =
-    canFetchBookmarks && bookmarkResult?.key !== fetchKey
+    canFetchBookmarks && bookmarkResult?.key !== requestKey
 
   useEffect(() => {
     if (!canFetchBookmarks) {
@@ -39,59 +39,66 @@ export function useMyBookmarks() {
 
     let cancelled = false
 
-    getBookmarks()
+    getUserBookmarks({ page: bookmarkPage, page_size: BOOKMARK_PAGE_SIZE })
       .then((data) => {
         if (!cancelled) {
           setBookmarkResult({
-            key: fetchKey,
-            items: data as unknown as BookmarkResponseItem[],
+            key: requestKey,
+            data,
           })
         }
       })
       .catch((error) => {
         console.error('Failed to load bookmarks', error)
         if (!cancelled) {
-          setBookmarkResult({ key: fetchKey, items: [] })
+          setBookmarkResult({
+            key: requestKey,
+            data: { count: 0, next: null, previous: null, results: [] },
+          })
         }
       })
 
     return () => {
       cancelled = true
     }
-  }, [canFetchBookmarks, fetchKey])
+  }, [bookmarkPage, canFetchBookmarks, requestKey])
 
-  const handleLikeToggle = useCallback(async (placeId: number) => {
-    try {
-      await deleteBookmark(placeId)
-      setBookmarkResult((prev) =>
-        prev
-          ? {
-              ...prev,
-              items: prev.items.filter((item) => item.place.id !== placeId),
-            }
-          : prev
-      )
-    } catch (error) {
-      console.error('Failed to delete bookmark', error)
-    }
-  }, [])
+  const handleLikeToggle = useCallback(
+    async (placeId: number) => {
+      try {
+        await deleteBookmark(placeId)
+        setBookmarkResult((prev) => {
+          if (!prev || prev.key !== requestKey) {
+            return prev
+          }
 
-  const paginatedBookmarks = useMemo(
-    () =>
-      bookmarks.slice(
-        (bookmarkPage - 1) * BOOKMARK_PAGE_SIZE,
-        bookmarkPage * BOOKMARK_PAGE_SIZE
-      ),
-    [bookmarkPage, bookmarks]
+          return {
+            ...prev,
+            data: {
+              ...prev.data,
+              count: Math.max(0, prev.data.count - 1),
+              results: prev.data.results.filter(
+                (place) => place.place_id !== placeId
+              ),
+            },
+          }
+        })
+        if (bookmarks.length === 1 && bookmarkPage > 1) {
+          setBookmarkPage((page) => page - 1)
+        }
+      } catch (error) {
+        console.error('Failed to delete bookmark', error)
+      }
+    },
+    [bookmarkPage, bookmarks.length, requestKey]
   )
 
   return {
     bookmarks,
-    bookmarkCount: bookmarks.length,
+    bookmarkCount,
     bookmarkPage,
-    bookmarkTotalPages: Math.ceil(bookmarks.length / BOOKMARK_PAGE_SIZE),
+    bookmarkTotalPages: Math.ceil(bookmarkCount / BOOKMARK_PAGE_SIZE),
     isBookmarkLoading,
-    paginatedBookmarks,
     setBookmarkPage,
     handleLikeToggle,
   }
