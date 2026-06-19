@@ -6,6 +6,7 @@ import { isAxiosError } from 'axios'
 
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Button } from '@/components/common/button'
+import { css } from '@/styled-system/css'
 import { ReviewModal } from '@/components/common/ReviewModal/ReviewModal'
 import type { ReviewSubmitPayload } from '@/components/common/ReviewModal'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
@@ -17,6 +18,7 @@ import {
 interface ReviewWriteButtonProps {
   placeId: number
   onSuccess?: () => void
+  hasMyReview?: boolean
 }
 
 function getCreateReviewErrorMessage(error: unknown) {
@@ -46,6 +48,7 @@ function getCreateReviewErrorMessage(error: unknown) {
 export default function ReviewWriteButton({
   placeId,
   onSuccess,
+  hasMyReview = false,
 }: ReviewWriteButtonProps) {
   const router = useRouter()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -148,10 +151,11 @@ export default function ReviewWriteButton({
     <>
       <Button
         aria-busy={!isAuthInitialized}
-        disabled={!isAuthInitialized}
+        disabled={!isAuthInitialized || hasMyReview}
         onClick={handleClick}
         size="sm"
         variant="outline"
+        className={hasMyReview ? css({ opacity: 0.45 }) : undefined}
       >
         리뷰 쓰기
       </Button>
