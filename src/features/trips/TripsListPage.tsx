@@ -22,23 +22,21 @@ const contentStyle = css({
 const PAGE_SIZE = 9
 
 export async function TripsListPage() {
-  const [routeResult, popularResult, regionTags, themeTags] = await Promise.all(
-    [
-      getRoutes({ page: 1, page_size: PAGE_SIZE, ordering: 'latest' }).catch(
-        () => ({ items: [], totalCount: 0 })
-      ),
-      getRoutes({ page: 1, page_size: 1, ordering: 'latest' }).catch(() => ({
-        items: [],
-        totalCount: 0,
-      })),
-      getRegionTags().catch((): Tag[] => []),
-      getThemeTags().catch((): Tag[] => []),
-    ]
-  )
+  const [routeResult, latestResult, regionTags, themeTags] = await Promise.all([
+    getRoutes({ page: 1, page_size: PAGE_SIZE, ordering: 'latest' }).catch(
+      () => ({ items: [], totalCount: 0 })
+    ),
+    getRoutes({ page: 1, page_size: 1, ordering: 'latest' }).catch(() => ({
+      items: [],
+      totalCount: 0,
+    })),
+    getRegionTags().catch((): Tag[] => []),
+    getThemeTags().catch((): Tag[] => []),
+  ])
 
   const courses = routeResult.items.map(toTripCourse)
-  const featuredCourse = popularResult.items[0]
-    ? toTripCourse(popularResult.items[0])
+  const featuredCourse = latestResult.items[0]
+    ? toTripCourse(latestResult.items[0])
     : courses[0]
 
   return (
