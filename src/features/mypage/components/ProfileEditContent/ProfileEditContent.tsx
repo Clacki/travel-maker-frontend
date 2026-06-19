@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Pencil, User } from 'lucide-react'
 import { isAxiosError } from 'axios'
 import { css } from '@/styled-system/css'
 import { Button } from '@/components/common/button'
+import { ErrorState, LoadingState } from '@/components/common/status'
+import { Toast } from '@/components/common/Toast/Toast'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 import {
@@ -17,20 +19,22 @@ import {
 import {
   mapProfileTagIdsToApiTagIds,
   mapProfileTagIdsToUserTags,
+  mapUserTagsToProfileTagIds,
   PROFILE_TAG_LIMIT,
   profileInterestTags,
 } from '../../lib/profile-tags'
-import {
-  getDefaultEditableProfile,
-  useProfileStore,
-} from '@/store/profileStore'
-
-interface ProfileEditContentProps {
-  userId: string
-}
+import { useProfileStore } from '@/store/profileStore'
+import type { EditableProfile } from '@/store/profileStore'
 
 const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_PROFILE_IMAGE_SIZE = 5 * 1024 * 1024
+const MAX_NICKNAME_LENGTH = 14
+const MAX_BIO_LENGTH = 100
+
+type InitialProfile = EditableProfile & {
+  id: string
+  profileImageUrl: string | null
+}
 
 type ApiErrorDetailResponse = {
   error_detail?: Record<string, string[] | string>
@@ -198,7 +202,19 @@ const labelStyle = css({
   display: 'block',
   fontSize: 'xs',
   color: 'text.secondary',
+})
+
+const fieldHeaderStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '2',
   mb: '1',
+})
+
+const characterCountStyle = css({
+  fontSize: 'xs',
+  color: 'text.secondary',
 })
 
 const fieldPanelStyle = css({
@@ -322,20 +338,25 @@ const footerStyle = css({
   mt: '8',
 })
 
-export function ProfileEditContent({ userId }: ProfileEditContentProps) {
+export function ProfileEditContent() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const nicknameCheckRequestRef = useRef(0)
+  const navigationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const userProfile = useUserProfileStore((state) => state.userProfile)
   const setUserProfile = useUserProfileStore((state) => state.setUserProfile)
-  const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
-  const savedProfile = useProfileStore((state) =>
-    state.getProfile(userId, fallbackProfile)
-  )
   const saveProfile = useProfileStore((state) => state.saveProfile)
 
   const [nickname, setNickname] = useState('')
-  const [bio, setBio] = useState(savedProfile.bio)
-  const [selectedTags, setSelectedTags] = useState(savedProfile.tagIds)
+  const [bio, setBio] = useState('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [initialProfile, setInitialProfile] = useState<InitialProfile | null>(
+    null
+  )
+  const [profileLoadStatus, setProfileLoadStatus] = useState<
+    'loading' | 'ready' | 'error'
+  >('loading')
+  const [profileLoadAttempt, setProfileLoadAttempt] = useState(0)
   const [nicknameStatus, setNicknameStatus] = useState<
     'idle' | 'checking' | 'available' | 'unavailable' | 'error'
   >('idle')
@@ -351,32 +372,87 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     'idle' | 'submitting' | 'error'
   >('idle')
   const [submitError, setSubmitError] = useState('')
+  const [toastVisible, setToastVisible] = useState(false)
 
-  const savedProfileTags = mapProfileTagIdsToUserTags(savedProfile.tagIds)
+  const displayedProfileTags = mapProfileTagIdsToUserTags(selectedTags)
   const isTagLimitReached = selectedTags.length >= PROFILE_TAG_LIMIT
-  const currentNickname = userProfile?.nickname ?? savedProfile.nickname
   const currentProfileImageUrl =
-    profileImagePreviewUrl || userProfile?.profileImageUrl || ''
-  const nextNickname = nickname.trim() || currentNickname
-  const isNicknameChanged = nextNickname !== currentNickname
+    profileImagePreviewUrl || initialProfile?.profileImageUrl || ''
+  const nextNickname = nickname.trim()
+  const isNicknameChanged = Boolean(
+    initialProfile && nextNickname !== initialProfile.nickname
+  )
   const isNicknameCheckRequired =
     isNicknameChanged && nicknameStatus !== 'available'
+  const areTagsChanged = Boolean(
+    initialProfile &&
+    [...selectedTags].sort().join(',') !==
+      [...initialProfile.tagIds].sort().join(',')
+  )
+  const isDirty = Boolean(
+    initialProfile &&
+    (isNicknameChanged ||
+      bio.trim() !== initialProfile.bio ||
+      areTagsChanged ||
+      selectedProfileImageFile)
+  )
   const isSubmitDisabled =
+    profileLoadStatus !== 'ready' ||
     imageUploadStatus === 'uploading' ||
     submitStatus === 'submitting' ||
     nicknameStatus === 'checking' ||
     isNicknameCheckRequired ||
-    !nextNickname
+    !nextNickname ||
+    !isDirty
+
+  useEffect(() => {
+    let cancelled = false
+
+    loadCurrentUserProfile()
+      .then((profile) => {
+        if (cancelled) {
+          return
+        }
+
+        const nextProfile: InitialProfile = {
+          id: profile.id,
+          nickname: profile.nickname,
+          bio: profile.bio ?? '',
+          tagIds: mapUserTagsToProfileTagIds(profile.tags ?? []),
+          profileImageUrl: profile.profileImageUrl ?? null,
+        }
+
+        setInitialProfile(nextProfile)
+        setNickname(nextProfile.nickname)
+        setBio(nextProfile.bio)
+        setSelectedTags(nextProfile.tagIds)
+        setProfileLoadStatus('ready')
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setProfileLoadStatus('error')
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [profileLoadAttempt])
 
   useEffect(() => {
     return () => {
       if (profileImagePreviewUrl) {
         URL.revokeObjectURL(profileImagePreviewUrl)
       }
+      if (navigationTimerRef.current) {
+        clearTimeout(navigationTimerRef.current)
+      }
     }
   }, [profileImagePreviewUrl])
 
   const handleTagToggle = (tagId: string) => {
+    setSubmitStatus('idle')
+    setSubmitError('')
     setSelectedTags((prev) => {
       if (prev.includes(tagId)) {
         return prev.filter((t) => t !== tagId)
@@ -391,6 +467,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   }
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    nicknameCheckRequestRef.current += 1
     setNickname(e.target.value)
     setNicknameStatus('idle')
     setNicknameError('')
@@ -400,14 +477,21 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
 
   const handleCheckDuplicate = async () => {
     const trimmed = nickname.trim()
-    if (!trimmed) return
+    if (!trimmed || trimmed === initialProfile?.nickname) return
 
     setNicknameStatus('checking')
     setNicknameError('')
+    const requestId = ++nicknameCheckRequestRef.current
     try {
       const { available } = await checkNickname(trimmed)
+      if (requestId !== nicknameCheckRequestRef.current) {
+        return
+      }
       setNicknameStatus(available ? 'available' : 'unavailable')
     } catch (error) {
+      if (requestId !== nicknameCheckRequestRef.current) {
+        return
+      }
       setNicknameStatus('error')
       setNicknameError(
         getNicknameErrorMessage(error) ??
@@ -457,6 +541,10 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
       return
     }
 
+    if (!initialProfile) {
+      return
+    }
+
     const nextProfile = {
       nickname: nextNickname,
       bio: bio.trim(),
@@ -469,7 +557,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     setNicknameError('')
 
     try {
-      let nextProfileImageUrl = userProfile?.profileImageUrl ?? undefined
+      let nextProfileImageUrl = initialProfile.profileImageUrl ?? undefined
 
       if (selectedProfileImageFile) {
         setImageUploadStatus('uploading')
@@ -513,19 +601,16 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         nickname: nextProfile.nickname,
         bio: nextProfile.bio,
         tags: mapProfileTagIdsToApiTagIds(nextProfile.tagIds),
-        ...(nextProfileImageUrl
+        ...(selectedProfileImageFile && nextProfileImageUrl
           ? { profile_image_url: nextProfileImageUrl }
           : {}),
       })
       const updatedProfileImageUrl =
-        updatedProfile.profile_image_url ??
-        updatedProfile.profile_img_url ??
-        nextProfileImageUrl ??
-        null
+        updatedProfile.profile_img_url ?? nextProfileImageUrl ?? null
 
-      saveProfile(userId, nextProfile)
+      saveProfile(initialProfile.id, nextProfile)
       setUserProfile({
-        id: userProfile?.id ?? userId,
+        id: userProfile?.id ?? initialProfile.id,
         nickname: updatedProfile.nickname,
         email: userProfile?.email,
         bio: updatedProfile.bio,
@@ -534,9 +619,13 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         followingCount: userProfile?.followingCount,
         bookmarkCount: userProfile?.bookmarkCount,
         reviewCount: userProfile?.reviewCount,
+        tags: updatedProfile.tags,
       })
-      void loadCurrentUserProfile()
-      router.push(`/profile/${userId}`)
+      await loadCurrentUserProfile().catch(() => undefined)
+      setToastVisible(true)
+      navigationTimerRef.current = setTimeout(() => {
+        router.push(`/profile/${initialProfile.id}`)
+      }, 800)
     } catch (error) {
       const nicknameErrorMessage = getNicknameErrorMessage(error)
 
@@ -553,7 +642,41 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   }
 
   const handleCancel = () => {
+    if (
+      isDirty &&
+      !window.confirm('변경사항이 저장되지 않습니다. 프로필 수정을 취소할까요?')
+    ) {
+      return
+    }
+
     router.back()
+  }
+
+  if (profileLoadStatus === 'loading') {
+    return (
+      <div className={containerStyle}>
+        <LoadingState
+          title="프로필 정보를 불러오는 중이에요"
+          description="잠시만 기다려주세요."
+        />
+      </div>
+    )
+  }
+
+  if (profileLoadStatus === 'error') {
+    return (
+      <div className={containerStyle}>
+        <ErrorState
+          title="프로필 정보를 불러오지 못했어요"
+          description="잠시 후 다시 시도해주세요."
+          actionLabel="다시 시도"
+          onAction={() => {
+            setProfileLoadStatus('loading')
+            setProfileLoadAttempt((attempt) => attempt + 1)
+          }}
+        />
+      </div>
+    )
   }
 
   return (
@@ -601,13 +724,11 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
           <p className={errorTextStyle}>{imageUploadError}</p>
         )}
         <span className={typeNameStyle}>
-          {userProfile?.nickname ?? savedProfile.nickname}
+          {nickname || initialProfile?.nickname}
         </span>
-        {savedProfile.bio && (
-          <p className={bioPreviewStyle}>{savedProfile.bio}</p>
-        )}
+        {bio && <p className={bioPreviewStyle}>{bio}</p>}
         <div className={typeTagRowStyle}>
-          {savedProfileTags.map((tag) => (
+          {displayedProfileTags.map((tag) => (
             <span key={tag.id} className={typeTagStyle}>
               #{tag.name}
             </span>
@@ -619,9 +740,14 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         <h2 className={sectionTitleStyle}>기본 정보</h2>
         <div className={fieldPanelStyle}>
           <div>
-            <label className={labelStyle} htmlFor="profile-nickname">
-              닉네임
-            </label>
+            <div className={fieldHeaderStyle}>
+              <label className={labelStyle} htmlFor="profile-nickname">
+                닉네임
+              </label>
+              <span className={characterCountStyle}>
+                {nickname.length}/{MAX_NICKNAME_LENGTH}
+              </span>
+            </div>
             <div className={inputRowStyle}>
               <input
                 id="profile-nickname"
@@ -629,14 +755,18 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
                 className={inputStyle}
                 value={nickname}
                 onChange={handleNicknameChange}
-                maxLength={20}
+                maxLength={MAX_NICKNAME_LENGTH}
                 placeholder="닉네임을 입력하세요"
               />
               <Button
                 variant="outline"
                 shape="rounded"
                 onClick={() => void handleCheckDuplicate()}
-                disabled={nicknameStatus === 'checking' || !nickname.trim()}
+                disabled={
+                  nicknameStatus === 'checking' ||
+                  !nickname.trim() ||
+                  nickname.trim() === initialProfile?.nickname
+                }
               >
                 {nicknameStatus === 'checking' ? '확인 중...' : '중복 확인'}
               </Button>
@@ -656,15 +786,24 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
           </div>
 
           <div>
-            <label className={labelStyle} htmlFor="profile-bio">
-              한줄소개
-            </label>
+            <div className={fieldHeaderStyle}>
+              <label className={labelStyle} htmlFor="profile-bio">
+                한줄소개
+              </label>
+              <span className={characterCountStyle}>
+                {bio.length}/{MAX_BIO_LENGTH}
+              </span>
+            </div>
             <textarea
               id="profile-bio"
               className={textareaStyle}
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              maxLength={50}
+              onChange={(e) => {
+                setBio(e.target.value)
+                setSubmitStatus('idle')
+                setSubmitError('')
+              }}
+              maxLength={MAX_BIO_LENGTH}
               placeholder="한줄소개를 입력하세요"
             />
           </div>
@@ -714,6 +853,7 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
         </Button>
       </div>
       {submitError && <p className={errorTextStyle}>{submitError}</p>}
+      <Toast message="프로필이 수정되었습니다." visible={toastVisible} />
     </div>
   )
 }
