@@ -357,7 +357,6 @@ export function FilterCard({
           </span>
         ))}
         <input
-          autoFocus
           value={searchValue}
           onChange={(e) => onSearchChange?.(e.target.value)}
           placeholder={
