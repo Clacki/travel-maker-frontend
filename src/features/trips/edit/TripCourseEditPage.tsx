@@ -9,6 +9,7 @@ import {
 import { ScheduleCard } from '@/features/trips/SchedulePanel/SchedulePanel'
 import CourseMapPanel from '@/features/trips/CourseMapPanel'
 import { PlaceSearchSection } from '@/features/trips/CourseMapPanel/components/PlaceSearchSection'
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { useCourseStore } from '@/store/tripsStore'
 
@@ -69,37 +70,39 @@ export function TripCourseEditPage({ route }: TripCourseEditPageProps) {
   }, [route.route_id])
 
   return (
-    <div className={pageStyle}>
-      <LayoutContainer>
-        <div className={headerStyle}>
-          <div className={pageBadgeStyle}>
-            <span className={badgeDotStyle} />
-            코스 에디터
+    <PageFadeIn>
+      <div className={pageStyle}>
+        <LayoutContainer>
+          <div className={headerStyle}>
+            <div className={pageBadgeStyle}>
+              <span className={badgeDotStyle} />
+              코스 에디터
+            </div>
+            <h1 className={pageTitleStyle}>여행 코스 수정하기</h1>
+            <p className={pageSubtitleStyle}>
+              기존 여행 코스를 수정하고, 일정에 맞춰 코스를 업데이트해보세요.
+            </p>
           </div>
-          <h1 className={pageTitleStyle}>여행 코스 수정하기</h1>
-          <p className={pageSubtitleStyle}>
-            기존 여행 코스를 수정하고, 일정에 맞춰 코스를 업데이트해보세요.
-          </p>
-        </div>
 
-        <div className={bodyStyle}>
-          <div className={leftPanelStyle}>
-            <CourseInfoCard />
-            <ScheduleCard />
-            <CoursePlaceCard />
-          </div>
-          <div className={rightPanelStyle}>
-            <CourseMapPanel
-              mode="edit"
-              tripId={route.route_id.toString()}
-              ownerId={route.user_id}
-            />
-            <div className={searchWrapperStyle}>
-              <PlaceSearchSection />
+          <div className={bodyStyle}>
+            <div className={leftPanelStyle}>
+              <CourseInfoCard />
+              <ScheduleCard />
+              <CoursePlaceCard />
+            </div>
+            <div className={rightPanelStyle}>
+              <CourseMapPanel
+                mode="edit"
+                tripId={route.route_id.toString()}
+                ownerId={route.user_id}
+              />
+              <div className={searchWrapperStyle}>
+                <PlaceSearchSection />
+              </div>
             </div>
           </div>
-        </div>
-      </LayoutContainer>
-    </div>
+        </LayoutContainer>
+      </div>
+    </PageFadeIn>
   )
 }

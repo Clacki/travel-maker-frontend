@@ -1,3 +1,4 @@
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { TripsHeroBanner } from './components/TripsHeroBanner'
 import { FeaturedTripCourse } from './components/FeaturedTripCourse'
@@ -40,18 +41,20 @@ export async function TripsListPage() {
     : courses[0]
 
   return (
-    <div className={pageStyle}>
-      <LayoutContainer className={contentStyle}>
-        <TripsHeroBanner />
-        {featuredCourse && <FeaturedTripCourse course={featuredCourse} />}
-        <TripsFilterSection
-          initialCourses={courses}
-          initialTotalCount={routeResult.totalCount}
-          regionTags={regionTags}
-          themeTags={themeTags}
-          pageSize={PAGE_SIZE}
-        />
-      </LayoutContainer>
-    </div>
+    <PageFadeIn>
+      <div className={pageStyle}>
+        <LayoutContainer className={contentStyle}>
+          <TripsHeroBanner />
+          {featuredCourse && <FeaturedTripCourse course={featuredCourse} />}
+          <TripsFilterSection
+            initialCourses={courses}
+            initialTotalCount={routeResult.totalCount}
+            regionTags={regionTags}
+            themeTags={themeTags}
+            pageSize={PAGE_SIZE}
+          />
+        </LayoutContainer>
+      </div>
+    </PageFadeIn>
   )
 }

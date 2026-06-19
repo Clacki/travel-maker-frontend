@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 
+import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { QuizSection } from './_components/QuizSection/QuizSection'
 
 export const metadata: Metadata = {
@@ -8,5 +9,9 @@ export const metadata: Metadata = {
 }
 
 export default function TestPage() {
-  return <QuizSection />
+  return (
+    <PageFadeIn>
+      <QuizSection />
+    </PageFadeIn>
+  )
 }
