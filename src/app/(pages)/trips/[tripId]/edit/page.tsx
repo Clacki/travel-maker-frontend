@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 
 import { getRouteDetail } from '@/features/trips/api/routesApi'
 import { TripCourseEditPage } from '@/features/trips/edit/TripCourseEditPage'
+import { TripEditAuthGate } from '@/features/trips/edit/TripEditAuthGate'
 
 import type { Metadata } from 'next'
 
@@ -28,5 +29,9 @@ export default async function TripEditPage({ params }: TripEditPageProps) {
     notFound()
   }
 
-  return <TripCourseEditPage route={route} />
+  return (
+    <TripEditAuthGate ownerId={route.user_id} tripId={tripId}>
+      <TripCourseEditPage route={route} />
+    </TripEditAuthGate>
+  )
 }

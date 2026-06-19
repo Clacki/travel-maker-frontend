@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { isAxiosError } from 'axios'
@@ -12,6 +12,7 @@ import { Button } from '@/components/common/button'
 import { ErrorState } from '@/components/common/status'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { useRequireAuth } from '@/features/auth/hooks/useRequireAuth'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
@@ -70,6 +71,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     initialIsFollowing,
   } = useMyPageOwner(userId)
 
+  const { requireAuth, loginModal } = useRequireAuth()
+
   const [activeTab, setActiveTab] = useState<TabType>('bookmark')
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [followModal, setFollowModal] = useState<{
@@ -115,7 +118,9 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     handleReviewSubmit,
     handleReviewDeleteConfirm,
   } = useMyReviews({
-    enabled: isOwner ? activeTab === 'review' : isAuthInitialized && isLoggedIn,
+    enabled: isOwner
+      ? activeTab === 'review'
+      : isAuthInitialized && activeTab === 'review',
     canManage: canManageReviews,
     isAuthInitialized,
     isLoggedIn,
@@ -144,22 +149,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     isTabActive: activeTab === 'test',
   })
 
-  useEffect(() => {
-    if (!isAuthInitialized) {
-      return
-    }
-
-    if (!isLoggedIn) {
-      router.replace('/?showLogin=true')
-    }
-  }, [isAuthInitialized, isLoggedIn, router])
-
   if (!isAuthInitialized || isProfileLoading) {
     return <MyPageSkeleton />
-  }
-
-  if (!isLoggedIn) {
-    return null
   }
 
   if (profileError === 'not_found') {
@@ -243,12 +234,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
         isFollowLoading={isFollowLoading}
         onEditClick={handleEditProfile}
         onWithdrawClick={() => setIsWithdrawOpen(true)}
-        onFollowToggle={handleFollowToggle}
+        onFollowToggle={() => requireAuth(() => handleFollowToggle())}
         onFollowerClick={() =>
-          setFollowModal({ type: 'followers', isOpen: true })
+          requireAuth(() => setFollowModal({ type: 'followers', isOpen: true }))
         }
         onFollowingClick={() =>
-          setFollowModal({ type: 'following', isOpen: true })
+          requireAuth(() => setFollowModal({ type: 'following', isOpen: true }))
         }
       />
 
@@ -381,6 +372,8 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           </p>
         ) : null}
       </Modal>
+
+      {loginModal}
     </div>
   )
 }

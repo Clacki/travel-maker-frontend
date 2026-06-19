@@ -2,10 +2,9 @@
 
 import type { ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import { LoginModal } from '@/components/auth/LoginModal'
-import { LoadingState } from '@/components/common/status'
+
+import { AuthGate } from '@/components/auth/AuthGate'
 import { ROUTES } from '@/constants/routes'
-import { useAuthStore } from '@/features/auth/store/useAuthStore'
 
 interface TripCreateAuthGateProps {
   children: ReactNode
@@ -13,23 +12,8 @@ interface TripCreateAuthGateProps {
 
 export function TripCreateAuthGate({ children }: TripCreateAuthGateProps) {
   const router = useRouter()
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
 
-  if (!isAuthInitialized) {
-    return <LoadingState />
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <LoginModal
-        isOpen
-        onClose={() => {
-          router.replace(ROUTES.TRIPS)
-        }}
-      />
-    )
-  }
-
-  return children
+  return (
+    <AuthGate onClose={() => router.replace(ROUTES.TRIPS)}>{children}</AuthGate>
+  )
 }
