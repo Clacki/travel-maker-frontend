@@ -18,12 +18,11 @@ interface FollowListModalProps {
   onClose: () => void
 }
 
-// 5 items × 64px (40px avatar + 24px py) = 320px
 const listStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '0',
-  height: '320px',
+  height: { base: '240px', md: '320px' },
   overflowY: 'auto',
 })
 

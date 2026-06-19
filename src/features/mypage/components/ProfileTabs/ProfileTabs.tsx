@@ -18,15 +18,18 @@ const tabListStyle = css({
   display: 'flex',
   borderBottomWidth: '1px',
   borderColor: 'border.subtle',
+  overflowX: 'auto',
+  scrollbarWidth: 'none',
+  _scrollbar: { display: 'none' },
 })
 
 const tabButtonStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '2',
-  px: '4',
+  gap: '1',
+  px: { base: '3', md: '4' },
   py: '3',
-  fontSize: 'sm',
+  fontSize: { base: 'xs', md: 'sm' },
   fontWeight: 'semibold',
   color: 'text.secondary',
   bg: 'transparent',
@@ -35,6 +38,8 @@ const tabButtonStyle = css({
   borderBottomStyle: 'solid',
   borderBottomColor: 'transparent',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
   transitionProperty: 'color, border-color',
   transitionDuration: '150ms',
   _hover: {

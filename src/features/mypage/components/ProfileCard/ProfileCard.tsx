@@ -19,8 +19,8 @@ interface ProfileCardProps {
 
 const cardStyle = css({
   display: 'flex',
-  gap: '6',
-  p: '6',
+  gap: { base: '3', md: '6' },
+  p: { base: '4', md: '6' },
   bg: 'bg.surface',
   borderWidth: '1px',
   borderColor: 'border.subtle',
@@ -30,8 +30,8 @@ const cardStyle = css({
 })
 
 const avatarStyle = css({
-  width: '80px',
-  height: '80px',
+  width: { base: '64px', md: '80px' },
+  height: { base: '64px', md: '80px' },
   borderRadius: 'pill',
   bg: 'bg.muted',
   overflow: 'hidden',
@@ -180,24 +180,23 @@ const notFollowingButtonStyle = css({
 })
 
 const withdrawButtonStyle = css({
-  position: 'absolute',
-  bottom: '6',
-  right: '6',
+  alignSelf: 'flex-start',
   display: 'inline-flex',
   alignItems: 'center',
   px: '3',
-  py: '2',
+  py: '1',
   borderRadius: 'pill',
-  bg: 'primary',
-  color: 'text.inverse',
+  bg: 'bg.muted',
+  color: 'text.secondary',
   fontSize: 'xs',
   fontWeight: 'semibold',
   border: 'none',
   cursor: 'pointer',
-  transitionProperty: 'background-color',
+  transitionProperty: 'background-color, color',
   transitionDuration: '150ms',
   _hover: {
-    bg: 'primary.hover',
+    bg: 'warning.soft',
+    color: 'warning',
   },
   _focusVisible: {
     outline: 'none',
@@ -290,22 +289,22 @@ export function ProfileCard({
             ))}
           </div>
         )}
+
+        {canManageAccount && onWithdrawClick && (
+          <button
+            type="button"
+            className={withdrawButtonStyle}
+            onClick={onWithdrawClick}
+          >
+            회원탈퇴
+          </button>
+        )}
       </div>
 
       {canEdit && onEditClick && (
         <button type="button" className={editButtonStyle} onClick={onEditClick}>
           <Pencil size={14} />
           프로필 수정
-        </button>
-      )}
-
-      {canManageAccount && onWithdrawClick && (
-        <button
-          type="button"
-          className={withdrawButtonStyle}
-          onClick={onWithdrawClick}
-        >
-          회원탈퇴
         </button>
       )}
 
