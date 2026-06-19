@@ -27,7 +27,7 @@ export async function TripsListPage() {
       getRoutes({ page: 1, page_size: PAGE_SIZE, ordering: 'latest' }).catch(
         () => ({ items: [], totalCount: 0 })
       ),
-      getRoutes({ page: 1, page_size: 1, ordering: 'popular' }).catch(() => ({
+      getRoutes({ page: 1, page_size: 1, ordering: 'latest' }).catch(() => ({
         items: [],
         totalCount: 0,
       })),
