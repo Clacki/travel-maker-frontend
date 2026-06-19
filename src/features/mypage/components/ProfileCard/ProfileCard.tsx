@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { Pencil, User } from 'lucide-react'
 import { css } from '@/styled-system/css'
 import type { UserProfile } from '@/types/mypage.types'
@@ -66,28 +65,6 @@ const nicknameStyle = css({
   fontSize: 'xl',
   fontWeight: 'bold',
   color: 'text.primary',
-})
-
-const badgeStyle = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  px: '2',
-  py: '1',
-  borderRadius: 'pill',
-  bg: 'primary',
-  color: 'text.inverse',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
-  textDecoration: 'none',
-  transitionProperty: 'background-color',
-  transitionDuration: '150ms',
-  _hover: {
-    bg: 'primary.hover',
-  },
-  _focusVisible: {
-    outline: 'none',
-    boxShadow: 'focus',
-  },
 })
 
 const bioStyle = css({
@@ -281,11 +258,6 @@ export function ProfileCard({
       <div className={infoStyle}>
         <div className={nameRowStyle}>
           <span className={nicknameStyle}>{user.nickname}</span>
-          {canEdit && (
-            <Link href="/test" className={badgeStyle}>
-              성향테스트 하기
-            </Link>
-          )}
         </div>
 
         {user.bio && <p className={bioStyle}>{user.bio}</p>}
