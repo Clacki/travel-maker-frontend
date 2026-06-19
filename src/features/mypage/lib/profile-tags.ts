@@ -3,8 +3,20 @@ import type { UserProfile } from '@/types/mypage.types'
 
 export const PROFILE_TAG_LIMIT = 3
 
-export const profileInterestTags =
+const profileStyleTags = [
+  { id: 'beach', label: '해변' },
+  { id: 'mountain', label: '산악' },
+  { id: 'city', label: '도시' },
+  { id: 'culture', label: '문화' },
+  { id: 'food', label: '미식' },
+  { id: 'activity', label: '액티비티' },
+  { id: 'romantic', label: '로맨틱' },
+]
+
+const themeTags =
   travelFilterSections.find((section) => section.id === 'theme')?.tags ?? []
+
+export const profileInterestTags = [...profileStyleTags, ...themeTags]
 
 const DEFAULT_PROFILE_TAG_IDS: string[] = []
 

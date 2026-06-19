@@ -14,7 +14,7 @@ export type CurrentUserResponse = {
   bio: string
   email: string
   profile_img_url: string | null
-  tags: Record<string, string>[]
+  tags: { id: number; name: string }[]
   follower_count: number
   following_count: number
   bookmark_count: number

@@ -19,6 +19,7 @@ export const mapCurrentUserToUserProfile = (
   followingCount: currentUser.following_count,
   bookmarkCount: currentUser.bookmark_count,
   reviewCount: currentUser.review_count,
+  tags: currentUser.tags,
 })
 
 export const loadCurrentUserProfile = async () => {

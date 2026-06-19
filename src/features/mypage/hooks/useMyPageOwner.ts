@@ -132,7 +132,10 @@ export function useMyPageOwner(userId: string) {
         ? (currentUserProfile?.reviewCount ?? mockMyProfile.review_count)
         : mockMyProfile.review_count,
       travel_type_name: null,
-      tags: mapProfileTagIdsToUserTags(editableProfile.tagIds),
+      tags: isOwner
+        ? (currentUserProfile?.tags ??
+          mapProfileTagIdsToUserTags(editableProfile.tagIds))
+        : mapProfileTagIdsToUserTags(editableProfile.tagIds),
     }
   }, [currentUserProfile, editableProfile, isOwner, publicProfile])
 

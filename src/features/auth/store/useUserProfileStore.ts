@@ -10,6 +10,7 @@ export type UserProfile = {
   followingCount?: number
   bookmarkCount?: number
   reviewCount?: number
+  tags?: { id: number; name: string }[]
 }
 
 export type UserProfileState = {
