@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { css } from '@/styled-system/css'
 
 interface InfoItem {
@@ -11,8 +11,6 @@ interface InfoItem {
 interface InfoGridProps {
   items: InfoItem[]
 }
-
-const LONG_TEXT_THRESHOLD = 40
 
 const gridStyle = css({
   display: 'grid',
@@ -61,12 +59,20 @@ const toggleButtonStyle = css({
 
 function InfoGridItem({ label, value }: InfoItem) {
   const [expanded, setExpanded] = useState(false)
-  const isLong = value.length > LONG_TEXT_THRESHOLD || value.includes('\n')
+  const [isOverflow, setIsOverflow] = useState(false)
+  const valueRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const el = valueRef.current
+    if (!el) return
+    setIsOverflow(el.scrollHeight > el.clientHeight)
+  }, [value])
 
   return (
     <div className={itemStyle}>
       <dt className={labelStyle}>{label}</dt>
       <dd
+        ref={valueRef}
         className={expanded ? valueExpandedStyle : valueClampedStyle}
         style={
           !expanded
@@ -82,7 +88,7 @@ function InfoGridItem({ label, value }: InfoItem) {
       >
         {value}
       </dd>
-      {isLong && (
+      {isOverflow && (
         <button
           type="button"
           className={toggleButtonStyle}
