@@ -20,6 +20,21 @@ export type {
   RouteDetail,
 }
 
+const serializeParams = (p: Record<string, unknown>): string => {
+  const parts: string[] = []
+  for (const [key, value] of Object.entries(p)) {
+    if (value === undefined || value === null) {
+      continue
+    }
+    if (Array.isArray(value)) {
+      value.forEach((v) => parts.push(`${key}=${encodeURIComponent(v)}`))
+    } else {
+      parts.push(`${key}=${encodeURIComponent(String(value))}`)
+    }
+  }
+  return parts.join('&')
+}
+
 type PaginatedRouteList = {
   count: number
   next: string | null
@@ -39,7 +54,7 @@ export const getRoutes = async (
 ): Promise<RouteListResult> => {
   const response = await api.get<PaginatedRouteList | RouteListItem[]>(
     '/routes',
-    { params }
+    { params, paramsSerializer: serializeParams }
   )
   const data = response.data
 

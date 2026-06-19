@@ -54,7 +54,7 @@ export function CourseInfoCard() {
           <h2 className={cardTitleStyle}>코스 기본 정보</h2>
           <p className={cardDescStyle}>여행의 분위기와 테마를 설정해주세요</p>
         </div>
-        <span className={badgeStyle}>편집 기능</span>
+        <span className={badgeStyle}>필수 항목</span>
       </div>
       <CourseInfoSection
         title={title}
@@ -92,7 +92,7 @@ export function CoursePlaceCard() {
             장소를 드래그하여 순서를 변경하거나 삭제할 수 있어요
           </p>
         </div>
-        <span className={badgeStyle}>{dayPlaces.length}곳</span>
+        <span className={badgeStyle}>필수 항목</span>
       </div>
       <PlaceListSection
         places={dayPlaces}
