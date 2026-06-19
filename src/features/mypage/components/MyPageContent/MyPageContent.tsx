@@ -15,7 +15,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
-import { withdrawUser } from '@/features/auth/api/authApi'
+import { logout, withdrawUser } from '@/features/auth/api/authApi'
 import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
@@ -213,6 +213,11 @@ export function MyPageContent({ userId }: MyPageContentProps) {
 
   const handleWithdraw = async (reason: string) => {
     await withdrawUser(reason)
+    try {
+      await logout()
+    } catch {
+      // 탈퇴 후 로그아웃 실패해도 진행
+    }
     clearAuth()
     router.replace('/')
   }
