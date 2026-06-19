@@ -194,10 +194,27 @@ export function FilterCard({
   searchValue = '',
   onSearchChange,
 }: FilterCardProps) {
+  const initialSelectedKey = useMemo(
+    () =>
+      sections
+        .map((section) => {
+          const values = initialSelected?.[section.id] ?? []
+          return `${section.id}:${values.join(',')}`
+        })
+        .join('|'),
+    [initialSelected, sections]
+  )
   const [selected, setSelected] = useState<Record<string, string[]>>(
     initialSelected ?? {}
   )
+  const [syncedInitialSelectedKey, setSyncedInitialSelectedKey] =
+    useState(initialSelectedKey)
   const [activeSection, setActiveSection] = useState<string | null>(null)
+
+  if (syncedInitialSelectedKey !== initialSelectedKey) {
+    setSyncedInitialSelectedKey(initialSelectedKey)
+    setSelected(initialSelected ?? {})
+  }
 
   useEffect(() => {
     onChange?.(selected)
@@ -278,6 +295,21 @@ export function FilterCard({
     }
     return items
   }, [sections, selected])
+
+  const selectedKey = useMemo(
+    () =>
+      sections
+        .map((section) => {
+          const values = selected[section.id] ?? []
+          return `${section.id}:${values.join(',')}`
+        })
+        .join('|'),
+    [sections, selected]
+  )
+  const initialSearchValue = initialSelected?.keyword?.[0] ?? ''
+  const hasChanges =
+    selectedKey !== initialSelectedKey ||
+    searchValue.trim() !== initialSearchValue.trim()
 
   const handleTabClick = useCallback((sectionId: string) => {
     setActiveSection((prev) => (prev === sectionId ? null : sectionId))
@@ -436,7 +468,12 @@ export function FilterCard({
             <Button variant="neutral" size="sm" onClick={handleReset}>
               초기화
             </Button>
-            <Button variant="primary" size="sm" onClick={handleApply}>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!hasChanges}
+              onClick={handleApply}
+            >
               여행지 보기 →
             </Button>
           </div>
