@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { css } from '@/styled-system/css'
 
 import { KeywordTag } from '@/components/common/tag/KeywordTag'
@@ -15,6 +17,8 @@ export interface TravelCardProps {
   /** 여행 성향 매칭률 (0~100). 표시 시 "%"를 붙여 우측 상단 배지로 노출 */
   matchRate?: number
   ctaText?: string
+  /** 제공 시 CTA 버튼을 해당 경로로 이동하는 Link로 렌더링 */
+  href?: string
 }
 
 const cardStyle = css({
@@ -139,6 +143,23 @@ const ctaIconStyle = css({
   color: 'text.primary',
 })
 
+const ctaArrow = (
+  <svg
+    className={ctaIconStyle}
+    viewBox="0 0 20 20"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M7.5 4.5L13 10L7.5 15.5"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
 export function TravelCard({
   imageSrc,
   imageAlt = '',
@@ -148,6 +169,7 @@ export function TravelCard({
   hashtags,
   matchRate,
   ctaText = '자세히 보기',
+  href,
 }: TravelCardProps) {
   const displayedHashtags = hashtags.slice(0, 3)
 
@@ -181,23 +203,17 @@ export function TravelCard({
 
       {/* CTA button */}
       <div className={ctaWrapperStyle}>
-        <button type="button" className={ctaButtonStyle}>
-          <span className={ctaTextStyle}>{ctaText}</span>
-          <svg
-            className={ctaIconStyle}
-            viewBox="0 0 20 20"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M7.5 4.5L13 10L7.5 15.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        {href ? (
+          <Link href={href} className={ctaButtonStyle}>
+            <span className={ctaTextStyle}>{ctaText}</span>
+            {ctaArrow}
+          </Link>
+        ) : (
+          <button type="button" className={ctaButtonStyle}>
+            <span className={ctaTextStyle}>{ctaText}</span>
+            {ctaArrow}
+          </button>
+        )}
       </div>
     </article>
   )

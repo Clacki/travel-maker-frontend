@@ -1,6 +1,7 @@
 import { css } from '@/styled-system/css'
 
 import { TravelCard } from '@/app/(pages)/test/_components/TravelCard/TravelCard'
+import { ROUTES } from '@/constants/routes'
 
 import type { RecommendedDestination } from '@/features/result/result.types'
 
@@ -61,6 +62,7 @@ export function DestinationsSection({
               description={dest.description}
               hashtags={dest.hashtags}
               matchRate={dest.matchRate}
+              href={ROUTES.DETAIL(dest.id)}
             />
           ))}
         </div>
