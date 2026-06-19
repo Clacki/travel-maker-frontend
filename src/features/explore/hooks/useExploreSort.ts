@@ -35,7 +35,7 @@ export function useExploreSort(onLoginRequired: () => void) {
       params.set('page', '1')
       router.push(`/explore?${params.toString()}`, { scroll: false })
     }
-  }, [isAuthInitialized, isLoggedIn, sort, searchParams, router])
+  }, [isAuthInitialized, isLoggedIn, sort]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function setSort(key: SortKey) {
     const params = new URLSearchParams(searchParams.toString())
