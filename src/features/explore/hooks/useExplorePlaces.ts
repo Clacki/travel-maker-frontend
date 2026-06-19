@@ -27,7 +27,6 @@ interface UseExplorePlacesParams {
   selectedTagIdsKey: string
   sort: SortKey
   keyword: string
-  categoryId: string | null
   tags: Tag[] | null
   pendingTag: string
   isAuthInitialized: boolean
@@ -39,7 +38,6 @@ export function useExplorePlaces({
   selectedTagIdsKey,
   sort,
   keyword,
-  categoryId,
   tags,
   pendingTag,
   isAuthInitialized,
@@ -53,12 +51,11 @@ export function useExplorePlaces({
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
-    if (!isAuthInitialized) return
-
     let cancelled = false
     if (pendingTag) return
 
     if (sort === 'recommended') {
+      if (!isAuthInitialized) return
       if (tags === null) return
 
       const userId = useUserProfileStore.getState().userProfile?.id
@@ -144,6 +141,7 @@ export function useExplorePlaces({
       cancelled = true
     }
   }, [
+    currentKey,
     currentPage,
     selectedTagIdsKey,
     sort,

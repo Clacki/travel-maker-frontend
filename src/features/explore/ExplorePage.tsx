@@ -38,7 +38,7 @@ function ExploreContent() {
     goToPage,
   } = useExploreParams(gridRef)
 
-  const tags = useTags()
+  const { tags, isLoading: isTagsLoading } = useTags()
 
   const selectedTagIds = useMemo(
     () => getSelectedTagIds(selected, categoryId, tags),
@@ -51,7 +51,7 @@ function ExploreContent() {
       const raw = selected[section]?.join(',') ?? ''
       return raw.split(',').some((v) => v && v !== 'all')
     }) || !!categoryId
-  const pendingTag = hasActiveFilter && tags === null ? 'pending' : ''
+  const pendingTag = hasActiveFilter && isTagsLoading ? 'pending' : ''
 
   const {
     sort,
@@ -73,7 +73,6 @@ function ExploreContent() {
     selectedTagIdsKey,
     sort,
     keyword,
-    categoryId,
     tags,
     pendingTag,
     isAuthInitialized,

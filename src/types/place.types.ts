@@ -11,7 +11,7 @@ export type Place = {
   bookmark_count: number
   rating_avg: number
   tags: PlaceTag[]
-  is_bookmarked: boolean
+  is_bookmarked?: boolean
   latitude: string | null
   longitude: string | null
   recommended_duration?: number // API 미제공 — 추후 확정 시 연결

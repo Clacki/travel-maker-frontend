@@ -19,7 +19,9 @@ export function useBookmarkToggle({
   const { isLoggedIn, isAuthInitialized } = useAuthStore()
 
   async function handleLikeToggle(placeId: number) {
-    if (!isAuthInitialized || !isLoggedIn) {
+    if (!isAuthInitialized) return
+
+    if (!isLoggedIn) {
       onLoginRequired()
       return
     }

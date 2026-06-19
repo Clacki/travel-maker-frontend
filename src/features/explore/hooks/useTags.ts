@@ -11,14 +11,34 @@ import {
 
 export function useTags() {
   const [tags, setTags] = useState<Tag[] | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
+    let cancelled = false
+
     getTags()
-      .then(setTags)
-      .catch(() => setTags([]))
+      .then((data) => {
+        if (!cancelled) setTags(data)
+      })
+      .catch((cause) => {
+        if (cancelled) return
+
+        console.error('Failed to load explore tags.', cause)
+        setError(
+          cause instanceof Error ? cause : new Error('Failed to load tags')
+        )
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  return tags
+  return { tags, isLoading, error }
 }
 
 export function getSelectedTagIds(
