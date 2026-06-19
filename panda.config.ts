@@ -28,7 +28,10 @@ export default defineConfig({
             500: { value: '#2DBE7E' },
           },
           red: {
+            50: { value: '#FFF1F1' },
+            200: { value: '#F3B7BA' },
             500: { value: '#E5484D' },
+            600: { value: '#D93D42' },
           },
           gray: {
             50: { value: '#F6FAFC' },
@@ -112,6 +115,12 @@ export default defineConfig({
           },
           success: { value: '{colors.green.500}' },
           warning: { value: '{colors.red.500}' },
+          danger: {
+            DEFAULT: { value: '{colors.red.500}' },
+            soft: { value: '{colors.red.50}' },
+            border: { value: '{colors.red.200}' },
+            hover: { value: '{colors.red.600}' },
+          },
           text: {
             primary: { value: '{colors.gray.900}' },
             secondary: { value: '{colors.gray.500}' },

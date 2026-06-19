@@ -1,6 +1,6 @@
 import Image from 'next/image'
-import { Pencil, User } from 'lucide-react'
-import { css } from '@/styled-system/css'
+import { Pencil, User, UserX } from 'lucide-react'
+import { css, cx } from '@/styled-system/css'
 import type { UserProfile } from '@/types/mypage.types'
 
 interface ProfileCardProps {
@@ -19,6 +19,7 @@ interface ProfileCardProps {
 
 const cardStyle = css({
   display: 'flex',
+  flexWrap: { base: 'wrap', md: 'nowrap' },
   gap: { base: '3', md: '6' },
   p: { base: '4', md: '6' },
   bg: 'bg.surface',
@@ -53,6 +54,8 @@ const infoStyle = css({
   flexDirection: 'column',
   gap: '2',
   flex: '1',
+  minW: '0',
+  pr: { md: '200px' },
 })
 
 const nameRowStyle = css({
@@ -107,32 +110,46 @@ const tagStyle = css({
   fontWeight: 'medium',
 })
 
-const editButtonStyle = css({
-  position: 'absolute',
-  top: '6',
-  right: '6',
+const profileActionGroupStyle = css({
+  position: { base: 'static', md: 'absolute' },
+  top: { md: '6' },
+  right: { md: '6' },
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+  gap: '2',
+  flexBasis: { base: '100%', md: 'auto' },
+  width: { base: 'full', md: 'auto' },
+})
+
+const profileActionButtonStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '1',
+  minH: '8',
   px: '3',
-  py: '2',
   borderRadius: 'sm',
   borderWidth: '1px',
-  borderColor: 'border.subtle',
-  bg: 'bg.surface',
-  color: 'text.secondary',
   fontSize: 'xs',
   fontWeight: 'semibold',
+  whiteSpace: 'nowrap',
   cursor: 'pointer',
-  transitionProperty: 'background-color, border-color',
+  transitionProperty: 'background-color, border-color, color',
   transitionDuration: '150ms',
-  _hover: {
-    bg: 'bg.muted',
-    borderColor: 'border',
-  },
   _focusVisible: {
     outline: 'none',
     boxShadow: 'focus',
+  },
+})
+
+const editButtonStyle = css({
+  borderColor: 'border.subtle',
+  bg: 'bg.surface',
+  color: 'text.secondary',
+  _hover: {
+    bg: 'bg.muted',
+    borderColor: 'border',
   },
 })
 
@@ -180,27 +197,13 @@ const notFollowingButtonStyle = css({
 })
 
 const withdrawButtonStyle = css({
-  alignSelf: 'flex-start',
-  display: 'inline-flex',
-  alignItems: 'center',
-  px: '3',
-  py: '1',
-  borderRadius: 'pill',
-  bg: 'bg.muted',
-  color: 'text.secondary',
-  fontSize: 'xs',
-  fontWeight: 'semibold',
-  border: 'none',
-  cursor: 'pointer',
-  transitionProperty: 'background-color, color',
-  transitionDuration: '150ms',
+  borderColor: 'danger.border',
+  bg: 'danger.soft',
+  color: 'danger',
   _hover: {
-    bg: 'warning.soft',
-    color: 'warning',
-  },
-  _focusVisible: {
-    outline: 'none',
-    boxShadow: 'focus',
+    bg: 'danger.border',
+    borderColor: 'danger.hover',
+    color: 'danger.hover',
   },
 })
 
@@ -289,23 +292,31 @@ export function ProfileCard({
             ))}
           </div>
         )}
-
-        {canManageAccount && onWithdrawClick && (
-          <button
-            type="button"
-            className={withdrawButtonStyle}
-            onClick={onWithdrawClick}
-          >
-            회원탈퇴
-          </button>
-        )}
       </div>
 
-      {canEdit && onEditClick && (
-        <button type="button" className={editButtonStyle} onClick={onEditClick}>
-          <Pencil size={14} />
-          프로필 수정
-        </button>
+      {((canEdit && onEditClick) || (canManageAccount && onWithdrawClick)) && (
+        <div className={profileActionGroupStyle}>
+          {canEdit && onEditClick && (
+            <button
+              type="button"
+              className={cx(profileActionButtonStyle, editButtonStyle)}
+              onClick={onEditClick}
+            >
+              <Pencil size={14} aria-hidden="true" />
+              프로필 수정
+            </button>
+          )}
+          {canManageAccount && onWithdrawClick && (
+            <button
+              type="button"
+              className={cx(profileActionButtonStyle, withdrawButtonStyle)}
+              onClick={onWithdrawClick}
+            >
+              <UserX size={14} aria-hidden="true" />
+              회원탈퇴
+            </button>
+          )}
+        </div>
       )}
 
       {!isMyProfile && onFollowToggle && (
