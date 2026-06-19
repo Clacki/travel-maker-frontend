@@ -1,21 +1,21 @@
 import { LayoutContainer } from '@/components/layout'
 import { Sparkles } from 'lucide-react'
 import { CategoryCard } from '@/features/explore/components/CategoryCard'
+import { CategoryCardSwiper } from '@/features/explore/components/CategoryCardSwiper'
 import { travelCategories } from '@/mocks/data/travel-data'
 import { css } from '@/styled-system/css'
 
-// 전체적으로 우측으로 이동해 히어로 텍스트 가림 방지
 const cardPositions = [
-  { left: '0%', top: '58%', rotate: -22, zIndex: 1 }, // 가장 왼쪽, 아래
-  { left: '12%', top: '22%', rotate: -13, zIndex: 2 }, // 왼쪽, 위
-  { left: '26%', top: '56%', rotate: -5, zIndex: 7 }, // 중앙-좌 (가장 앞), 아래
-  { left: '40%', top: '18%', rotate: 3, zIndex: 6 }, // 중앙, 위
-  { left: '54%', top: '54%', rotate: 10, zIndex: 5 }, // 중앙-우, 아래
-  { left: '67%', top: '20%', rotate: 17, zIndex: 4 }, // 오른쪽, 위
-  { left: '78%', top: '58%', rotate: 23, zIndex: 3 }, // 가장 오른쪽 (잘림), 아래
+  { left: '0%', top: '58%', rotate: -22, zIndex: 1 },
+  { left: '12%', top: '22%', rotate: -13, zIndex: 2 },
+  { left: '26%', top: '56%', rotate: -5, zIndex: 7 },
+  { left: '40%', top: '18%', rotate: 3, zIndex: 6 },
+  { left: '54%', top: '54%', rotate: 10, zIndex: 5 },
+  { left: '67%', top: '20%', rotate: 17, zIndex: 4 },
+  { left: '78%', top: '58%', rotate: 23, zIndex: 3 },
 ]
 
-// md(768px~1023px): column 레이아웃에서 카드 섹션 500px 안에 수용되도록 top 값 조정
+// md(768px~1023px): 스와이퍼로 처리되므로 사실상 미사용 — lg+ 분기용 백업
 const mdCardPositions = [
   { left: '0%', top: '24%', rotate: -22, zIndex: 1 },
   { left: '12%', top: '2%', rotate: -13, zIndex: 2 },
@@ -26,22 +26,11 @@ const mdCardPositions = [
   { left: '78%', top: '24%', rotate: 23, zIndex: 3 },
 ]
 
-// sm(<768px): column 레이아웃에서 카드 섹션 400px 안에 수용되도록 top 값 조정
-const smCardPositions = [
-  { left: '0%', top: '36%', rotate: -22, zIndex: 1 },
-  { left: '12%', top: '8%', rotate: -13, zIndex: 2 },
-  { left: '26%', top: '34%', rotate: -5, zIndex: 7 },
-  { left: '40%', top: '6%', rotate: 3, zIndex: 6 },
-  { left: '54%', top: '32%', rotate: 10, zIndex: 5 },
-  { left: '67%', top: '7%', rotate: 17, zIndex: 4 },
-  { left: '78%', top: '36%', rotate: 23, zIndex: 3 },
-]
-
 export default function Home() {
   return (
     <main
       className={css({
-        h: '100vh',
+        h: '100dvh',
         overflow: 'hidden',
         display: 'flex',
         flexDir: 'column',
@@ -59,13 +48,31 @@ export default function Home() {
         })}
         style={{ backgroundImage: "url('/images/bg_Theme/travel-bg.webp')" }}
       />
-      {/* Gradient overlay */}
+      {/* 모바일(< lg): column 레이아웃 - 텍스트가 위에 오므로 to bottom으로 상단 가독성 확보 */}
       <div
-        className={css({ position: 'absolute', inset: 0 })}
+        className={css({
+          position: 'absolute',
+          inset: 0,
+          display: { base: 'block', lg: 'none' },
+        })}
+        style={{
+          background:
+            'linear-gradient(to bottom, var(--colors-bg-canvas) 0%, color-mix(in srgb, var(--colors-bg-canvas) 80%, transparent) 35%, color-mix(in srgb, var(--colors-bg-canvas) 10%, transparent) 100%)',
+        }}
+        aria-hidden
+      />
+      {/* 데스크탑(lg+): row 레이아웃 - 텍스트가 왼쪽에 오므로 to right으로 좌측 가독성 확보 */}
+      <div
+        className={css({
+          position: 'absolute',
+          inset: 0,
+          display: { base: 'none', lg: 'block' },
+        })}
         style={{
           background:
             'linear-gradient(to right, var(--colors-bg-canvas) 0%, color-mix(in srgb, var(--colors-bg-canvas) 85%, transparent) 30%, color-mix(in srgb, var(--colors-bg-canvas) 10%, transparent) 100%)',
         }}
+        aria-hidden
       />
 
       <LayoutContainer
@@ -86,7 +93,8 @@ export default function Home() {
             minW: { lg: '320px' },
             flexShrink: 0,
             textAlign: { base: 'center', lg: 'left' },
-            py: { base: 8, lg: 0 },
+            pt: { base: 6, lg: 0 },
+            pb: { base: 2, lg: 0 },
             wordBreak: 'keep-all',
             overflowWrap: 'break-word',
             userSelect: 'none',
@@ -141,12 +149,24 @@ export default function Home() {
           </p>
         </section>
 
-        {/* Category cards section */}
+        {/* 모바일·태블릿(< lg): 스와이퍼 캐러셀 */}
         <section
           className={css({
-            w: { base: 'full', lg: '3/5' },
+            display: { base: 'flex', lg: 'none' },
+            alignItems: 'center',
+            w: 'full',
+          })}
+        >
+          <CategoryCardSwiper categories={travelCategories} />
+        </section>
+
+        {/* 데스크탑(lg+): 팬 카드 배치 */}
+        <section
+          className={css({
+            display: { base: 'none', lg: 'block' },
+            w: '3/5',
             position: 'relative',
-            h: { base: '400px', md: '500px', lg: 'full' },
+            h: 'full',
           })}
         >
           {travelCategories
@@ -158,7 +178,6 @@ export default function Home() {
                 index={index}
                 style={cardPositions[index]}
                 mdStyle={mdCardPositions[index]}
-                smStyle={smCardPositions[index]}
               />
             ))}
         </section>

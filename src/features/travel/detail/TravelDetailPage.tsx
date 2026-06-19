@@ -23,7 +23,10 @@ const pageStyle = css({
 
 const contentGridStyle = css({
   display: 'grid',
-  gridTemplateColumns: { base: '1fr', lg: 'minmax(0, 7fr) minmax(0, 5fr)' },
+  gridTemplateColumns: {
+    base: 'minmax(0, 1fr)',
+    lg: 'minmax(0, 7fr) minmax(0, 5fr)',
+  },
   gap: '6',
   alignItems: 'start',
 })
@@ -32,6 +35,7 @@ const rightColumnStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '4',
+  minW: 0,
 })
 
 export default function TravelDetailPage({

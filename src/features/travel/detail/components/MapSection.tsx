@@ -47,6 +47,7 @@ const wrapperStyle = css({
   borderWidth: '1px',
   borderColor: 'border.subtle',
   overflow: 'hidden',
+  w: 'full',
 })
 
 const mapContainerStyle = css({
