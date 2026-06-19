@@ -40,7 +40,6 @@ export function useMyPageOwner(userId: string) {
 
   const shouldFetchPublicProfile =
     isAuthInitialized &&
-    isLoggedIn &&
     !isOwner &&
     !shouldWaitForCurrentUser &&
     Boolean(numericId)
@@ -53,7 +52,7 @@ export function useMyPageOwner(userId: string) {
     shouldWaitForCurrentUser ||
     (shouldFetchPublicProfile && publicProfileResult?.userId !== numericId)
   const profileError =
-    !isAuthInitialized || !isLoggedIn || isOwner || shouldWaitForCurrentUser
+    !isAuthInitialized || isOwner || shouldWaitForCurrentUser
       ? null
       : !numericId
         ? 'not_found'

@@ -1,3 +1,4 @@
+import { AuthGate } from '@/components/auth/AuthGate'
 import { ProfileEditContent } from '@/features/mypage/components/ProfileEditContent'
 
 interface ProfileEditPageProps {
@@ -9,5 +10,9 @@ export default async function ProfileEditPage({
 }: ProfileEditPageProps) {
   const { userId } = await params
 
-  return <ProfileEditContent userId={userId} />
+  return (
+    <AuthGate>
+      <ProfileEditContent userId={userId} />
+    </AuthGate>
+  )
 }

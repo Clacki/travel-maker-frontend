@@ -122,7 +122,11 @@ export function useMyReviews({
 
   const fetchMyReviews = useCallback(
     async (page: number) => {
-      if (!isAuthInitialized || !isLoggedIn) {
+      if (!isAuthInitialized) {
+        return
+      }
+
+      if (!targetUserId && !isLoggedIn) {
         return
       }
 

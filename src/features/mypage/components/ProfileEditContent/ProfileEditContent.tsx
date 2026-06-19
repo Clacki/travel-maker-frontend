@@ -6,8 +6,6 @@ import { Pencil, User } from 'lucide-react'
 import { isAxiosError } from 'axios'
 import { css } from '@/styled-system/css'
 import { Button } from '@/components/common/button'
-import { LoadingState } from '@/components/common/status'
-import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 import {
@@ -327,8 +325,6 @@ const footerStyle = css({
 export function ProfileEditContent({ userId }: ProfileEditContentProps) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
   const userProfile = useUserProfileStore((state) => state.userProfile)
   const setUserProfile = useUserProfileStore((state) => state.setUserProfile)
   const fallbackProfile = useMemo(() => getDefaultEditableProfile(), [])
@@ -373,30 +369,12 @@ export function ProfileEditContent({ userId }: ProfileEditContentProps) {
     !nextNickname
 
   useEffect(() => {
-    if (!isAuthInitialized) {
-      return
-    }
-
-    if (!isLoggedIn) {
-      router.replace('/?showLogin=true')
-    }
-  }, [isAuthInitialized, isLoggedIn, router])
-
-  useEffect(() => {
     return () => {
       if (profileImagePreviewUrl) {
         URL.revokeObjectURL(profileImagePreviewUrl)
       }
     }
   }, [profileImagePreviewUrl])
-
-  if (!isAuthInitialized) {
-    return <LoadingState />
-  }
-
-  if (!isLoggedIn) {
-    return null
-  }
 
   const handleTagToggle = (tagId: string) => {
     setSelectedTags((prev) => {
