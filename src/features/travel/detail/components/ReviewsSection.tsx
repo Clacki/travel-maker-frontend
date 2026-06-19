@@ -84,6 +84,7 @@ export default function ReviewsSection({ placeId }: ReviewsSectionProps) {
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [isPaging, setIsPaging] = useState(false)
+  const [hasMyReview, setHasMyReview] = useState(false)
   const isLoading = reviews === undefined
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
@@ -93,6 +94,7 @@ export default function ReviewsSection({ placeId }: ReviewsSectionProps) {
         .then(({ reviews: list, total: count }) => {
           setReviews(list)
           setTotal(count)
+          setHasMyReview((prev) => prev || list.some((r) => r.isOwner))
         })
         .catch(() => {
           setReviews([])
@@ -105,6 +107,7 @@ export default function ReviewsSection({ placeId }: ReviewsSectionProps) {
   const fetchReviews = useCallback(() => {
     setReviews(undefined)
     setPage(1)
+    setHasMyReview(false)
     loadPage(1)
   }, [loadPage])
 
@@ -131,7 +134,11 @@ export default function ReviewsSection({ placeId }: ReviewsSectionProps) {
         <h2 className={headingStyle}>
           리뷰{!isLoading && total > 0 && ` (${total.toLocaleString()}개)`}
         </h2>
-        <ReviewWriteButton placeId={placeId} onSuccess={fetchReviews} />
+        <ReviewWriteButton
+          placeId={placeId}
+          onSuccess={fetchReviews}
+          hasMyReview={hasMyReview}
+        />
       </div>
 
       {isLoading ? (
