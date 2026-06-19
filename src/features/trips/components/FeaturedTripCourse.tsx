@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, MapPin, Bookmark } from 'lucide-react'
+import { ArrowRight, MapPin, Clock } from 'lucide-react'
 import { KeywordTag } from '@/components/common/tag'
 import { ROUTES } from '@/constants/routes'
 import type { TripCourse } from '../types/trip'
@@ -151,14 +151,14 @@ export function FeaturedTripCourse({ course }: FeaturedTripCourseProps) {
   return (
     <section className={sectionStyle} aria-labelledby="featured-trip-title">
       <h2 id="featured-trip-title" className={sectionLabelStyle}>
-        <Bookmark size={16} aria-hidden="true" />
-        이번 주 인기 코스
+        <Clock size={16} aria-hidden="true" />
+        이번 주 최신 코스
       </h2>
 
       <article className={cardStyle}>
         <div className={contentStyle}>
           <div className={badgeRowStyle}>
-            <span className={badgeStyle}>가장 많이 저장된 코스</span>
+            <span className={badgeStyle}>최신 코스</span>
           </div>
 
           <h3 className={titleStyle}>{course.title}</h3>
