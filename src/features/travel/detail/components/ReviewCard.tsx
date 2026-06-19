@@ -268,6 +268,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
   const [displayRating, setDisplayRating] = useState(review.rating)
   const [displayContent, setDisplayContent] = useState(review.content)
   const [displayImageUrl, setDisplayImageUrl] = useState(review.imageUrl)
+  const [avatarError, setAvatarError] = useState(false)
   const textRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
@@ -362,7 +363,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
               className={authorLinkStyle}
             >
               {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
-              {author.avatarUrl ? (
+              {author.avatarUrl && !avatarError ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={author.avatarUrl}
@@ -373,6 +374,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
                     borderRadius: 'pill',
                     objectFit: 'cover',
                   })}
+                  onError={() => setAvatarError(true)}
                 />
               ) : (
                 <div className={avatarStyle} aria-hidden="true">
