@@ -67,6 +67,7 @@ function normalizeRelatedType(
     description: type.description,
     imageUrl: type.image_url ?? undefined,
     tags: type.type_tags ?? [],
+    reason: type.reason ?? undefined,
   }
 }
 

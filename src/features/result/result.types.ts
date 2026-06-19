@@ -46,6 +46,7 @@ export type RelatedTravelType = {
   description: string
   image_url?: string | null
   type_tags?: string[] | null
+  reason?: string | null
 }
 
 export type TestResultResponse = {
