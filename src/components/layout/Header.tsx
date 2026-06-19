@@ -1,7 +1,7 @@
 'use client'
 
 import { LoginModal } from '@/components/auth/LoginModal'
-import { Button, IconButton } from '@/components/common/button'
+import { Button } from '@/components/common/button'
 import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { ProfileDropdown } from '@/components/layout/ProfileDropdown'
 import { ROUTES } from '@/constants/routes'
@@ -92,14 +92,6 @@ const mobileNavLabelStyle = css({
   display: { base: 'inline', md: 'none' },
 })
 
-const desktopLoginButtonStyle = css({
-  display: { base: 'none', sm: 'inline-flex' },
-})
-
-const mobileLoginButtonStyle = css({
-  display: { base: 'inline-flex', sm: 'none' },
-})
-
 interface HeaderProps {
   className?: string
 }
@@ -173,49 +165,26 @@ export function Header({ className }: HeaderProps) {
             </nav>
 
             {!isAuthInitialized ? (
-              <>
-                <Button
-                  aria-busy="true"
-                  className={desktopLoginButtonStyle}
-                  disabled
-                  variant="secondary"
-                  size="sm"
-                  shape="pill"
-                >
-                  Login
-                </Button>
-                <IconButton
-                  aria-busy="true"
-                  aria-label="로그인"
-                  className={mobileLoginButtonStyle}
-                  disabled
-                  size="sm"
-                >
-                  <LoginIcon />
-                </IconButton>
-              </>
+              <Button
+                aria-busy="true"
+                disabled
+                variant="secondary"
+                size="sm"
+                shape="pill"
+              >
+                Login
+              </Button>
             ) : isLoggedIn ? (
               <ProfileDropdown />
             ) : (
-              <>
-                <Button
-                  className={desktopLoginButtonStyle}
-                  onClick={openLoginModal}
-                  variant="secondary"
-                  size="sm"
-                  shape="pill"
-                >
-                  Login
-                </Button>
-                <IconButton
-                  aria-label="로그인"
-                  className={mobileLoginButtonStyle}
-                  onClick={openLoginModal}
-                  size="sm"
-                >
-                  <LoginIcon />
-                </IconButton>
-              </>
+              <Button
+                onClick={openLoginModal}
+                variant="secondary"
+                size="sm"
+                shape="pill"
+              >
+                Login
+              </Button>
             )}
           </div>
         </LayoutContainer>
@@ -223,19 +192,5 @@ export function Header({ className }: HeaderProps) {
 
       <LoginModal isOpen={isLoginModalOpen} onClose={closeLoginModal} />
     </>
-  )
-}
-
-function LoginIcon() {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24">
-      <path
-        d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20a7.5 7.5 0 0 1 15 0"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-      />
-    </svg>
   )
 }
