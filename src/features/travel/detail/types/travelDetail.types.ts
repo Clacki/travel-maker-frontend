@@ -7,6 +7,7 @@ export type PlaceReviewItem = {
   review_id: number
   user_id: number
   user_nickname: string
+  user_profile_img_url: string | null
   rating: number
   content: string
   image_url: string | null

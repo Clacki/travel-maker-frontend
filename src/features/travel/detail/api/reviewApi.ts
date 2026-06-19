@@ -27,7 +27,11 @@ export const getPlaceReviews = async (
   return {
     reviews: data.results.map((item) => ({
       id: item.review_id,
-      author: { id: item.user_id, name: item.user_nickname },
+      author: {
+        id: item.user_id,
+        name: item.user_nickname,
+        avatarUrl: item.user_profile_img_url ?? undefined,
+      },
       rating: item.rating,
       content: item.content,
       imageUrl: item.image_url ?? item.img_url ?? null,
