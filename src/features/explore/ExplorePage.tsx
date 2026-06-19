@@ -26,7 +26,7 @@ function ExploreContent() {
   const {
     searchInput,
     setSearchInput,
-    filterResetKey,
+    filterKey,
     filterInitialSelected,
     keyword,
     categoryId,
@@ -115,7 +115,7 @@ function ExploreContent() {
       >
         <div className={css({ maxW: '7xl', mx: 'auto' })}>
           <FilterCard
-            key={filterResetKey}
+            key={filterKey}
             sections={travelFilterSections}
             initialSelected={filterInitialSelected}
             resultCount={totalCount}

@@ -13,9 +13,14 @@ export function useExploreParams(gridRef: RefObject<HTMLElement | null>) {
   const [prevKeyword, setPrevKeyword] = useState(keyword)
   const [searchInput, setSearchInput] = useState(keyword)
   const [filterResetKey, setFilterResetKey] = useState(0)
-  const [filterInitialSelected, setFilterInitialSelected] = useState<
-    Record<string, string[]>
-  >(() => parseParams(searchParams))
+  const filterInitialSelected = useMemo(
+    () => parseParams(searchParams),
+    [searchParams]
+  )
+  const filterKey = useMemo(
+    () => `${filterResetKey}-${JSON.stringify(filterInitialSelected)}`,
+    [filterResetKey, filterInitialSelected]
+  )
 
   // URL keyword 변경 시(뒤로가기 포함) searchInput 동기화 — React 공식 getDerivedState 패턴
   if (prevKeyword !== keyword) {
@@ -68,7 +73,6 @@ export function useExploreParams(gridRef: RefObject<HTMLElement | null>) {
     if (searchParams.get('sort')) params.set('sort', searchParams.get('sort')!)
     params.set('page', '1')
     setSearchInput('')
-    setFilterInitialSelected({})
     setFilterResetKey((k) => k + 1)
     router.push(`/explore?${params.toString()}`, { scroll: false })
   }
@@ -76,7 +80,7 @@ export function useExploreParams(gridRef: RefObject<HTMLElement | null>) {
   return {
     searchInput,
     setSearchInput,
-    filterResetKey,
+    filterKey,
     filterInitialSelected,
     keyword,
     categoryId,
