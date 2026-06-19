@@ -80,7 +80,7 @@ export function ExploreGrid({
                       )
                     }
                   }}
-                  className={css({ cursor: 'pointer' })}
+                  className={css({ cursor: 'pointer', minWidth: 0 })}
                 >
                   <PlaceCard
                     placeId={place.id}
