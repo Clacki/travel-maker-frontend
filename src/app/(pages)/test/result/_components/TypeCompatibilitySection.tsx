@@ -12,6 +12,7 @@ export type TypeCompatibilityCardData = {
   description: string
   imageUrl?: string
   tags: string[]
+  reason?: string
 }
 
 interface TypeCompatibilitySectionProps {
@@ -122,6 +123,17 @@ const descriptionStyle = css({
   wordBreak: 'keep-all',
 })
 
+const reasonStyle = css({
+  fontSize: 'sm',
+  color: 'text.secondary',
+  lineHeight: 'normal',
+  wordBreak: 'keep-all',
+
+  borderLeftWidth: '2px',
+  borderLeftColor: 'border.subtle',
+  pl: '3',
+})
+
 const tagListStyle = css({
   display: 'flex',
   flexWrap: 'wrap',
@@ -191,6 +203,7 @@ function CompatibilityCard({
         >
           <h3 className={titleStyle}>{type.name}</h3>
           <p className={descriptionStyle}>{type.description}</p>
+          {type.reason && <p className={reasonStyle}>{type.reason}</p>}
         </div>
         {type.tags.length > 0 && (
           <div className={tagListStyle}>
