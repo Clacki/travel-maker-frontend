@@ -200,7 +200,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   }
 
   const handleEditProfile = () => {
-    router.push(`/profile/${userId}/edit`)
+    router.push(ROUTES.PROFILE_EDIT(String(user.id)))
   }
 
   const handleWithdraw = async (reason: string) => {

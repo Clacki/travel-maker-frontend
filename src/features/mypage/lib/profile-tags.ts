@@ -3,20 +3,12 @@ import type { UserProfile } from '@/types/mypage.types'
 
 export const PROFILE_TAG_LIMIT = 3
 
-const profileStyleTags = [
-  { id: 'beach', label: '해변' },
-  { id: 'mountain', label: '산악' },
-  { id: 'city', label: '도시' },
-  { id: 'culture', label: '문화' },
-  { id: 'food', label: '미식' },
-  { id: 'activity', label: '액티비티' },
-  { id: 'romantic', label: '로맨틱' },
-]
-
 const themeTags =
   travelFilterSections.find((section) => section.id === 'theme')?.tags ?? []
 
-export const profileInterestTags = [...profileStyleTags, ...themeTags]
+const FIRST_PROFILE_TAG_API_ID = 8
+
+export const profileInterestTags = themeTags
 
 const DEFAULT_PROFILE_TAG_IDS: string[] = []
 
@@ -38,8 +30,10 @@ export function mapProfileTagIdsToUserTags(
   return normalizeTagIds(tagIds)
     .map((tagId) => profileInterestTags.find((tag) => tag.id === tagId))
     .filter((tag): tag is (typeof profileInterestTags)[number] => Boolean(tag))
-    .map((tag, index) => ({
-      id: index + 1,
+    .map((tag) => ({
+      id:
+        profileInterestTags.findIndex((candidate) => candidate.id === tag.id) +
+        FIRST_PROFILE_TAG_API_ID,
       name: tag.label,
     }))
 }
@@ -48,5 +42,26 @@ export function mapProfileTagIdsToApiTagIds(tagIds: string[]) {
   return normalizeTagIds(tagIds)
     .map((tagId) => profileInterestTags.findIndex((tag) => tag.id === tagId))
     .filter((tagIndex) => tagIndex >= 0)
-    .map((tagIndex) => tagIndex + 1)
+    .map((tagIndex) => tagIndex + FIRST_PROFILE_TAG_API_ID)
+}
+
+export function mapUserTagsToProfileTagIds(
+  tags: { id: number; name: string }[]
+) {
+  return normalizeTagIds(
+    tags
+      .map((tag) => {
+        const index = tag.id - FIRST_PROFILE_TAG_API_ID
+        const tagById = profileInterestTags[index]
+
+        if (tagById) {
+          return tagById.id
+        }
+
+        return profileInterestTags.find(
+          (candidate) => candidate.label === tag.name
+        )?.id
+      })
+      .filter((tagId): tagId is string => Boolean(tagId))
+  )
 }

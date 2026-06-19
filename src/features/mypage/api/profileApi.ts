@@ -14,17 +14,16 @@ export type ProfileImagePresignedUrlResponse = {
 }
 
 export type UpdateMyProfileRequest = {
-  nickname: string
-  bio: string
-  tags: number[]
+  nickname?: string
+  bio?: string
+  tags?: number[]
   profile_image_url?: string
 }
 
 export type UpdatedMyProfileResponse = {
   nickname: string
   bio: string
-  profile_img_url?: string | null
-  profile_image_url?: string | null
+  profile_img_url: string | null
   tags: {
     id: number
     name: string
@@ -37,7 +36,7 @@ export async function checkNickname(
   nickname: string
 ): Promise<{ available: boolean }> {
   try {
-    await api.post('/users/nickname/check', { nickname })
+    await api.post<{ detail: string }>('/users/nickname/check', { nickname })
     return { available: true }
   } catch (error) {
     if (isAxiosError(error) && error.response?.status === 409) {
