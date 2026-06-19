@@ -2,47 +2,32 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-interface UseShareLinkParams {
-  title: string
-}
-
-export function useShareLink({ title }: UseShareLinkParams) {
-  const [copied, setCopied] = useState(false)
+export function useShareLink() {
+  const [toastVisible, setToastVisible] = useState(false)
   const isSharing = useRef(false)
-  const copiedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(
     () => () => {
-      if (copiedTimeoutRef.current) {
-        clearTimeout(copiedTimeoutRef.current)
-      }
+      if (timerRef.current) clearTimeout(timerRef.current)
     },
     []
   )
 
   const shareLink = async () => {
     if (isSharing.current) return
-
     isSharing.current = true
+
     try {
-      const url = window.location.href
+      await navigator.clipboard.writeText(window.location.href)
+    } catch {}
 
-      if (navigator.share) {
-        await navigator.share({ title, url })
-      } else {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
+    setToastVisible(true)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => setToastVisible(false), 2000)
 
-        if (copiedTimeoutRef.current) {
-          clearTimeout(copiedTimeoutRef.current)
-        }
-
-        copiedTimeoutRef.current = setTimeout(() => setCopied(false), 2000)
-      }
-    } finally {
-      isSharing.current = false
-    }
+    isSharing.current = false
   }
 
-  return { copied, shareLink }
+  return { toastVisible, shareLink }
 }

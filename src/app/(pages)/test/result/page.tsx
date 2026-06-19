@@ -5,12 +5,13 @@ export const metadata = {
 }
 
 type TestResultPageProps = {
-  searchParams: Promise<{ type?: string }>
+  searchParams: Promise<{ type?: string; type_key?: string; vector?: string }>
 }
 
 export default async function TestResultPage({
   searchParams,
 }: TestResultPageProps) {
-  const { type } = await searchParams
-  return <ResultPage sharedTypeKey={type} />
+  const { type, type_key, vector } = await searchParams
+  const effectiveTypeKey = type_key ?? type
+  return <ResultPage sharedTypeKey={effectiveTypeKey} sharedVector={vector} />
 }

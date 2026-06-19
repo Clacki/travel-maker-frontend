@@ -10,3 +10,13 @@ export const postQuizSubmit = async (
   const response = await api.post<QuizSubmitResponse>('/quiz/submit', payload)
   return response.data
 }
+
+export const getSharedQuizResult = async (
+  typeKey: string,
+  vector: string
+): Promise<QuizSubmitResponse> => {
+  const response = await api.get<QuizSubmitResponse>('/quiz/result/shared', {
+    params: { type_key: typeKey, vector },
+  })
+  return response.data
+}

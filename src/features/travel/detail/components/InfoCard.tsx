@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import { LoginModal } from '@/components/auth/LoginModal'
+import { Toast } from '@/components/common/Toast/Toast'
 import { css } from '@/styled-system/css'
 import { useShareLink } from '../hooks/useShareLink'
 import { useTravelDetailBookmark } from '../hooks/useTravelDetailBookmark'
@@ -73,7 +74,7 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
     is_bookmarked,
   } = detail
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
-  const { copied, shareLink } = useShareLink({ title: place_name })
+  const { toastVisible, shareLink } = useShareLink()
   const {
     isAuthInitialized,
     isBookmarked,
@@ -98,7 +99,7 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
           />
 
           <TravelDetailActionBar
-            copied={copied}
+            copied={toastVisible}
             isAuthInitialized={isAuthInitialized}
             isBookmarked={isBookmarked}
             isBookmarkPending={isBookmarkPending}
@@ -120,6 +121,7 @@ export default function InfoCard({ detail, highlightedTags }: InfoCardProps) {
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
       />
+      <Toast message="링크가 복사되었습니다" visible={toastVisible} />
     </>
   )
 }

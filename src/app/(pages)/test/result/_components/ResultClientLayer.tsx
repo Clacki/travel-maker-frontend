@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { css } from '@/styled-system/css'
@@ -24,6 +24,7 @@ import type {
   QuizSubmitResponse,
   ResultVectorItem,
 } from '@/features/result/quizSubmit.types'
+import { getSharedQuizResult } from '@/features/result/quizSubmitApi'
 import {
   readSessionResultCache,
   subscribeSessionResultCache,
@@ -46,6 +47,7 @@ const TRAIT_FALLBACK_ICONS = ['🌟', '📍', '💡', '🎯']
 
 interface ResultClientLayerProps {
   sharedTypeKey?: string
+  sharedVector?: string
 }
 
 function isValidTypeKey(key: string): key is TypeKey {
@@ -209,14 +211,49 @@ function buildResultViewModel(
   }
 }
 
-export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
+export function ResultClientLayer({
+  sharedTypeKey,
+  sharedVector,
+}: ResultClientLayerProps) {
   const {
     resultVector,
     typeKey: storeTypeKey,
     apiResult: storeApiResult,
-    apiError,
+    apiError: storeApiError,
   } = useQuizStore()
   const router = useRouter()
+
+  // 공유 링크로 접근한 경우: API로 결과 조회
+  const [sharedResult, setSharedResult] = useState<QuizSubmitResponse | null>(
+    null
+  )
+  const [sharedError, setSharedError] = useState(false)
+
+  const isSharedAccess =
+    !!sharedTypeKey && !!sharedVector && !storeApiResult && !storeTypeKey
+
+  useEffect(() => {
+    if (!isSharedAccess) {
+      return
+    }
+
+    let cancelled = false
+    getSharedQuizResult(sharedTypeKey, sharedVector)
+      .then((result) => {
+        if (!cancelled) {
+          setSharedResult(result)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSharedError(true)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isSharedAccess, sharedTypeKey, sharedVector])
 
   // sessionStorage에서 이 타입의 결과를 복원 (store가 비어있을 때 사용)
   // server snapshot = null → hydration mismatch 방지
@@ -228,7 +265,8 @@ export function ResultClientLayer({ sharedTypeKey }: ResultClientLayerProps) {
     () => null
   )
 
-  const apiResult = storeApiResult ?? cachedApiResult
+  const apiResult = storeApiResult ?? sharedResult ?? cachedApiResult
+  const apiError = storeApiError || sharedError
 
   // type_key: API 우선 → 로컬 계산 → sharedTypeKey 순으로 폴백
   const effectiveTypeKey =

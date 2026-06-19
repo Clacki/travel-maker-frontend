@@ -5,6 +5,8 @@ import { useState, useCallback } from 'react'
 import { css, cx } from '@/styled-system/css'
 
 import { buttonRecipe } from '@/components/common/button/Button'
+import { Toast } from '@/components/common/Toast/Toast'
+import { useQuizStore } from '@/store/quizStore'
 
 interface ShareButtonProps {
   typeKey: string
@@ -15,51 +17,38 @@ const shareButtonStyle = css({
 })
 
 export function ShareButton({ typeKey }: ShareButtonProps) {
-  const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [toastVisible, setToastVisible] = useState(false)
 
   const handleShare = useCallback(async () => {
-    const shareUrl = `${window.location.origin}/test/result?type=${typeKey}`
+    const { resultVector } = useQuizStore.getState()
 
-    if (typeof navigator.share === 'function') {
-      try {
-        await navigator.share({
-          title: '나의 여행 성향 테스트 결과',
-          url: shareUrl,
-        })
-        return
-      } catch (err) {
-        // 사용자가 직접 취소한 경우(AbortError)는 폴백 없이 조용히 종료
-        if (err instanceof DOMException && err.name === 'AbortError') return
-        // 그 외 오류(미지원, 권한 등)는 클립보드 복사로 폴백
-      }
-    }
+    const shareUrl = resultVector
+      ? `${window.location.origin}/test/result?type_key=${typeKey}&vector=${resultVector.join(',')}`
+      : `${window.location.origin}/test/result?type=${typeKey}`
 
     try {
       await navigator.clipboard.writeText(shareUrl)
-      setStatus('copied')
-      setTimeout(() => setStatus('idle'), 1500)
     } catch {
-      setStatus('failed')
-      setTimeout(() => setStatus('idle'), 2000)
+      // clipboard 실패 시 무시
     }
+
+    setToastVisible(true)
+    setTimeout(() => setToastVisible(false), 2000)
   }, [typeKey])
 
-  const label = {
-    idle: '결과 공유하기',
-    copied: '링크 복사됨!',
-    failed: 'URL을 직접 복사해주세요',
-  }[status]
-
   return (
-    <button
-      type="button"
-      className={cx(
-        buttonRecipe({ variant: 'outline', size: 'md', shape: 'pill' }),
-        shareButtonStyle
-      )}
-      onClick={handleShare}
-    >
-      {label}
-    </button>
+    <>
+      <button
+        type="button"
+        className={cx(
+          buttonRecipe({ variant: 'outline', size: 'md', shape: 'pill' }),
+          shareButtonStyle
+        )}
+        onClick={handleShare}
+      >
+        결과 공유하기
+      </button>
+      <Toast message="링크가 복사되었습니다" visible={toastVisible} />
+    </>
   )
 }
