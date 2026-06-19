@@ -103,7 +103,7 @@ export function ExploreGrid({
                     rating={Number(place.rating_avg)}
                     imageUrl={place.image_url ?? undefined}
                     variant="bookmark"
-                    isLiked={place.is_bookmarked}
+                    isLiked={Boolean(place.is_bookmarked)}
                     onLikeToggle={onLikeToggle}
                   />
                 </div>
