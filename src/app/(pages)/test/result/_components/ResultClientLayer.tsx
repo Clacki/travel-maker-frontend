@@ -300,9 +300,16 @@ export function ResultClientLayer({
     effectiveTypeKey
   )
 
+  const effectiveVectorString =
+    sharedVector ?? (resultVector ? resultVector.join(',') : undefined)
+
   return (
     <>
-      <HeroSection result={result} typeKey={effectiveTypeKey} />
+      <HeroSection
+        result={result}
+        typeKey={effectiveTypeKey}
+        effectiveVector={effectiveVectorString}
+      />
       <CompassSection compassData={result.compassData} />
       {recommendedDestinations.length > 0 ? (
         <DestinationsSection
