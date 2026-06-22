@@ -47,9 +47,10 @@ export const pageTitleStyle = css({
 })
 
 export const leftPanelStyle = css({
-  flex: '0 0 44%',
+  flex: { base: '1 1 auto', lg: '0 0 44%' },
   minW: 0,
-  pr: '3',
+  pr: { base: 0, lg: '3' },
+  pb: { base: '3', lg: 0 },
   py: '4',
   display: 'flex',
   flexDirection: 'column',
@@ -57,9 +58,9 @@ export const leftPanelStyle = css({
 })
 
 export const rightPanelStyle = css({
-  flex: '0 0 56%',
+  flex: { base: '1 1 auto', lg: '0 0 56%' },
   minW: 0,
-  pl: '3',
+  pl: { base: 0, lg: '3' },
   py: '4',
   display: 'flex',
   flexDirection: 'column',
@@ -72,6 +73,7 @@ export const searchWrapperStyle = css({
 
 export const bodyStyle = css({
   display: 'flex',
+  flexDirection: { base: 'column', lg: 'row' },
   alignItems: 'flex-start',
 })
 

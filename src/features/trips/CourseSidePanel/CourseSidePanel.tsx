@@ -23,8 +23,17 @@ const PlaceListSection = dynamic(
 
 const cardHeaderStyle = css({
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   justifyContent: 'space-between',
+  gap: '2',
+})
+
+const placeCardDescStyle = css({
+  display: '-webkit-box',
+  WebkitBoxOrient: 'vertical',
+  overflow: 'hidden',
+  WebkitLineClamp: { base: 2, lg: 1 },
+  wordBreak: 'keep-all',
 })
 
 const badgeStyle = css({
@@ -35,6 +44,7 @@ const badgeStyle = css({
   px: '2',
   py: '0.5',
   fontWeight: 'medium',
+  whiteSpace: 'nowrap',
 })
 
 export function CourseInfoCard() {
@@ -88,7 +98,7 @@ export function CoursePlaceCard() {
       <div className={cardHeaderStyle}>
         <div>
           <h2 className={cardTitleStyle}>선택한 코스 · {selectedDay}일차</h2>
-          <p className={cardDescStyle}>
+          <p className={`${cardDescStyle} ${placeCardDescStyle}`}>
             장소를 드래그하여 순서를 변경하거나 삭제할 수 있어요
           </p>
         </div>
