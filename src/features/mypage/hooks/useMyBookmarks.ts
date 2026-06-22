@@ -2,11 +2,31 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import type { UserBookmarksResponse } from '@/types/mypage.types'
+import type {
+  UserBookmarkPlace,
+  UserBookmarksResponse,
+} from '@/types/mypage.types'
 
 import { deleteBookmark, getUserBookmarks } from '../api/bookmarkApi'
 
 const BOOKMARK_PAGE_SIZE = 8
+
+type BookmarksApiResponse = UserBookmarksResponse | UserBookmarkPlace[]
+
+const normalizeBookmarksResponse = (
+  data: BookmarksApiResponse
+): UserBookmarksResponse => {
+  if (Array.isArray(data)) {
+    return {
+      count: data.length,
+      next: null,
+      previous: null,
+      results: data,
+    }
+  }
+
+  return data
+}
 
 export function useMyBookmarks() {
   const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
@@ -44,11 +64,11 @@ export function useMyBookmarks() {
         if (!cancelled) {
           setBookmarkResult({
             key: requestKey,
-            data,
+            data: normalizeBookmarksResponse(data),
           })
         }
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error('Failed to load bookmarks', error)
         if (!cancelled) {
           setBookmarkResult({
@@ -67,30 +87,32 @@ export function useMyBookmarks() {
     async (placeId: number) => {
       try {
         await deleteBookmark(placeId)
-        setBookmarkResult((prev) => {
-          if (!prev || prev.key !== requestKey) {
-            return prev
-          }
 
-          return {
-            ...prev,
-            data: {
-              ...prev.data,
-              count: Math.max(0, prev.data.count - 1),
-              results: prev.data.results.filter(
-                (place) => place.place_id !== placeId
-              ),
-            },
-          }
-        })
-        if (bookmarks.length === 1 && bookmarkPage > 1) {
+        const nextData = normalizeBookmarksResponse(
+          await getUserBookmarks({
+            page: bookmarkPage,
+            page_size: BOOKMARK_PAGE_SIZE,
+          })
+        )
+
+        if (
+          nextData.results.length === 0 &&
+          nextData.count > 0 &&
+          bookmarkPage > 1
+        ) {
           setBookmarkPage((page) => page - 1)
+          return
         }
+
+        setBookmarkResult({
+          key: requestKey,
+          data: nextData,
+        })
       } catch (error) {
         console.error('Failed to delete bookmark', error)
       }
     },
-    [bookmarkPage, bookmarks.length, requestKey]
+    [bookmarkPage, requestKey]
   )
 
   return {
