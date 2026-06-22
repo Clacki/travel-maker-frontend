@@ -78,6 +78,24 @@ export const bodyStyle = css({
 })
 
 // 코스 카드 공통 스타일 (CourseSidePanel / SchedulePanel 공유)
+export const cardHeaderStyle = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '2',
+})
+
+export const cardBadgeStyle = css({
+  bg: 'primary.soft',
+  color: 'primary',
+  borderRadius: 'pill',
+  fontSize: 'xs',
+  px: '2',
+  py: '0.5',
+  fontWeight: 'medium',
+  whiteSpace: 'nowrap',
+})
+
 export const cardStyle = css({
   bg: 'bg.surface',
   borderRadius: '2xl',

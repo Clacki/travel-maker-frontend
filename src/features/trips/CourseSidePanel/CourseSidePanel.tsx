@@ -8,9 +8,11 @@ import {
   cardStyle,
   cardTitleStyle,
   cardDescStyle,
+  cardHeaderStyle,
+  cardBadgeStyle,
 } from '@/features/trips/styles/courseEditor.styles'
 
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 import { CourseInfoSection } from './components/CourseInfoSection'
 
@@ -21,30 +23,12 @@ const PlaceListSection = dynamic(
   { ssr: false, loading: () => <div className={loadingStyle} /> }
 )
 
-const cardHeaderStyle = css({
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: '2',
-})
-
 const placeCardDescStyle = css({
   display: '-webkit-box',
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
   WebkitLineClamp: { base: 2, lg: 1 },
   wordBreak: 'keep-all',
-})
-
-const badgeStyle = css({
-  bg: 'primary.soft',
-  color: 'primary',
-  borderRadius: 'pill',
-  fontSize: 'xs',
-  px: '2',
-  py: '0.5',
-  fontWeight: 'medium',
-  whiteSpace: 'nowrap',
 })
 
 export function CourseInfoCard() {
@@ -64,7 +48,7 @@ export function CourseInfoCard() {
           <h2 className={cardTitleStyle}>코스 기본 정보</h2>
           <p className={cardDescStyle}>여행의 분위기와 테마를 설정해주세요</p>
         </div>
-        <span className={badgeStyle}>필수 항목</span>
+        <span className={cardBadgeStyle}>필수 항목</span>
       </div>
       <CourseInfoSection
         title={title}
@@ -98,11 +82,11 @@ export function CoursePlaceCard() {
       <div className={cardHeaderStyle}>
         <div>
           <h2 className={cardTitleStyle}>선택한 코스 · {selectedDay}일차</h2>
-          <p className={`${cardDescStyle} ${placeCardDescStyle}`}>
+          <p className={cx(cardDescStyle, placeCardDescStyle)}>
             장소를 드래그하여 순서를 변경하거나 삭제할 수 있어요
           </p>
         </div>
-        <span className={badgeStyle}>필수 항목</span>
+        <span className={cardBadgeStyle}>필수 항목</span>
       </div>
       <PlaceListSection
         places={dayPlaces}
