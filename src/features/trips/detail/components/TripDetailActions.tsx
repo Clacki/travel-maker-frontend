@@ -12,14 +12,18 @@ import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import { Toast } from '@/components/common/Toast/Toast'
 import { deleteRoute } from '@/features/trips/api/routesApi'
 import type { TripCourseDetail } from '../types/tripDetail'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 
 const actionsStyle = css({
-  display: 'flex',
-  flexWrap: 'wrap',
+  display: { base: 'grid', md: 'flex' },
+  gridTemplateColumns: {
+    base: 'repeat(2, minmax(0, 1fr))',
+    md: 'none',
+  },
+  flexWrap: { md: 'wrap' },
   alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '3',
+  justifyContent: { md: 'space-between' },
+  gap: { base: '2', md: '3' },
   p: { base: '4', md: '5' },
   bg: 'bg.surface',
   borderWidth: '1px',
@@ -27,10 +31,40 @@ const actionsStyle = css({
   borderRadius: 'lg',
 })
 
+const ownerActionsStyle = css({
+  gridTemplateColumns: {
+    base: 'repeat(4, minmax(0, 1fr))',
+    md: 'none',
+  },
+})
+
 const groupStyle = css({
-  display: 'flex',
-  flexWrap: 'wrap',
+  display: { base: 'contents', md: 'flex' },
+  flexWrap: { md: 'wrap' },
   gap: '2',
+})
+
+const actionItemStyle = css({
+  width: { base: 'full', md: 'auto' },
+  minH: { base: '12', md: '10' },
+  minW: 0,
+  gap: { base: '0', md: '2' },
+  px: { base: '0', md: '5' },
+  fontSize: { base: 'xs', md: 'md' },
+})
+
+const actionIconStyle = css({
+  flexShrink: 0,
+  width: { base: '5', md: 'auto' },
+  height: { base: '5', md: 'auto' },
+})
+
+const actionLabelStyle = css({
+  display: { base: 'none', md: 'inline' },
+  minW: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 })
 
 const linkButtonStyle = css({
@@ -84,14 +118,6 @@ const editLinkStyle = css({
   _focusVisible: {
     outline: 'none',
     boxShadow: 'focus',
-  },
-})
-
-const dangerButtonStyle = css({
-  color: 'text.secondary',
-  _hover: {
-    borderColor: 'primary',
-    color: 'primary',
   },
 })
 
@@ -153,33 +179,55 @@ export function TripDetailActions({ trip }: TripDetailActionsProps) {
 
   return (
     <>
-      <section className={actionsStyle} aria-label="코스 상세 작업">
-        <Link href={ROUTES.TRIPS} className={linkButtonStyle}>
-          <ArrowLeft size={17} aria-hidden="true" />
-          목록으로
+      <section
+        className={cx(actionsStyle, isOwner && ownerActionsStyle)}
+        aria-label="코스 상세 작업"
+      >
+        <Link
+          href={ROUTES.TRIPS}
+          className={cx(linkButtonStyle, actionItemStyle)}
+          aria-label="목록으로"
+        >
+          <ArrowLeft size={17} aria-hidden="true" className={actionIconStyle} />
+          <span className={actionLabelStyle}>목록으로</span>
         </Link>
 
         <div className={groupStyle}>
-          <Button variant="neutral" onClick={handleShare}>
-            <Share2 size={17} aria-hidden="true" />
-            공유하기
+          <Button
+            variant="neutral"
+            className={actionItemStyle}
+            aria-label="공유하기"
+            onClick={handleShare}
+          >
+            <Share2 size={17} aria-hidden="true" className={actionIconStyle} />
+            <span className={actionLabelStyle}>공유하기</span>
           </Button>
           {isOwner ? (
             <>
               <Link
                 href={ROUTES.TRIP_EDIT(String(trip.id))}
-                className={editLinkStyle}
+                className={cx(editLinkStyle, actionItemStyle)}
+                aria-label="수정하기"
               >
-                <Pencil size={17} aria-hidden="true" />
-                수정하기
+                <Pencil
+                  size={17}
+                  aria-hidden="true"
+                  className={actionIconStyle}
+                />
+                <span className={actionLabelStyle}>수정하기</span>
               </Link>
               <Button
-                variant="neutral"
-                className={dangerButtonStyle}
+                variant="danger"
+                className={actionItemStyle}
+                aria-label="삭제하기"
                 onClick={handleDelete}
               >
-                <Trash2 size={17} aria-hidden="true" />
-                삭제하기
+                <Trash2
+                  size={17}
+                  aria-hidden="true"
+                  className={actionIconStyle}
+                />
+                <span className={actionLabelStyle}>삭제하기</span>
               </Button>
             </>
           ) : null}
