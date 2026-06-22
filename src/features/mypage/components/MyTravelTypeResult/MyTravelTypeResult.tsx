@@ -21,7 +21,7 @@ import {
 import { Toast } from '@/components/common/Toast/Toast'
 import { ROUTES } from '@/constants/routes'
 import { TRAVEL_TYPE_MAP } from '@/features/result/result.constants'
-import { css } from '@/styled-system/css'
+import { css, cx } from '@/styled-system/css'
 import type {
   RecommendedPlace,
   TravelTypeResult,
@@ -648,7 +648,7 @@ function RecommendedDestinationCard({
               <Link
                 key={`${destination.place_id}-${index}`}
                 href={ROUTES.DETAIL(String(destination.place_id))}
-                className={`${destinationItemStyle} ${destinationLinkStyle}`}
+                className={cx(destinationItemStyle, destinationLinkStyle)}
                 aria-label={`${destination.place_name} 상세 페이지로 이동`}
               >
                 {content}
@@ -656,7 +656,7 @@ function RecommendedDestinationCard({
             ) : (
               <div
                 key={`invalid-${index}`}
-                className={`${destinationItemStyle} ${destinationDisabledStyle}`}
+                className={cx(destinationItemStyle, destinationDisabledStyle)}
                 aria-disabled="true"
               >
                 {content}
