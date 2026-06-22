@@ -50,16 +50,18 @@ export const leftPanelStyle = css({
   flex: { base: '1 1 auto', lg: '0 0 44%' },
   minW: 0,
   pr: { base: 0, lg: '3' },
+  pt: '4',
   pb: { base: '3', lg: 0 },
-  py: '4',
   display: 'flex',
   flexDirection: 'column',
   gap: '3',
 })
 
 export const rightPanelStyle = css({
-  flex: { base: '1 1 auto', lg: '0 0 56%' },
+  flex: { lg: '0 0 56%' },
   minW: 0,
+  w: { base: 'full', sm: '90vw' },
+  mx: { base: 0, sm: 'auto', lg: 0 },
   pl: { base: 0, lg: '3' },
   py: '4',
   display: 'flex',

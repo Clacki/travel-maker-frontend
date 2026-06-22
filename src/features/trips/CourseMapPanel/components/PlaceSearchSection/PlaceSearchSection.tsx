@@ -24,6 +24,7 @@ const cardStyle = css({
   borderWidth: '1px',
   borderColor: 'border.subtle',
   flexShrink: 0,
+  w: 'full',
 })
 
 const sectionStyle = css({

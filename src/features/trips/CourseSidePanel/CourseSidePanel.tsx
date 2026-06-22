@@ -24,10 +24,7 @@ const PlaceListSection = dynamic(
 )
 
 const placeCardDescStyle = css({
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-  WebkitLineClamp: { base: 2, lg: 1 },
+  lineClamp: { base: 2, lg: 1 },
   wordBreak: 'keep-all',
 })
 

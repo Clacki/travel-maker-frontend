@@ -52,6 +52,7 @@ const panelStyle = css({
   borderWidth: '1px',
   borderColor: 'border.subtle',
   overflow: 'hidden',
+  w: 'full',
 })
 
 const mapHeaderStyle = css({
