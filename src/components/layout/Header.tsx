@@ -57,6 +57,15 @@ const headerActionsStyle = css({
   minW: 0,
 })
 
+const authActionSlotStyle = css({
+  width: '16',
+  minH: '10',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  flexShrink: 0,
+})
+
 const navStyle = css({
   display: { base: 'flex' },
   alignItems: 'center',
@@ -101,8 +110,7 @@ export function Header({ className }: HeaderProps) {
   const pathname = usePathname()
   const origin =
     typeof window === 'undefined' ? 'http://localhost' : window.location.origin
-  const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-  const isAuthInitialized = useAuthStore((state) => state.isAuthInitialized)
+  const authStatus = useAuthStore((state) => state.authStatus)
 
   const openLoginModal = () => setIsLoginModalOpen(true)
   const closeLoginModal = () => setIsLoginModalOpen(false)
@@ -164,28 +172,20 @@ export function Header({ className }: HeaderProps) {
               ))}
             </nav>
 
-            {!isAuthInitialized ? (
-              <Button
-                aria-busy="true"
-                disabled
-                variant="secondary"
-                size="sm"
-                shape="pill"
-              >
-                Login
-              </Button>
-            ) : isLoggedIn ? (
-              <ProfileDropdown />
-            ) : (
-              <Button
-                onClick={openLoginModal}
-                variant="secondary"
-                size="sm"
-                shape="pill"
-              >
-                Login
-              </Button>
-            )}
+            <div className={authActionSlotStyle}>
+              {authStatus === 'authenticated' ? (
+                <ProfileDropdown />
+              ) : authStatus === 'unauthenticated' ? (
+                <Button
+                  onClick={openLoginModal}
+                  variant="secondary"
+                  size="sm"
+                  shape="pill"
+                >
+                  Login
+                </Button>
+              ) : null}
+            </div>
           </div>
         </LayoutContainer>
       </header>
