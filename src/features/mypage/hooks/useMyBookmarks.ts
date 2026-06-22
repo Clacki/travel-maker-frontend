@@ -23,12 +23,15 @@ export function useMyBookmarks() {
   const fetchKey = `${currentUserId ?? 'unknown'}:${accessToken ?? 'none'}`
   const requestKey = `${fetchKey}:${bookmarkPage}`
   const canFetchBookmarks = isAuthInitialized && isLoggedIn && !!accessToken
+
   const bookmarkData =
     canFetchBookmarks && bookmarkResult?.key === requestKey
       ? bookmarkResult.data
       : null
+
   const bookmarks = bookmarkData?.results ?? []
   const bookmarkCount = bookmarkData?.count ?? 0
+
   const isBookmarkLoading =
     canFetchBookmarks && bookmarkResult?.key !== requestKey
 
@@ -39,7 +42,10 @@ export function useMyBookmarks() {
 
     let cancelled = false
 
-    getUserBookmarks({ page: bookmarkPage, page_size: BOOKMARK_PAGE_SIZE })
+    getUserBookmarks({
+      page: bookmarkPage,
+      page_size: BOOKMARK_PAGE_SIZE,
+    })
       .then((data) => {
         if (!cancelled) {
           setBookmarkResult({
@@ -48,12 +54,18 @@ export function useMyBookmarks() {
           })
         }
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         console.error('Failed to load bookmarks', error)
+
         if (!cancelled) {
           setBookmarkResult({
             key: requestKey,
-            data: { count: 0, next: null, previous: null, results: [] },
+            data: {
+              count: 0,
+              next: null,
+              previous: null,
+              results: [],
+            },
           })
         }
       })
@@ -67,30 +79,30 @@ export function useMyBookmarks() {
     async (placeId: number) => {
       try {
         await deleteBookmark(placeId)
-        setBookmarkResult((prev) => {
-          if (!prev || prev.key !== requestKey) {
-            return prev
-          }
 
-          return {
-            ...prev,
-            data: {
-              ...prev.data,
-              count: Math.max(0, prev.data.count - 1),
-              results: prev.data.results.filter(
-                (place) => place.place_id !== placeId
-              ),
-            },
-          }
+        const nextData = await getUserBookmarks({
+          page: bookmarkPage,
+          page_size: BOOKMARK_PAGE_SIZE,
         })
-        if (bookmarks.length === 1 && bookmarkPage > 1) {
+
+        if (
+          nextData.results.length === 0 &&
+          nextData.count > 0 &&
+          bookmarkPage > 1
+        ) {
           setBookmarkPage((page) => page - 1)
+          return
         }
+
+        setBookmarkResult({
+          key: requestKey,
+          data: nextData,
+        })
       } catch (error) {
         console.error('Failed to delete bookmark', error)
       }
     },
-    [bookmarkPage, bookmarks.length, requestKey]
+    [bookmarkPage, requestKey]
   )
 
   return {
