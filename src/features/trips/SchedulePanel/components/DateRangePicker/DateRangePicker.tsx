@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { DayPicker } from 'react-day-picker'
-import { Calendar, ChevronDown } from 'lucide-react'
+import { Calendar, ChevronDown, Info } from 'lucide-react'
 
 import type { CourseDateRange } from '@/features/trips/types/course.types'
 import { MAX_TRIP_DAYS } from '@/features/trips/types/course.types'
@@ -46,6 +46,35 @@ const dropdownStyle = css({
   p: '4',
   w: '320px',
 })
+
+const hintBaseStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+  fontSize: 'xs',
+  color: 'text.secondary',
+} as const
+
+const hintStyle = css({ ...hintBaseStyle, mt: '1.5' })
+
+const dropdownHintStyle = css({
+  ...hintBaseStyle,
+  mt: '3',
+  pt: '3',
+  borderTopWidth: '1px',
+  borderColor: 'border.subtle',
+})
+
+const HINT_TEXT = `최대 ${MAX_TRIP_DAYS}일까지 선택할 수 있어요`
+
+function TripDaysHint({ className, id }: { className: string; id?: string }) {
+  return (
+    <p id={id} className={className} role="note">
+      <Info size={12} aria-hidden="true" />
+      {HINT_TEXT}
+    </p>
+  )
+}
 
 const calendarClassNames = {
   root: css({ w: 'full' }),
@@ -284,6 +313,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
         className={triggerStyle}
         onClick={handleOpen}
         aria-expanded={open}
+        aria-describedby="date-range-hint"
       >
         <Calendar
           size={16}
@@ -309,6 +339,9 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
           })}
         />
       </button>
+
+      {/* B: 입력창 하단 상시 힌트 */}
+      <TripDaysHint id="date-range-hint" className={hintStyle} />
 
       {open && (
         <div
@@ -356,6 +389,9 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
             }}
             classNames={calendarClassNames}
           />
+
+          {/* A: 달력 드롭다운 하단 힌트 */}
+          <TripDaysHint className={dropdownHintStyle} />
         </div>
       )}
     </div>
