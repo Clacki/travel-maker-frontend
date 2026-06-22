@@ -47,19 +47,22 @@ export const pageTitleStyle = css({
 })
 
 export const leftPanelStyle = css({
-  flex: '0 0 44%',
+  flex: { base: '1 1 auto', lg: '0 0 44%' },
   minW: 0,
-  pr: '3',
-  py: '4',
+  pr: { base: 0, lg: '3' },
+  pt: '4',
+  pb: { base: '3', lg: 0 },
   display: 'flex',
   flexDirection: 'column',
   gap: '3',
 })
 
 export const rightPanelStyle = css({
-  flex: '0 0 56%',
+  flex: { lg: '0 0 56%' },
   minW: 0,
-  pl: '3',
+  w: { base: 'full', sm: '90vw' },
+  mx: { base: 0, sm: 'auto', lg: 0 },
+  pl: { base: 0, lg: '3' },
   py: '4',
   display: 'flex',
   flexDirection: 'column',
@@ -72,10 +75,29 @@ export const searchWrapperStyle = css({
 
 export const bodyStyle = css({
   display: 'flex',
+  flexDirection: { base: 'column', lg: 'row' },
   alignItems: 'flex-start',
 })
 
 // 코스 카드 공통 스타일 (CourseSidePanel / SchedulePanel 공유)
+export const cardHeaderStyle = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '2',
+})
+
+export const cardBadgeStyle = css({
+  bg: 'primary.soft',
+  color: 'primary',
+  borderRadius: 'pill',
+  fontSize: 'xs',
+  px: '2',
+  py: '0.5',
+  fontWeight: 'medium',
+  whiteSpace: 'nowrap',
+})
+
 export const cardStyle = css({
   bg: 'bg.surface',
   borderRadius: '2xl',
