@@ -19,6 +19,7 @@ import {
 } from '@/components/common/status'
 import { Toast } from '@/components/common/Toast/Toast'
 import type { RecommendedDestination } from '@/features/result/result.types'
+import { TRAVEL_TYPE_MAP } from '@/features/result/result.constants'
 import { css } from '@/styled-system/css'
 import type {
   TravelTypeResult,
@@ -405,12 +406,32 @@ interface TravelTypeHeroCardProps {
   onRetryTest: () => void
 }
 
+function resolveTypeKey(result: TravelTypeResult): string | null {
+  if (result.type_key) return result.type_key
+  const entry = (
+    Object.entries(TRAVEL_TYPE_MAP) as [string, { name: string }][]
+  ).find(([, data]) => data.name === result.name)
+  return entry ? entry[0] : null
+}
+
 function TravelTypeHeroCard({ result, onRetryTest }: TravelTypeHeroCardProps) {
   const [toastVisible, setToastVisible] = useState(false)
 
   const handleShare = async () => {
+    const typeKey = resolveTypeKey(result)
+    let shareUrl: string
+
+    if (typeKey && result.result_vector.length > 0) {
+      const vector = result.result_vector.map((v) => v.value / 100).join(',')
+      shareUrl = `${window.location.origin}/test/result?type_key=${typeKey}&vector=${vector}`
+    } else if (typeKey) {
+      shareUrl = `${window.location.origin}/test/result?type=${typeKey}`
+    } else {
+      shareUrl = window.location.href
+    }
+
     try {
-      await navigator.clipboard.writeText(window.location.href)
+      await navigator.clipboard.writeText(shareUrl)
     } catch {}
 
     setToastVisible(true)

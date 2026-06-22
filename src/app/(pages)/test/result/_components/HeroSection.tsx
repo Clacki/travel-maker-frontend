@@ -13,6 +13,7 @@ import { ShareButton } from './ShareButton'
 interface HeroSectionProps {
   result: TestResultResponse
   typeKey: TypeKey
+  effectiveVector?: string
 }
 
 /* 풀 width 배경 래퍼 */
@@ -209,7 +210,11 @@ const buttonRowStyle = css({
   alignSelf: 'flex-start',
 })
 
-export function HeroSection({ result, typeKey }: HeroSectionProps) {
+export function HeroSection({
+  result,
+  typeKey,
+  effectiveVector,
+}: HeroSectionProps) {
   return (
     <section className={sectionStyle}>
       <div className={innerStyle}>
@@ -234,7 +239,7 @@ export function HeroSection({ result, typeKey }: HeroSectionProps) {
             <Link href={ROUTES.TEST} className={retryLinkStyle}>
               테스트 다시하기
             </Link>
-            <ShareButton typeKey={typeKey} />
+            <ShareButton typeKey={typeKey} effectiveVector={effectiveVector} />
           </div>
         </div>
 

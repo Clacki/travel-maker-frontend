@@ -10,31 +10,32 @@ import { useQuizStore } from '@/store/quizStore'
 
 interface ShareButtonProps {
   typeKey: string
+  effectiveVector?: string
 }
 
 const shareButtonStyle = css({
   cursor: 'pointer',
 })
 
-export function ShareButton({ typeKey }: ShareButtonProps) {
+export function ShareButton({ typeKey, effectiveVector }: ShareButtonProps) {
   const [toastVisible, setToastVisible] = useState(false)
 
   const handleShare = useCallback(async () => {
     const { resultVector } = useQuizStore.getState()
+    const vectorString =
+      effectiveVector ?? (resultVector ? resultVector.join(',') : null)
 
-    const shareUrl = resultVector
-      ? `${window.location.origin}/test/result?type_key=${typeKey}&vector=${resultVector.join(',')}`
+    const shareUrl = vectorString
+      ? `${window.location.origin}/test/result?type_key=${typeKey}&vector=${vectorString}`
       : `${window.location.origin}/test/result?type=${typeKey}`
 
     try {
       await navigator.clipboard.writeText(shareUrl)
-    } catch {
-      // clipboard 실패 시 무시
-    }
+    } catch {}
 
     setToastVisible(true)
     setTimeout(() => setToastVisible(false), 2000)
-  }, [typeKey])
+  }, [typeKey, effectiveVector])
 
   return (
     <>

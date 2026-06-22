@@ -481,17 +481,19 @@ export function FilterCard({
 
         {activeSectionData && (
           <div className={dropdownPanelStyle}>
-            <div
-              className={css({
-                display: 'flex',
-                justifyContent: 'flex-end',
-                mb: '3',
-              })}
-            >
-              <span className={badgeHintStyle}>
-                {badgeTextMap[activeSectionData.badgeVariant] ?? ''}
-              </span>
-            </div>
+            {activeSectionData.badgeVariant !== 'bool' && (
+              <div
+                className={css({
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mb: '3',
+                })}
+              >
+                <span className={badgeHintStyle}>
+                  {badgeTextMap[activeSectionData.badgeVariant] ?? ''}
+                </span>
+              </div>
+            )}
             <div className={tagGridStyle}>
               {activeSectionData.tags.map((tag) => (
                 <FilterTag
