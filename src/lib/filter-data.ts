@@ -68,9 +68,9 @@ export const travelFilterSections: FilterSectionData[] = [
     id: 'companion',
     icon: '👥',
     label: '동행',
-    typeLabel: '복수 선택',
-    badgeVariant: 'multi',
-    selectionMode: 'multi',
+    typeLabel: '1개 선택',
+    badgeVariant: 'single',
+    selectionMode: 'single',
     tags: [
       { id: 'solo', label: '혼자', emoji: '🙋' },
       { id: 'couple', label: '커플', emoji: '💑' },
