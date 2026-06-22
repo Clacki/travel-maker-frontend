@@ -33,8 +33,6 @@ export function TripSummaryBar({ trip }: TripSummaryBarProps) {
       <span className={dividerStyle}>|</span>
       <span>{trip.durationLabel}</span>
       <span className={dividerStyle}>|</span>
-      <span>{trip.isPublic ? '공유 가능' : '비공개'}</span>
-      <span className={dividerStyle}>|</span>
       <span>선택한 장소 순서 기준</span>
     </div>
   )

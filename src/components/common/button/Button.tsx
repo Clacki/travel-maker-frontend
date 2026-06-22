@@ -90,6 +90,21 @@ export const buttonRecipe = cva({
           color: 'text.secondary',
         },
       },
+      danger: {
+        bg: 'danger.soft',
+        borderColor: 'danger.border',
+        color: 'danger',
+        _hover: {
+          bg: 'danger.border',
+          borderColor: 'danger.hover',
+          color: 'danger.hover',
+        },
+        _disabled: {
+          bg: 'bg.muted',
+          borderColor: 'border.subtle',
+          color: 'text.secondary',
+        },
+      },
     },
     size: {
       sm: {
@@ -137,6 +152,7 @@ export type ButtonVariant =
   | 'outline'
   | 'ghost'
   | 'neutral'
+  | 'danger'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 export type ButtonShape = 'rounded' | 'pill'
 

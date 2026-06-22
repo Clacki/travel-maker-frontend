@@ -32,7 +32,7 @@ const headerInnerStyle = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: '4',
+  gap: { base: '2', md: '4' },
 })
 
 const logoStyle = css({
@@ -42,6 +42,7 @@ const logoStyle = css({
   lineHeight: 'tight',
   letterSpacing: '0',
   whiteSpace: 'nowrap',
+  flexShrink: 0,
   borderRadius: 'sm',
   _focusVisible: {
     outline: 'none',
@@ -54,11 +55,12 @@ const headerActionsStyle = css({
   alignItems: 'center',
   justifyContent: 'flex-end',
   gap: { base: '2', md: '4' },
+  flex: '1',
   minW: 0,
 })
 
 const authActionSlotStyle = css({
-  width: '16',
+  width: { base: '10', md: '16' },
   minH: '10',
   display: 'flex',
   alignItems: 'center',
@@ -66,21 +68,30 @@ const authActionSlotStyle = css({
   flexShrink: 0,
 })
 
+const unauthenticatedActionSlotStyle = css({
+  width: { base: 'auto', md: '16' },
+})
+
 const navStyle = css({
-  display: { base: 'flex' },
+  display: 'flex',
   alignItems: 'center',
+  justifyContent: 'flex-end',
   gap: '1',
+  flex: '1',
+  minW: 0,
 })
 
 const navLinkStyle = css({
   display: 'inline-flex',
   alignItems: 'center',
   minH: '10',
-  px: '3',
+  px: { base: '1', md: '3' },
+  flexShrink: 0,
   borderRadius: 'pill',
   color: 'text.primary',
   fontSize: 'sm',
   fontWeight: 'semibold',
+  whiteSpace: 'nowrap',
   transitionProperty: 'background-color, color, box-shadow',
   transitionDuration: '150ms',
   _hover: {
@@ -172,7 +183,13 @@ export function Header({ className }: HeaderProps) {
               ))}
             </nav>
 
-            <div className={authActionSlotStyle}>
+            <div
+              className={cx(
+                authActionSlotStyle,
+                authStatus === 'unauthenticated' &&
+                  unauthenticatedActionSlotStyle
+              )}
+            >
               {authStatus === 'authenticated' ? (
                 <ProfileDropdown />
               ) : authStatus === 'unauthenticated' ? (
