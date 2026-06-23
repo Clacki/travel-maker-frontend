@@ -119,6 +119,8 @@
 
 ## 시작하기
 
+https://github.com/Ie-ight/travel-maker-frontend.git clone 받기
+
 ### 요구사항
 
 - Node.js 20+
@@ -185,8 +187,8 @@ pnpm panda:dev      # Panda CSS 코드젠 watch 모드
 | `/detail/[id]`           | 여행지 상세 — 정보, 리뷰, 지도              | —         |
 | `/test`                  | 여행 성향 테스트 질문                       | —         |
 | `/test/result`           | 성향 테스트 결과 — 공유 가능한 URL          | —         |
-| `/trips`                 | 여행 일정 목록                              | ✓         |
-| `/trips/[tripId]`        | 여행 일정 상세                              | ✓         |
+| `/trips`                 | 여행 일정 목록                              | -         |
+| `/trips/[tripId]`        | 여행 일정 상세                              | -         |
 | `/trips/create`          | 여행 일정 생성                              | ✓         |
 | `/profile/[userId]`      | 프로필 — 북마크, 내 리뷰, 성향 결과         | ✓         |
 | `/profile/[userId]/edit` | 프로필 수정                                 | ✓         |
@@ -332,6 +334,8 @@ page.tsx (Server)
 
 ### 브랜치 전략
 
+git flow 전략 사용하고 있습니다
+
 - `main` — 프로덕션 배포 브랜치 (직접 push 금지)
 - `develop` — 통합 개발 브랜치 (**PR base는 항상 `develop`**)
 - `feature/이슈번호-설명` — 기능 개발
@@ -339,7 +343,7 @@ page.tsx (Server)
 
 ### 커밋 메시지
 
-[Conventional Commits](https://www.conventionalcommits.org/) 형식을 따릅니다.
+타입: 변경사항
 
 ```text
 feat: 여행지 상세 페이지 북마크 기능 추가
@@ -347,6 +351,8 @@ fix: 카카오 로그인 콜백 토큰 누락 버그 수정
 refactor: PlaceCard 컴포넌트 Server Component로 전환
 chore: pnpm 버전 업그레이드
 ```
+
+[Conventional Commits](https://www.conventionalcommits.org/) 형식을 따릅니다.
 
 ### PR 규칙
 
