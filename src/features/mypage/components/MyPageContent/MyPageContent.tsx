@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { isAxiosError } from 'axios'
@@ -32,6 +32,7 @@ import { MyTripsSection } from '../MyTripsSection'
 import { ProfileCard } from '../ProfileCard'
 import type { TabType } from '../ProfileTabs'
 import { ProfileTabs } from '../ProfileTabs'
+import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 
 interface MyPageContentProps {
   userId: string
@@ -71,6 +72,12 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     canManageBookmarks,
     initialIsFollowing,
   } = useMyPageOwner(userId)
+
+  useEffect(() => {
+    if (!isAuthInitialized || !isLoggedIn || !isOwner) return
+
+    void loadCurrentUserProfile()
+  }, [isAuthInitialized, isLoggedIn, isOwner])
 
   const { requireAuth, loginModal } = useRequireAuth()
 
@@ -176,12 +183,14 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     try {
       if (isFollowing) {
         await unfollowUser(user.id)
+        await loadCurrentUserProfile()
         setFollowingOverride(false)
         setLocalFollowerCount((prev) =>
           Math.max(0, (prev ?? user.follower_count) - 1)
         )
       } else {
         await followUser(user.id)
+        await loadCurrentUserProfile()
         setFollowingOverride(true)
         setLocalFollowerCount((prev) => (prev ?? user.follower_count) + 1)
       }
