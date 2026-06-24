@@ -1,6 +1,5 @@
 import api from '@/lib/api'
 import type {
-  Place,
   PlacesResponse,
   GetPlacesParams,
   GetPlacesFilterParams,
@@ -57,8 +56,8 @@ export const getPlacesFilter = async (
 
 export const getPlacesRecommend = async (
   params: GetPlacesRecommendParams = {}
-): Promise<Place[]> => {
-  const response = await api.get<Place[]>(PLACES_RECOMMEND_PATH, {
+): Promise<PlacesResponse> => {
+  const response = await api.get<PlacesResponse>(PLACES_RECOMMEND_PATH, {
     params,
     paramsSerializer: serializeParams,
   })

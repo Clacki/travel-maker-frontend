@@ -75,12 +75,13 @@ export function useExplorePlaces({
 
       getPlacesRecommend({
         ...(recommendTagIds.length > 0 ? { tags: recommendTagIds } : {}),
-        limit: ITEMS_PER_PAGE,
+        page: currentPage,
+        page_size: ITEMS_PER_PAGE,
       })
         .then((data) => {
           if (cancelled) return
-          setPlaces(data)
-          setTotalCount(data.length)
+          setPlaces(data.results)
+          setTotalCount(data.count)
           setFetchedKey(currentKey)
         })
         .catch(() => {

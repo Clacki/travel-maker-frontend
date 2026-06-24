@@ -43,5 +43,6 @@ export type GetPlacesSearchParams = Omit<GetPlacesFilterParams, 'tags'>
 export type GetPlacesRecommendParams = {
   tags?: number[]
   region_tag_id?: number
-  limit?: number
+  page?: number
+  page_size?: number
 }
