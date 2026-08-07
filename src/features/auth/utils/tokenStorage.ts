@@ -1,5 +1,6 @@
 export const ACCESS_TOKEN_STORAGE_KEY = 'accessToken'
 export const AUTH_LOGGED_OUT_STORAGE_KEY = 'authLoggedOut'
+export const DEMO_SESSION_STORAGE_KEY = 'travelmaker-demo-session'
 
 export const clearLegacyStoredAccessToken = () => {
   if (typeof window === 'undefined') {
@@ -32,3 +33,17 @@ export const getAuthLoggedOut = () => {
 
   return localStorage.getItem(AUTH_LOGGED_OUT_STORAGE_KEY) === 'true'
 }
+
+export const setDemoSession = () => {
+  if (typeof window !== 'undefined')
+    localStorage.setItem(DEMO_SESSION_STORAGE_KEY, 'true')
+}
+
+export const clearDemoSession = () => {
+  if (typeof window !== 'undefined')
+    localStorage.removeItem(DEMO_SESSION_STORAGE_KEY)
+}
+
+export const hasDemoSession = () =>
+  typeof window !== 'undefined' &&
+  localStorage.getItem(DEMO_SESSION_STORAGE_KEY) === 'true'

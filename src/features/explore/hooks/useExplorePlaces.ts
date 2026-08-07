@@ -46,8 +46,10 @@ export function useExplorePlaces({
   const [places, setPlaces] = useState<Place[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [fetchedKey, setFetchedKey] = useState<string | null>(null)
+  const [error, setError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
-  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}`
+  const currentKey = `${currentPage}-${selectedTagIdsKey}-${sort}-${keyword}-${pendingTag}-${retryCount}`
   const isLoading = fetchedKey !== currentKey
 
   useEffect(() => {
@@ -82,12 +84,14 @@ export function useExplorePlaces({
           if (cancelled) return
           setPlaces(data.results)
           setTotalCount(data.count)
+          setError(false)
           setFetchedKey(currentKey)
         })
         .catch(() => {
           if (cancelled) return
           setPlaces([])
           setTotalCount(0)
+          setError(true)
           setFetchedKey(currentKey)
         })
 
@@ -129,12 +133,14 @@ export function useExplorePlaces({
         if (cancelled) return
         setPlaces(data.results)
         setTotalCount(data.count)
+        setError(false)
         setFetchedKey(currentKey)
       })
       .catch(() => {
         if (cancelled) return
         setPlaces([])
         setTotalCount(0)
+        setError(true)
         setFetchedKey(currentKey)
       })
 
@@ -158,5 +164,12 @@ export function useExplorePlaces({
     onLoginRequired,
   })
 
-  return { places, totalCount, isLoading, handleLikeToggle }
+  return {
+    places,
+    totalCount,
+    isLoading,
+    error,
+    retry: () => setRetryCount((count) => count + 1),
+    handleLikeToggle,
+  }
 }

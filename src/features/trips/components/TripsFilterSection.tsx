@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { SlidersHorizontal } from 'lucide-react'
+import { ChevronDown, SlidersHorizontal } from 'lucide-react'
 import { EmptyState } from '@/components/common/status'
 import { FilterTag } from '@/components/common/tag'
 import { Pagination } from '@/components/ui/Pagination/Pagination'
@@ -20,14 +20,84 @@ const sectionStyle = css({
 })
 
 const filterPanelStyle = css({
-  display: 'grid',
-  gap: { base: '5', md: '6' },
-  p: { base: '4', md: '6' },
   bg: 'bg.surface',
   borderWidth: '1px',
   borderColor: 'border',
   borderRadius: 'xl',
   boxShadow: 'sm',
+})
+
+const filterToggleStyle = css({
+  width: 'full',
+  minH: '14',
+  px: { base: '4', md: '6' },
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  bg: 'transparent',
+  border: 'none',
+  color: 'text.primary',
+  cursor: 'pointer',
+  textAlign: 'left',
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
+})
+
+const filterToggleLabelStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  fontSize: 'md',
+  fontWeight: 'bold',
+})
+
+const appliedCountStyle = css({
+  px: '2.5',
+  py: '1',
+  borderRadius: 'pill',
+  bg: 'primary.soft',
+  color: 'primary',
+  fontSize: 'xs',
+  fontWeight: 'semibold',
+})
+
+const chevronStyle = css({
+  flexShrink: 0,
+  transitionProperty: 'transform',
+  transitionDuration: '200ms',
+})
+
+const chevronOpenStyle = css({
+  transform: 'rotate(180deg)',
+})
+
+const filterCollapseStyle = css({
+  display: 'grid',
+  gridTemplateRows: '0fr',
+  transitionProperty: 'grid-template-rows',
+  transitionDuration: '250ms',
+  transitionTimingFunction: 'ease',
+})
+
+const filterCollapseOpenStyle = css({
+  gridTemplateRows: '1fr',
+})
+
+const filterCollapseInnerStyle = css({
+  overflow: 'hidden',
+})
+
+const filterContentStyle = css({
+  display: 'grid',
+  gap: { base: '5', md: '6' },
+  px: { base: '4', md: '6' },
+  pb: { base: '4', md: '6' },
+  pt: '2',
+  borderTopWidth: '1px',
+  borderTopColor: 'border.subtle',
 })
 
 const filterRowStyle = css({
@@ -56,6 +126,34 @@ const chipGroupStyle = css({
 const countTextStyle = css({
   color: 'text.secondary',
   fontSize: 'sm',
+})
+
+const filterFooterStyle = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+})
+
+const resetButtonStyle = css({
+  px: '3',
+  py: '2',
+  borderWidth: '1px',
+  borderColor: 'border.subtle',
+  borderRadius: 'sm',
+  bg: 'bg.surface',
+  color: 'text.secondary',
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  _hover: {
+    borderColor: 'primary',
+    color: 'primary',
+  },
+  _focusVisible: {
+    outline: 'none',
+    boxShadow: 'focus',
+  },
 })
 
 const gridStyle = css({
@@ -101,6 +199,7 @@ export function TripsFilterSection({
   themeTags,
   pageSize,
 }: TripsFilterSectionProps) {
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [region, setRegion] = useState(ALL_FILTER)
   const [theme, setTheme] = useState(ALL_FILTER)
   const [currentPage, setCurrentPage] = useState(1)
@@ -165,6 +264,8 @@ export function TripsFilterSection({
   }, [region, theme, currentPage, pageSize, regionTagMap, themeTagMap])
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
+  const appliedFilterCount =
+    Number(region !== ALL_FILTER) + Number(theme !== ALL_FILTER)
 
   const changeRegion = (nextRegion: string) => {
     setRegion(nextRegion)
@@ -188,43 +289,84 @@ export function TripsFilterSection({
   return (
     <section className={sectionStyle} aria-labelledby="trip-list-title">
       <div className={filterPanelStyle}>
-        <div className={filterRowStyle}>
-          <span className={filterLabelStyle}>
-            <SlidersHorizontal size={15} aria-hidden="true" />
-            지역
+        <button
+          type="button"
+          className={filterToggleStyle}
+          aria-expanded={isFilterOpen}
+          aria-controls="trip-filter-content"
+          onClick={() => setIsFilterOpen((open) => !open)}
+        >
+          <span className={filterToggleLabelStyle}>
+            <SlidersHorizontal size={17} aria-hidden="true" />
+            필터
+            {appliedFilterCount > 0 ? (
+              <span className={appliedCountStyle}>
+                {appliedFilterCount}개 적용
+              </span>
+            ) : null}
           </span>
-          <div className={chipGroupStyle}>
-            {regionFilters.map((filter) => (
-              <FilterTag
-                key={filter}
-                label={filter}
-                isSelected={region === filter}
-                onClick={() => changeRegion(filter)}
-                variant="filter"
-              />
-            ))}
+          <ChevronDown
+            size={20}
+            aria-hidden="true"
+            className={`${chevronStyle} ${isFilterOpen ? chevronOpenStyle : ''}`}
+          />
+        </button>
+
+        <div
+          id="trip-filter-content"
+          className={`${filterCollapseStyle} ${isFilterOpen ? filterCollapseOpenStyle : ''}`}
+        >
+          <div className={filterCollapseInnerStyle}>
+            <div className={filterContentStyle}>
+              <div className={filterRowStyle}>
+                <span className={filterLabelStyle}>
+                  <SlidersHorizontal size={15} aria-hidden="true" />
+                  지역
+                </span>
+                <div className={chipGroupStyle}>
+                  {regionFilters.map((filter) => (
+                    <FilterTag
+                      key={filter}
+                      label={filter}
+                      isSelected={region === filter}
+                      onClick={() => changeRegion(filter)}
+                      variant="filter"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className={filterRowStyle}>
+                <span className={filterLabelStyle}>
+                  <SlidersHorizontal size={15} aria-hidden="true" />
+                  테마
+                </span>
+                <div className={chipGroupStyle}>
+                  {themeFilters.map((filter) => (
+                    <FilterTag
+                      key={filter}
+                      label={filter}
+                      isSelected={theme === filter}
+                      onClick={() => changeTheme(filter)}
+                      variant="filter"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className={filterFooterStyle}>
+                <p className={countTextStyle}>총 {totalCount}개의 여행 코스</p>
+                <button
+                  type="button"
+                  className={resetButtonStyle}
+                  onClick={resetFilters}
+                >
+                  초기화
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-
-        <div className={filterRowStyle}>
-          <span className={filterLabelStyle}>
-            <SlidersHorizontal size={15} aria-hidden="true" />
-            테마
-          </span>
-          <div className={chipGroupStyle}>
-            {themeFilters.map((filter) => (
-              <FilterTag
-                key={filter}
-                label={filter}
-                isSelected={theme === filter}
-                onClick={() => changeTheme(filter)}
-                variant="filter"
-              />
-            ))}
-          </div>
-        </div>
-
-        <p className={countTextStyle}>총 {totalCount}개의 여행 코스</p>
       </div>
 
       {courses.length > 0 ? (

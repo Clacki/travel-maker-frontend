@@ -8,6 +8,7 @@
     "build": "panda codegen && next build",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "prepare": "husky",
     "panda": "panda codegen",
     "panda:dev": "panda codegen --watch",

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://travelmaker.demo',
   timeout: 10000,
   withCredentials: true,
   headers: {
@@ -18,6 +18,13 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${accessToken}`
     } else {
       delete config.headers.Authorization
+    }
+
+    if (typeof window !== 'undefined') {
+      const scenario = new URLSearchParams(window.location.search).get(
+        'demoScenario'
+      )
+      if (scenario) config.headers['X-Demo-Scenario'] = scenario
     }
 
     if (typeof FormData !== 'undefined' && config.data instanceof FormData) {

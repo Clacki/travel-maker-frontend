@@ -1,3 +1,5 @@
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { Star, ImageIcon, Heart, MessageCircle } from 'lucide-react'
@@ -5,6 +7,7 @@ import { css, cva } from '@/styled-system/css'
 import { ROUTES } from '@/constants/routes'
 import { LikeButton } from './LikeButton'
 import { EditButton } from './EditButton'
+import { useState } from 'react'
 
 export interface PlaceCardBaseProps {
   placeId: number
@@ -187,6 +190,7 @@ const descriptionStyle = css({
 })
 
 export function PlaceCard(props: PlaceCardProps) {
+  const [hasImageError, setHasImageError] = useState(false)
   const {
     placeId,
     placeName,
@@ -203,13 +207,14 @@ export function PlaceCard(props: PlaceCardProps) {
   return (
     <article className={cardRecipe({ variant })}>
       <div className={imageWrapperStyle}>
-        {imageUrl ? (
+        {imageUrl && !hasImageError ? (
           <Image
             src={imageUrl}
             alt={placeName}
             fill
             sizes="(max-width: 768px) 50vw, 25vw"
             className={css({ objectFit: 'cover' })}
+            onError={() => setHasImageError(true)}
           />
         ) : (
           <div className={imagePlaceholderStyle} aria-hidden="true">

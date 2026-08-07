@@ -69,16 +69,17 @@ function ExploreContent() {
     sort,
   })
 
-  const { places, totalCount, isLoading, handleLikeToggle } = useExplorePlaces({
-    currentPage,
-    selectedTagIdsKey,
-    sort,
-    keyword,
-    tags,
-    pendingTag,
-    isAuthInitialized,
-    onLoginRequired: () => setIsLoginModalOpen(true),
-  })
+  const { places, totalCount, isLoading, error, retry, handleLikeToggle } =
+    useExplorePlaces({
+      currentPage,
+      selectedTagIdsKey,
+      sort,
+      keyword,
+      tags,
+      pendingTag,
+      isAuthInitialized,
+      onLoginRequired: () => setIsLoginModalOpen(true),
+    })
 
   const { bgImage, heroTitle, heroDesc } = useExploreHero(
     previewStyle,
@@ -144,6 +145,7 @@ function ExploreContent() {
           gridRef={gridRef}
           places={places}
           isLoading={isLoading}
+          error={error}
           currentPage={currentPage}
           totalPages={totalPages}
           selectedTagNames={effectiveTagNames}
@@ -151,6 +153,7 @@ function ExploreContent() {
           onLikeToggle={handleLikeToggle}
           onPageChange={goToPage}
           onClearFilters={clearAllFilters}
+          onRetry={retry}
         />
 
         <LoginModal

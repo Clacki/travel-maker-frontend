@@ -1,14 +1,12 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { isAxiosError } from 'axios'
 
 import { ReviewModal } from '@/components/common/ReviewModal'
 import type { ReviewSubmitPayload } from '@/components/common/ReviewModal'
 import { ReviewImageLightbox } from '@/components/common/ReviewImageLightbox'
 import { LoginModal } from '@/components/auth/LoginModal'
-import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import {
   deleteReview,
@@ -82,16 +80,10 @@ const authorNameStyle = css({
   color: 'text.primary',
 })
 
-const authorLinkStyle = css({
+const authorDisplayStyle = css({
   display: 'flex',
   alignItems: 'center',
   gap: '3',
-  textDecoration: 'none',
-  _hover: {
-    '& span:last-child': {
-      textDecoration: 'underline',
-    },
-  },
 })
 
 const metaStyle = css({
@@ -358,10 +350,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
         {/* 좌측: 헤더(아바타·이름·별점·날짜) + 텍스트 + 더보기 */}
         <div className={textSectionStyle}>
           <div className={headerStyle}>
-            <Link
-              href={ROUTES.PROFILE(String(author.id))}
-              className={authorLinkStyle}
-            >
+            <div className={authorDisplayStyle}>
               {/* TODO: API 연결 후 avatarUrl 도메인을 next.config에 허용하고 <Image>로 교체 */}
               {author.avatarUrl && !avatarError ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -392,7 +381,7 @@ export default function ReviewCard({ review, onDeleted }: ReviewCardProps) {
                   <time dateTime={createdAt}>{formatDate(createdAt)}</time>
                 </div>
               </div>
-            </Link>
+            </div>
           </div>
           <div className={textContainerStyle}>
             <p

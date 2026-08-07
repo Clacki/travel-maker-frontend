@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import localFont from 'next/font/local'
 import { AuthInitializer } from '@/features/auth/components/AuthInitializer'
 import { TopLoader } from '@/components/layout/TopLoader'
+import { MockProvider } from '@/components/providers/MockProvider'
 import { css } from '@/styled-system/css'
 import '@/styles/globals.css'
 
@@ -39,7 +40,9 @@ export default function RootLayout({
           })}
         >
           <TopLoader />
-          <AuthInitializer>{children}</AuthInitializer>
+          <MockProvider>
+            <AuthInitializer>{children}</AuthInitializer>
+          </MockProvider>
         </div>
       </body>
     </html>

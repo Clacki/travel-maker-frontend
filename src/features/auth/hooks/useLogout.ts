@@ -1,10 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import { logout } from '@/features/auth/api/authApi'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
-import { markAuthLoggedOut } from '@/features/auth/utils/tokenStorage'
+import {
+  clearDemoSession,
+  markAuthLoggedOut,
+} from '@/features/auth/utils/tokenStorage'
 
 export const useLogout = () => {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
@@ -21,13 +23,11 @@ export const useLogout = () => {
     setIsLoggingOut(true)
 
     try {
-      await logout()
-    } catch (error) {
-      console.error('Logout request failed.', error)
-    } finally {
+      clearDemoSession()
       markAuthLoggedOut()
       clearAuth()
       clearUserProfile()
+    } finally {
       setIsLoggingOut(false)
     }
   }

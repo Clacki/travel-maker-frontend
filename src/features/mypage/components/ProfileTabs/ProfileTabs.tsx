@@ -102,12 +102,6 @@ export function ProfileTabs({
       ]
     : [
         {
-          id: 'bookmark' as TabType,
-          label: '찜 목록',
-          count: bookmarkCount,
-          icon: <Heart size={16} />,
-        },
-        {
           id: 'review' as TabType,
           label: '리뷰',
           count: reviewCount,

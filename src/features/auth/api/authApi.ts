@@ -8,6 +8,11 @@ export type TokenRefreshResponse = {
   access_token: string
 }
 
+export const demoLogin = async () => {
+  const response = await api.post<TokenRefreshResponse>('/auth/demo-login')
+  return response.data
+}
+
 export type CurrentUserResponse = {
   id: number
   nickname: string

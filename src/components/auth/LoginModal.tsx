@@ -1,8 +1,12 @@
 'use client'
 
 import { Modal } from '@/components/common/modal'
-import { redirectToKakaoLogin } from '@/services/auth'
+import { demoLogin } from '@/features/auth/api/authApi'
+import { useAuthStore } from '@/features/auth/store/useAuthStore'
+import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
+import { setDemoSession } from '@/features/auth/utils/tokenStorage'
 import { css } from '@/styled-system/css'
+import { useState } from 'react'
 
 interface LoginModalProps {
   isOpen: boolean
@@ -152,11 +156,25 @@ const guideItems = [
 ]
 
 export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const handleKakaoLogin = () => {
+  const setAccessToken = useAuthStore((state) => state.setAccessToken)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const handleKakaoLogin = async () => {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    setErrorMessage(null)
     try {
-      redirectToKakaoLogin()
+      const { access_token } = await demoLogin()
+      setDemoSession()
+      setAccessToken(access_token)
+      await loadCurrentUserProfile()
+      onClose()
     } catch (error) {
       console.error(error)
+      setErrorMessage('데모 로그인에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -191,17 +209,19 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
         <button
           className={kakaoButtonStyle}
           onClick={handleKakaoLogin}
+          disabled={isSubmitting}
           type="button"
         >
           <span className={kakaoIconStyle} aria-hidden="true">
             K
           </span>
-          카카오로 시작하기
+          {isSubmitting ? '로그인 중...' : '카카오로 데모 로그인'}
         </button>
 
         <p className={helperTextStyle}>
-          간편하게 1초 로그인 · 카카오 계정으로 시작
+          실제 카카오 인증 없이 포트폴리오용 데모 계정으로 로그인됩니다.
         </p>
+        {errorMessage && <p className={helperTextStyle}>{errorMessage}</p>}
       </div>
     </Modal>
   )

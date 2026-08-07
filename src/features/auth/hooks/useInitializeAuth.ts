@@ -2,13 +2,13 @@
 
 import { useEffect, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { refreshAccessToken } from '@/features/auth/api/authApi'
+import { DEMO_ACCESS_TOKEN } from '../../../../mocks/db'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
 import { useUserProfileStore } from '@/features/auth/store/useUserProfileStore'
 import {
   clearAuthLoggedOut,
   clearLegacyStoredAccessToken,
-  getAuthLoggedOut,
+  hasDemoSession,
 } from '@/features/auth/utils/tokenStorage'
 import { loadCurrentUserProfile } from '@/features/auth/utils/currentUserProfile'
 
@@ -41,16 +41,17 @@ export const useInitializeAuth = () => {
       return
     }
 
-    if (getAuthLoggedOut()) {
+    if (!hasDemoSession()) {
+      clearAuth()
+      clearUserProfile()
       setAuthInitialized(true)
       return
     }
 
-    const initializeWithRefresh = async () => {
+    const initializeDemoSession = async () => {
       try {
-        const { access_token: accessToken } = await refreshAccessToken()
         clearAuthLoggedOut()
-        setAccessToken(accessToken, { isAuthInitialized: false })
+        setAccessToken(DEMO_ACCESS_TOKEN, { isAuthInitialized: false })
         try {
           await loadCurrentUserProfile()
         } catch (error) {
@@ -65,7 +66,7 @@ export const useInitializeAuth = () => {
       }
     }
 
-    authInitializationPromise ??= initializeWithRefresh()
+    authInitializationPromise ??= initializeDemoSession()
     void authInitializationPromise
   }, [
     clearAuth,

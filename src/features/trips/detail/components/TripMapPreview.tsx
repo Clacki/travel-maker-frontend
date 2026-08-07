@@ -1,34 +1,14 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { MapPin } from 'lucide-react'
+
 import type { TripCourseDetail, TripPlace } from '../types/tripDetail'
-import type {
-  KakaoLatLng,
-  KakaoOverlay,
-  KakaoPolyline,
-  KakaoMapInstance,
-} from '@/features/trips/types/kakao.types'
-import {
-  PRIMARY_COLOR,
-  INVERSE_COLOR,
-  createMarkerOverlay,
-} from '@/features/trips/utils/createKakaoMarker'
-import { loadKakaoSdk } from '@/features/trips/utils/loadKakaoSdk'
 import { css } from '@/styled-system/css'
 
-const APP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_APP_KEY
+const sectionStyle = css({ display: 'grid', gap: '3' })
 
-const sectionStyle = css({
-  display: 'grid',
-  gap: '3',
-})
-
-const tabsStyle = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2',
-})
+const tabsStyle = css({ display: 'flex', flexWrap: 'wrap', gap: '2' })
 
 const tabButtonStyle = css({
   minH: '8',
@@ -40,25 +20,13 @@ const tabButtonStyle = css({
   color: 'text.primary',
   fontSize: 'sm',
   fontWeight: 'semibold',
-  transitionProperty: 'background-color, border-color, color, box-shadow',
-  transitionDuration: '150ms',
-  _hover: {
-    borderColor: 'primary',
-    color: 'primary',
-  },
-  _focusVisible: {
-    outline: 'none',
-    boxShadow: 'focus',
-  },
+  cursor: 'pointer',
+  _hover: { borderColor: 'primary', color: 'primary' },
+  _focusVisible: { outline: 'none', boxShadow: 'focus' },
   '&[aria-pressed=true]': {
     bg: 'primary',
     borderColor: 'primary',
     color: 'text.inverse',
-    _hover: {
-      bg: 'primary.hover',
-      borderColor: 'primary.hover',
-      color: 'text.inverse',
-    },
   },
 })
 
@@ -71,14 +39,39 @@ const mapWrapStyle = css({
   borderRadius: 'xl',
   bg: 'bg.muted',
   boxShadow: 'sm',
+  backgroundImage:
+    'linear-gradient(30deg, transparent 49%, token(colors.border.subtle) 50%, transparent 51%), linear-gradient(150deg, transparent 49%, token(colors.border.subtle) 50%, transparent 51%)',
+  backgroundSize: '84px 84px',
 })
 
-const mapContainerStyle = css({
+const markerListStyle = css({
   position: 'absolute',
-  inset: 0,
-  '& svg': {
-    display: 'revert',
-    maxWidth: 'revert',
+  inset: '0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexWrap: 'wrap',
+  gap: { base: '5', md: '8' },
+  px: '8',
+  pb: '20',
+})
+
+const markerButtonStyle = css({
+  width: '10',
+  height: '10',
+  borderRadius: 'pill',
+  borderWidth: '2px',
+  borderColor: 'bg.surface',
+  bg: 'primary',
+  color: 'text.inverse',
+  boxShadow: 'md',
+  fontSize: 'sm',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+  '&[aria-pressed=true]': {
+    bg: 'bg.surface',
+    color: 'primary',
+    borderColor: 'primary',
   },
 })
 
@@ -94,7 +87,6 @@ const selectedCardStyle = css({
   bg: 'bg.surface',
   color: 'text.primary',
   boxShadow: 'md',
-  zIndex: '1',
 })
 
 const selectedTitleStyle = css({
@@ -105,7 +97,16 @@ const selectedTitleStyle = css({
   fontWeight: 'bold',
 })
 
-const selectedTextStyle = css({
+const selectedTextStyle = css({ color: 'text.secondary', fontSize: 'xs' })
+
+const demoNoticeStyle = css({
+  position: 'absolute',
+  top: '4',
+  right: '4',
+  px: '3',
+  py: '1.5',
+  borderRadius: 'sm',
+  bg: 'bg.surface',
   color: 'text.secondary',
   fontSize: 'xs',
 })
@@ -125,9 +126,7 @@ const sequenceStyle = css({
   fontSize: 'sm',
 })
 
-const sequenceDividerStyle = css({
-  color: 'text.secondary',
-})
+const sequenceDividerStyle = css({ color: 'text.secondary' })
 
 interface TripMapPreviewProps {
   trip: TripCourseDetail
@@ -139,152 +138,19 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
     trip.days[0]?.places[0]?.id
   )
 
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<KakaoMapInstance | null>(null)
-  const overlaysRef = useRef<KakaoOverlay[]>([])
-  const polylineRef = useRef<KakaoPolyline | null>(null)
-  const overlayContentsRef = useRef<
-    Array<{
-      id: number
-      el: HTMLDivElement
-      tailInner: HTMLDivElement
-      cleanup: () => void
-    }>
-  >([])
-
   const places = useMemo<TripPlace[]>(() => {
-    if (activeDay === 'all') {
-      return trip.days.flatMap((day) => day.places)
-    }
+    if (activeDay === 'all') return trip.days.flatMap((day) => day.places)
     return trip.days.find((day) => day.day === activeDay)?.places ?? []
   }, [activeDay, trip.days])
 
   const selectedPlace =
     places.find((place) => place.id === selectedPlaceId) ?? places[0]
 
-  const initMap = useCallback(() => {
-    if (!mapRef.current) return
-    const center = new window.kakao.maps.LatLng(36.5, 127.5)
-    const map = new window.kakao.maps.Map(mapRef.current, {
-      center,
-      level: 13,
-    })
-    mapInstanceRef.current = map
-  }, [])
-
-  // 카카오맵 SDK 로드
-  useEffect(() => {
-    if (typeof window === 'undefined' || !APP_KEY) {
-      return
-    }
-    loadKakaoSdk(APP_KEY).then(initMap)
-  }, [initMap])
-
-  // 일차 변경 시 마커·폴리라인 갱신
-  useEffect(() => {
-    const map = mapInstanceRef.current
-    if (!map || !window.kakao?.maps) {
-      return
-    }
-
-    // 기존 오버레이·폴리라인 제거 (이벤트 리스너 cleanup 포함)
-    overlayContentsRef.current.forEach(({ cleanup }) => cleanup())
-    overlayContentsRef.current = []
-    overlaysRef.current.forEach((o) => o.setMap(null))
-    overlaysRef.current = []
-    if (polylineRef.current) {
-      polylineRef.current.setMap(null)
-      polylineRef.current = null
-    }
-
-    const coordPlaces = places.filter((p) => p.latitude && p.longitude)
-    if (coordPlaces.length === 0) {
-      return
-    }
-
-    const path: KakaoLatLng[] = []
-    overlayContentsRef.current = []
-
-    coordPlaces.forEach((place, idx) => {
-      const position = new window.kakao.maps.LatLng(
-        place.latitude!,
-        place.longitude!
-      )
-      path.push(position)
-
-      const { el, tailInner } = createMarkerOverlay(
-        String(idx + 1),
-        PRIMARY_COLOR
-      )
-
-      const handleClick = () => setSelectedPlaceId(place.id)
-      el.addEventListener('click', handleClick)
-      overlayContentsRef.current.push({
-        id: place.id,
-        el,
-        tailInner,
-        cleanup: () => el.removeEventListener('click', handleClick),
-      })
-
-      const overlay = new window.kakao.maps.CustomOverlay({
-        position,
-        content: el,
-        yAnchor: 1.4,
-      })
-      overlay.setMap(map)
-      overlaysRef.current.push(overlay)
-    })
-
-    if (path.length >= 2) {
-      const polyline = new window.kakao.maps.Polyline({
-        path,
-        strokeWeight: 5,
-        strokeColor: PRIMARY_COLOR,
-        strokeOpacity: 0.9,
-        strokeStyle: 'solid',
-      })
-      polyline.setMap(map)
-      polylineRef.current = polyline
-    }
-
-    const bounds = new window.kakao.maps.LatLngBounds()
-    path.forEach((p) => bounds.extend(p))
-    map.setBounds(bounds)
-  }, [places])
-
-  // 선택 장소 변경 시 마커 스타일 업데이트 + 지도 이동
-  useEffect(() => {
-    if (!mapInstanceRef.current || !window.kakao?.maps) return
-
-    overlayContentsRef.current.forEach(({ id, el, tailInner }) => {
-      const isSelected = id === selectedPlace?.id
-      const bgColor = isSelected ? INVERSE_COLOR : PRIMARY_COLOR
-      const textColor = isSelected ? PRIMARY_COLOR : INVERSE_COLOR
-      el.style.background = bgColor
-      el.style.color = textColor
-      el.style.border = isSelected ? `2px solid ${PRIMARY_COLOR}` : 'none'
-      el.style.minWidth = isSelected ? '32px' : '28px'
-      el.style.height = isSelected ? '32px' : '28px'
-      tailInner.style.borderTopColor = bgColor
-    })
-
-    if (!selectedPlace?.latitude || !selectedPlace?.longitude) {
-      return
-    }
-    mapInstanceRef.current.panTo(
-      new window.kakao.maps.LatLng(
-        selectedPlace.latitude,
-        selectedPlace.longitude
-      )
-    )
-  }, [selectedPlace])
-
   const selectDay = (day: number | 'all') => {
     const nextPlaces =
       day === 'all'
-        ? trip.days.flatMap((d) => d.places)
-        : (trip.days.find((d) => d.day === day)?.places ?? [])
-
+        ? trip.days.flatMap((item) => item.places)
+        : (trip.days.find((item) => item.day === day)?.places ?? [])
     setActiveDay(day)
     setSelectedPlaceId(nextPlaces[0]?.id)
   }
@@ -292,10 +158,9 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
   return (
     <section className={sectionStyle} aria-labelledby="trip-map-title">
       <h2 id="trip-map-title" className={css({ srOnly: true })}>
-        지도에서 코스 보기
+        코스 지도
       </h2>
-
-      <div className={tabsStyle} aria-label="일차별 지도 보기">
+      <div className={tabsStyle} aria-label="일차별 코스 보기">
         <button
           type="button"
           aria-pressed={activeDay === 'all'}
@@ -318,7 +183,23 @@ export function TripMapPreview({ trip }: TripMapPreviewProps) {
       </div>
 
       <div className={mapWrapStyle}>
-        <div ref={mapRef} className={mapContainerStyle} />
+        <span className={demoNoticeStyle}>
+          데모 버전에서는 지도 기능을 제공하지 않습니다.
+        </span>
+        <div className={markerListStyle}>
+          {places.map((place) => (
+            <button
+              key={place.id}
+              type="button"
+              className={markerButtonStyle}
+              aria-label={`${place.name} 선택`}
+              aria-pressed={selectedPlace?.id === place.id}
+              onClick={() => setSelectedPlaceId(place.id)}
+            >
+              {place.order}
+            </button>
+          ))}
+        </div>
         {selectedPlace ? (
           <div className={selectedCardStyle}>
             <strong className={selectedTitleStyle}>
