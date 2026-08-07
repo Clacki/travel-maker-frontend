@@ -3,8 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { isAxiosError } from 'axios'
-
 import { PageFadeIn } from '@/components/common/PageFadeIn'
 import { ReviewModal } from '@/components/common/ReviewModal'
 import { WithdrawModal } from '@/components/common/WithdrawModal'
@@ -13,12 +11,10 @@ import { Button } from '@/components/common/button'
 import { ErrorState } from '@/components/common/status'
 import { ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { useRequireAuth } from '@/features/auth/hooks/useRequireAuth'
 import { MyPageSkeleton } from '@/features/mypage/components/MyPageSkeleton'
 import { css } from '@/styled-system/css'
 
 import { logout, withdrawUser } from '@/features/auth/api/authApi'
-import { followUser, unfollowUser } from '../../api/followApi'
 import { FollowListModal } from '../FollowListModal/FollowListModal'
 import { useMyBookmarks } from '../../hooks/useMyBookmarks'
 import { useMyPageOwner } from '../../hooks/useMyPageOwner'
@@ -66,9 +62,6 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     isOwner,
     isProfileLoading,
     profileError,
-    canEditProfile,
-    canManageAccount,
-    canManageReviews,
     canManageBookmarks,
     initialIsFollowing,
   } = useMyPageOwner(userId)
@@ -79,22 +72,18 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     void loadCurrentUserProfile()
   }, [isAuthInitialized, isLoggedIn, isOwner])
 
-  const { requireAuth, loginModal } = useRequireAuth()
-
-  const [activeTab, setActiveTab] = useState<TabType>('bookmark')
+  const [activeTab, setActiveTab] = useState<TabType>(() =>
+    userId === '1' || userId === 'me' ? 'bookmark' : 'review'
+  )
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false)
   const [followModal, setFollowModal] = useState<{
     type: 'followers' | 'following'
     isOpen: boolean
   }>({ type: 'followers', isOpen: false })
-  const [followingOverride, setFollowingOverride] = useState<boolean | null>(
-    null
-  )
+  const [followingOverride] = useState<boolean | null>(null)
   const isFollowing = followingOverride ?? initialIsFollowing
-  const [isFollowLoading, setIsFollowLoading] = useState(false)
-  const [localFollowerCount, setLocalFollowerCount] = useState<number | null>(
-    null
-  )
+  const [isFollowLoading] = useState(false)
+  const [localFollowerCount] = useState<number | null>(null)
 
   const {
     bookmarkCount,
@@ -129,7 +118,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
     enabled: isOwner
       ? activeTab === 'review'
       : isAuthInitialized && activeTab === 'review',
-    canManage: canManageReviews,
+    canManage: false,
     isAuthInitialized,
     isLoggedIn,
     targetUserId: isOwner ? undefined : user.id,
@@ -177,41 +166,6 @@ export function MyPageContent({ userId }: MyPageContentProps) {
   const displayedReviewCount =
     activeTab === 'review' || reviewCount > 0 ? reviewCount : user.review_count
 
-  const handleFollowToggle = async () => {
-    if (isFollowLoading) return
-    setIsFollowLoading(true)
-    try {
-      if (isFollowing) {
-        await unfollowUser(user.id)
-        await loadCurrentUserProfile()
-        setFollowingOverride(false)
-        setLocalFollowerCount((prev) =>
-          Math.max(0, (prev ?? user.follower_count) - 1)
-        )
-      } else {
-        await followUser(user.id)
-        await loadCurrentUserProfile()
-        setFollowingOverride(true)
-        setLocalFollowerCount((prev) => (prev ?? user.follower_count) + 1)
-      }
-    } catch (error) {
-      if (isAxiosError(error)) {
-        const status = error.response?.status
-        if (status === 409) {
-          setFollowingOverride(true)
-        } else if (status === 404) {
-          setFollowingOverride(false)
-        }
-      }
-    } finally {
-      setIsFollowLoading(false)
-    }
-  }
-
-  const handleEditProfile = () => {
-    router.push(ROUTES.PROFILE_EDIT(String(user.id)))
-  }
-
   const handleWithdraw = async (reason: string) => {
     await withdrawUser(reason)
     try {
@@ -239,23 +193,10 @@ export function MyPageContent({ userId }: MyPageContentProps) {
             follower_count: localFollowerCount ?? user.follower_count,
           }}
           isMyProfile={isOwner}
-          canEdit={canEditProfile}
-          canManageAccount={canManageAccount}
+          canEdit={false}
+          canManageAccount={false}
           isFollowing={isFollowing}
           isFollowLoading={isFollowLoading}
-          onEditClick={handleEditProfile}
-          onWithdrawClick={() => setIsWithdrawOpen(true)}
-          onFollowToggle={() => requireAuth(() => handleFollowToggle())}
-          onFollowerClick={() =>
-            requireAuth(() =>
-              setFollowModal({ type: 'followers', isOpen: true })
-            )
-          }
-          onFollowingClick={() =>
-            requireAuth(() =>
-              setFollowModal({ type: 'following', isOpen: true })
-            )
-          }
         />
 
         <div className={tabContentStyle}>
@@ -288,7 +229,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
               totalPages={reviewTotalPages}
               isLoading={isReviewLoading}
               errorMessage={reviewError}
-              canManage={canManageReviews}
+              canManage={false}
               onPageChange={setReviewPage}
               onRetry={() => void fetchMyReviews(reviewPage)}
               onEditReview={handleReviewEdit}
@@ -299,7 +240,7 @@ export function MyPageContent({ userId }: MyPageContentProps) {
           {activeTab === 'trip' && (
             <MyTripsSection
               trips={trips}
-              canManage={isOwner}
+              canManage={false}
               onCreateTrip={() => router.push(ROUTES.TRIP_CREATE)}
               onDeleteTrip={isOwner ? handleTripDeleteRequest : undefined}
             />
@@ -391,8 +332,6 @@ export function MyPageContent({ userId }: MyPageContentProps) {
             </p>
           ) : null}
         </Modal>
-
-        {loginModal}
       </div>
     </PageFadeIn>
   )

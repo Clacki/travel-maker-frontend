@@ -9,6 +9,7 @@ import { ROUTES } from '@/constants/routes'
 import { ITEMS_PER_PAGE, type SortKey } from '../constants'
 import { PlaceCardSkeleton } from './PlaceCardSkeleton'
 import { ExploreEmpty } from './ExploreEmpty'
+import { ErrorState } from '@/components/common/status'
 import type { Place } from '../types/places.types'
 
 const gridStyle = css({
@@ -28,6 +29,7 @@ interface ExploreGridProps {
   gridRef: RefObject<HTMLElement | null>
   places: Place[]
   isLoading: boolean
+  error: boolean
   currentPage: number
   totalPages: number
   selectedTagNames: string[]
@@ -35,12 +37,14 @@ interface ExploreGridProps {
   onLikeToggle: (placeId: number) => void
   onPageChange: (page: number) => void
   onClearFilters: () => void
+  onRetry: () => void
 }
 
 export function ExploreGrid({
   gridRef,
   places,
   isLoading,
+  error,
   currentPage,
   totalPages,
   selectedTagNames,
@@ -48,6 +52,7 @@ export function ExploreGrid({
   onLikeToggle,
   onPageChange,
   onClearFilters,
+  onRetry,
 }: ExploreGridProps) {
   const selectedTagSet = new Set(selectedTagNames)
   const highlightSuffix = selectedTagNames.length
@@ -64,6 +69,13 @@ export function ExploreGrid({
               <PlaceCardSkeleton key={i} />
             ))}
           </div>
+        ) : error ? (
+          <ErrorState
+            title="여행지를 불러오지 못했어요"
+            description="잠시 후 다시 시도해주세요."
+            actionLabel="다시 시도"
+            onAction={onRetry}
+          />
         ) : places.length > 0 ? (
           <Fragment key={`places-${places.length}-${places[0]?.id ?? ''}`}>
             <div className={cx(gridStyle, fadeInStyle)}>

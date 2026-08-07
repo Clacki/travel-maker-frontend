@@ -76,11 +76,9 @@ const checkIconStyle = css({
   filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
 })
 
-export default function GallerySection({
-  images,
-  placeId: _placeId,
-}: GallerySectionProps) {
+export default function GallerySection({ images }: GallerySectionProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set())
   const [isDraggingStyle, setIsDraggingStyle] = useState(false)
   const rowRef = useRef<HTMLDivElement>(null)
   const isDragging = useRef(false)
@@ -88,7 +86,10 @@ export default function GallerySection({
   const scrollLeft = useRef(0)
   const dragMoved = useRef(false)
 
-  const mainImage = images[selectedIndex] ?? images[0]
+  const selectedImage = images[selectedIndex] ?? images[0]
+  const mainImage = failedImages.has(selectedImage)
+    ? '/thumbnail-default.svg'
+    : selectedImage
   const thumbnails = images
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -134,6 +135,11 @@ export default function GallerySection({
               sizes="(max-width: 1024px) 100vw, 58vw"
               style={{ objectFit: 'cover' }}
               priority
+              onError={() =>
+                setFailedImages((current) =>
+                  new Set(current).add(selectedImage)
+                )
+              }
             />
           </motion.div>
         </AnimatePresence>
@@ -168,12 +174,15 @@ export default function GallerySection({
               }}
             >
               <Image
-                src={src}
+                src={failedImages.has(src) ? '/thumbnail-default.svg' : src}
                 alt={`여행지 이미지 ${index + 1}`}
                 fill
                 sizes="80px"
                 draggable={false}
                 style={{ objectFit: 'cover' }}
+                onError={() =>
+                  setFailedImages((current) => new Set(current).add(src))
+                }
               />
               {isSelected && (
                 <div className={thumbnailOverlayStyle}>
