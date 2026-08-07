@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 
-import { getRouteDetail } from '@/features/trips/api/routesApi'
 import { toTripCourseDetail } from '@/features/trips/detail/data/tripDetailAdapter'
 import { TripDetailPage } from '@/features/trips/detail/TripDetailPage'
+import { demoRouteDetails } from '../../../../../mocks/data/routeData'
 
 interface TripDetailRoutePageProps {
   params: Promise<{ tripId: string }>
@@ -19,12 +19,8 @@ export async function generateMetadata({
     return { title: '여행 코스 상세' }
   }
 
-  try {
-    const route = await getRouteDetail(routeId)
-    return { title: route.title }
-  } catch {
-    return { title: '여행 코스 상세' }
-  }
+  const route = demoRouteDetails[routeId]
+  return { title: route?.title ?? '여행 코스 상세' }
 }
 
 export default async function TripDetailRoutePage({
@@ -37,13 +33,11 @@ export default async function TripDetailRoutePage({
     notFound()
   }
 
-  let trip
-  try {
-    const route = await getRouteDetail(routeId)
-    trip = toTripCourseDetail(route)
-  } catch {
+  const route = demoRouteDetails[routeId]
+  if (!route) {
     notFound()
   }
 
+  const trip = toTripCourseDetail(route)
   return <TripDetailPage trip={trip} />
 }

@@ -3,11 +3,10 @@ import { LayoutContainer } from '@/components/layout/LayoutContainer'
 import { TripsHeroBanner } from './components/TripsHeroBanner'
 import { FeaturedTripCourse } from './components/FeaturedTripCourse'
 import { TripsFilterSection } from './components/TripsFilterSection'
-import { getRoutes } from './api/routesApi'
-import { getRegionTags, getThemeTags } from './api/tagsApi'
 import { toTripCourse } from './types/trip'
-import type { Tag } from '@/types/tag.types'
 import { css } from '@/styled-system/css'
+import { demoTags } from '../../../mocks/data/demoData'
+import { demoRouteList } from '../../../mocks/data/routeData'
 
 const pageStyle = css({
   minH: '100vh',
@@ -22,23 +21,10 @@ const contentStyle = css({
 
 const PAGE_SIZE = 9
 
-export async function TripsListPage() {
-  const [routeResult, latestResult, regionTags, themeTags] = await Promise.all([
-    getRoutes({ page: 1, page_size: PAGE_SIZE, ordering: 'latest' }).catch(
-      () => ({ items: [], totalCount: 0 })
-    ),
-    getRoutes({ page: 1, page_size: 1, ordering: 'latest' }).catch(() => ({
-      items: [],
-      totalCount: 0,
-    })),
-    getRegionTags().catch((): Tag[] => []),
-    getThemeTags().catch((): Tag[] => []),
-  ])
-
-  const courses = routeResult.items.map(toTripCourse)
-  const featuredCourse = latestResult.items[0]
-    ? toTripCourse(latestResult.items[0])
-    : courses[0]
+export function TripsListPage() {
+  const initialRoutes = demoRouteList.slice(0, PAGE_SIZE)
+  const courses = initialRoutes.map(toTripCourse)
+  const featuredCourse = courses[0]
 
   return (
     <PageFadeIn>
@@ -48,9 +34,9 @@ export async function TripsListPage() {
           {featuredCourse && <FeaturedTripCourse course={featuredCourse} />}
           <TripsFilterSection
             initialCourses={courses}
-            initialTotalCount={routeResult.totalCount}
-            regionTags={regionTags}
-            themeTags={themeTags}
+            initialTotalCount={demoRouteList.length}
+            regionTags={demoTags}
+            themeTags={demoTags}
             pageSize={PAGE_SIZE}
           />
         </LayoutContainer>
