@@ -5,9 +5,10 @@ import {
   DEMO_BOOKMARKS_STORAGE_KEY,
   hydrateDemoBookmarks,
 } from '../../../mocks/db'
+import { isMswEnabled } from '@/lib/dataSource'
 
 export function MockProvider({ children }: { children: ReactNode }) {
-  const [isReady, setIsReady] = useState(false)
+  const [isReady, setIsReady] = useState(!isMswEnabled)
 
   useEffect(() => {
     let active = true
@@ -21,14 +22,12 @@ export function MockProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem(DEMO_BOOKMARKS_STORAGE_KEY)
         }
       }
+      if (!isMswEnabled) return
       const { worker } = await import('../../../mocks/browser')
       await worker.start({
         onUnhandledRequest(request, print) {
           const url = new URL(request.url)
-          if (
-            url.origin === window.location.origin ||
-            url.hostname === 'travelmaker.demo'
-          ) {
+          if (url.origin === window.location.origin) {
             print.warning()
           }
         },
