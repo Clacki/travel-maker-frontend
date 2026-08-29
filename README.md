@@ -173,15 +173,19 @@ pnpm install
 cp .env.example .env.local
 ```
 
-| 변수                             | 설명                                          |
-| -------------------------------- | --------------------------------------------- |
-| `NEXT_PUBLIC_API_URL`            | 백엔드 API 서버 URL                           |
-| `NEXT_PUBLIC_KAKAO_CLIENT_ID`    | 카카오 OAuth 앱 키                            |
-| `NEXT_PUBLIC_KAKAO_REDIRECT_URI` | 카카오 OAuth 리다이렉트 URI (백엔드 콜백 URL) |
-| `NEXT_PUBLIC_KAKAO_MAP_APP_KEY`  | 카카오맵 JavaScript 앱 키                     |
+| 변수                             | 설명                                                   |
+| -------------------------------- | ------------------------------------------------------ |
+| `NEXT_PUBLIC_DATA_SOURCE`        | 데이터 소스 (`mock` 또는 `api`, 기본값 `mock`)         |
+| `NEXT_PUBLIC_API_URL`            | `api` 모드에서 사용할 백엔드 API 서버 URL              |
+| `NEXT_PUBLIC_MSW_ENABLED`        | 개발/테스트 네트워크 mock 활성화 (`production`은 제외) |
+| `NEXT_PUBLIC_KAKAO_CLIENT_ID`    | 카카오 OAuth 앱 키                                     |
+| `NEXT_PUBLIC_KAKAO_REDIRECT_URI` | 카카오 OAuth 리다이렉트 URI (백엔드 콜백 URL)          |
+| `NEXT_PUBLIC_KAKAO_MAP_APP_KEY`  | 카카오맵 JavaScript 앱 키                              |
 
 > **주의**: `NEXT_PUBLIC_KAKAO_REDIRECT_URI`는 프론트 경로가 아닌 백엔드 콜백 API URL을 가리킵니다.  
 > 카카오 OAuth 흐름은 [인증 흐름 문서](docs/auth-flow.md)를 참고하세요.
+
+Mock/API 데이터 흐름과 MSW의 역할은 [Mock 데이터 구조 문서](docs/mock-data-architecture.md)를 참고하세요.
 
 ### 3. 개발 서버 실행
 
