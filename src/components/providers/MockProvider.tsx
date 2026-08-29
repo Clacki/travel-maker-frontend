@@ -12,6 +12,7 @@ export function MockProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let active = true
+    let stopWorker: (() => void) | undefined
     const start = async () => {
       const stored = localStorage.getItem(DEMO_BOOKMARKS_STORAGE_KEY)
       if (stored) {
@@ -32,11 +33,17 @@ export function MockProvider({ children }: { children: ReactNode }) {
           }
         },
       })
+      stopWorker = () => worker.stop()
+      if (!active) {
+        stopWorker()
+        return
+      }
       if (active) setIsReady(true)
     }
     void start()
     return () => {
       active = false
+      stopWorker?.()
     }
   }, [])
 

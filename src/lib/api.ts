@@ -1,15 +1,19 @@
 import axios from 'axios'
 import { useAuthStore } from '@/features/auth/store/useAuthStore'
-import { isMockDataSource } from './dataSource'
+import { isMockDataSource, isMswEnabled } from './dataSource'
+
+const useBrowserMsw =
+  isMockDataSource && isMswEnabled && typeof window !== 'undefined'
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL?.trim() || undefined,
-  adapter: isMockDataSource
-    ? async (config) => {
-        const { mockApiAdapter } = await import('./mockApiAdapter')
-        return mockApiAdapter(config)
-      }
-    : undefined,
+  adapter:
+    isMockDataSource && !useBrowserMsw
+      ? async (config) => {
+          const { mockApiAdapter } = await import('./mockApiAdapter')
+          return mockApiAdapter(config)
+        }
+      : undefined,
   timeout: 10000,
   withCredentials: true,
   headers: {
