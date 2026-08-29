@@ -13,9 +13,17 @@ const pretendard = localFont({
   display: 'swap',
 })
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  'https://travel-maker-frontend.vercel.app'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Travel Maker',
   description: '국내 여행 취향 기반 추천 서비스',
+  alternates: {
+    canonical: '/',
+  },
 }
 
 export default function RootLayout({
